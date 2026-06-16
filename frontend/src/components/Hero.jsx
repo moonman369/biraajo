@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 
 const HERO_IMG =
   "https://customer-assets.emergentagent.com/job_adaec391-d42f-41ce-b775-ff2b784b7b8b/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg";
+const HERO_VIDEO =
+  "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/6469flkz_biraajo%206th%20june%2000101268_prob4.mp4";
 
 export default function Hero() {
   return (
@@ -10,13 +12,23 @@ export default function Hero() {
       className="relative min-h-screen w-full overflow-hidden"
       data-testid="hero-section"
     >
-      {/* Background image */}
+      {/* Background video with image poster fallback */}
       <div className="absolute inset-0">
+        <video
+          src={HERO_VIDEO}
+          poster={HERO_IMG}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
         <img
           src={HERO_IMG}
-          alt="Biraajo supper club table"
-          className="absolute inset-0 w-full h-full object-cover"
-          loading="eager"
+          alt=""
+          aria-hidden
+          className="absolute inset-0 w-full h-full object-cover -z-10"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0A0504]/55 via-[#0A0504]/40 to-[#0A0504]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(10,5,4,0.9))]" />

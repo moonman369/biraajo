@@ -58,13 +58,12 @@ export default function Gallery() {
               {isVideo(img.url) ? (
                 <video
                   src={img.url}
-                  className="w-full h-auto object-cover"
+                  className="w-full aspect-[4/5] object-cover bg-[#140A09]"
+                  autoPlay
                   muted
                   loop
                   playsInline
-                  preload="metadata"
-                  onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
-                  onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
+                  preload="auto"
                 />
               ) : (
                 <img
