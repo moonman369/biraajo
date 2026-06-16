@@ -392,7 +392,7 @@ function GalleryAdmin() {
       <h2 className="font-display text-4xl mb-6">Gallery</h2>
       <form onSubmit={add} className="bg-[#140A09] border border-[#2D1D1A] p-6 grid grid-cols-1 sm:grid-cols-12 gap-3 mb-8">
         <input
-          required value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Image URL"
+          required value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Image or video URL (.jpg / .png / .mp4 / .webm)"
           data-testid="gallery-url-input"
           className="sm:col-span-6 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#9C3527] outline-none"
         />

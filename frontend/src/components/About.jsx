@@ -13,7 +13,7 @@ const chapters = [
       "Regional dishes were reimagined through modern techniques. Familiar flavours appeared in unexpected forms. Every gathering became an opportunity to explore new ideas and tell stories through food.",
       "What began as a few dinners around a shared table slowly became the foundation for something more.",
     ],
-    image: "https://images.unsplash.com/photo-1606660023296-81d67734170a",
+    image: "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ozdq9xth__DSC4892-2%20%281%29.jpg",
     align: "left",
   },
   {
@@ -27,7 +27,7 @@ const chapters = [
       "After graduating from culinary school in Switzerland, Vidip spent time working in professional kitchens, refining his craft and expanding his perspective on food, culture and hospitality.",
       "Exposure to different cuisines, techniques and philosophies reinforced a belief that continues to shape Biraajo today: the most memorable meals are rarely about food alone. They are about people, memories and the conversations that happen around the table.",
     ],
-    image: "https://images.unsplash.com/photo-1566554273541-37a9ca77b91f",
+    image: "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/knt2zl0v__DSC4971-2%20%281%29.jpg",
     align: "right",
   },
   {
@@ -41,7 +41,7 @@ const chapters = [
       "Rather than building a restaurant from scratch, Vidip chose to restore a space already rich with history. Original details, family memories and old-world character have been carefully preserved, allowing the apartment to remain what it has always been: a home.",
       "The setting feels familiar, intimate and lived in. The food does not.",
     ],
-    image: "https://images.unsplash.com/photo-1517870662726-c1d98ee36250",
+    image: "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/xw1h2s8n_IMG_0183%20%283%29%20%281%29.jpg",
     align: "left",
   },
   {
@@ -55,7 +55,7 @@ const chapters = [
       "A childhood favourite may be smoked. A regional classic may be fermented. A familiar flavour may return in a form you've never encountered before.",
       "Every menu begins with a story and ends around a shared table.",
     ],
-    image: "https://images.unsplash.com/photo-1697659602792-31dcb2a5a4ec",
+    image: "https://customer-assets.emergentagent.com/job_adaec391-d42f-41ce-b775-ff2b784b7b8b/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg",
     align: "right",
   },
 ];

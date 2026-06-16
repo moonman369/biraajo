@@ -2,11 +2,11 @@ import { motion } from "framer-motion";
 import { Instagram } from "lucide-react";
 
 const tiles = [
-  "https://images.unsplash.com/photo-1606471191009-63994c53433b",
-  "https://images.unsplash.com/photo-1728910156510-77488f19b152",
-  "https://images.unsplash.com/photo-1697659602792-31dcb2a5a4ec",
-  "https://images.unsplash.com/photo-1588644525273-f37b60d78512",
-  "https://images.unsplash.com/photo-1517870662726-c1d98ee36250",
+  "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/xw1h2s8n_IMG_0183%20%283%29%20%281%29.jpg",
+  "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ozdq9xth__DSC4892-2%20%281%29.jpg",
+  "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/knt2zl0v__DSC4971-2%20%281%29.jpg",
+  "https://customer-assets.emergentagent.com/job_adaec391-d42f-41ce-b775-ff2b784b7b8b/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg",
+  "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg",
   "https://images.unsplash.com/photo-1585937421612-70a008356fbe",
 ];
 

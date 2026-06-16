@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { api } from "@/lib/api";
+
+const isVideo = (url = "") => /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
 
 export default function Gallery() {
   const [images, setImages] = useState([]);
@@ -53,12 +55,30 @@ export default function Gallery() {
               className="block mb-3 lg:mb-4 w-full break-inside-avoid img-zoom overflow-hidden bg-[#0A0504] group relative"
               data-testid={`gallery-thumb-${i}`}
             >
-              <img
-                src={img.url}
-                alt={img.caption || "Biraajo"}
-                className="w-full h-auto object-cover"
-                loading="lazy"
-              />
+              {isVideo(img.url) ? (
+                <video
+                  src={img.url}
+                  className="w-full h-auto object-cover"
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+                  onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
+                />
+              ) : (
+                <img
+                  src={img.url}
+                  alt={img.caption || "Biraajo"}
+                  className="w-full h-auto object-cover"
+                  loading="lazy"
+                />
+              )}
+              {isVideo(img.url) && (
+                <span className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 bg-[#0A0504]/80 backdrop-blur-sm text-overline text-[#F3EFE7]">
+                  <Play size={10} /> Video
+                </span>
+              )}
               <div className="absolute inset-0 bg-[#0A0504]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
                 <span className="text-overline text-[#F3EFE7]">view</span>
               </div>
@@ -103,16 +123,30 @@ export default function Gallery() {
             >
               <ChevronRight size={36} />
             </button>
-            <motion.img
+            <motion.div
               key={images[openIndex].id}
-              src={images[openIndex].url}
-              alt=""
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="max-h-[88vh] max-w-[88vw] object-contain"
+              className="max-h-[88vh] max-w-[88vw]"
               onClick={(e) => e.stopPropagation()}
-            />
+            >
+              {isVideo(images[openIndex].url) ? (
+                <video
+                  src={images[openIndex].url}
+                  className="max-h-[88vh] max-w-[88vw] object-contain"
+                  controls
+                  autoPlay
+                  playsInline
+                />
+              ) : (
+                <img
+                  src={images[openIndex].url}
+                  alt=""
+                  className="max-h-[88vh] max-w-[88vw] object-contain"
+                />
+              )}
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
