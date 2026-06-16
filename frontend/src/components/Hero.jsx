@@ -32,7 +32,7 @@ export default function Hero() {
             transition={{ duration: 1, delay: 0.6 }}
           >
             <span className="ember-dot mr-3 align-middle" />
-            est. mumbai · since 2022
+            south calcutta · since 2024
           </motion.span>
           <motion.span
             className="text-right hidden sm:inline"
@@ -40,7 +40,7 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.7 }}
           >
-            a contemporary supper club
+            not quite a restaurant · not just a home
           </motion.span>
         </div>
 
@@ -72,29 +72,29 @@ export default function Hero() {
           >
             <div className="lg:col-span-7">
               <p className="font-display text-2xl sm:text-3xl lg:text-4xl text-[#F3EFE7] leading-snug italic font-light">
-                by Vidip Shah —{" "}
+                Not quite a restaurant.{" "}
                 <span className="not-italic text-[#B5A79E]">
-                  unforgettable dining stitched together through food, culture, and conversation.
+                  Not just a home. Hosted from a restored family apartment in South Calcutta.
                 </span>
               </p>
             </div>
 
             <div className="lg:col-span-5 lg:text-right">
-              <p className="text-overline mb-5 lg:mb-4">Begin</p>
+              <p className="text-overline mb-5 lg:mb-4">Take a seat</p>
               <div className="flex flex-col sm:flex-row gap-4 lg:justify-end">
                 <a
-                  href="#experiences"
+                  href="#events"
                   data-testid="hero-view-experiences-button"
                   className="inline-flex items-center justify-center px-7 py-4 bg-[#9C3527] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500"
                 >
-                  View Experiences
+                  Join the Table
                 </a>
                 <a
-                  href="#events"
+                  href="#experiences"
                   data-testid="hero-join-events-button"
                   className="inline-flex items-center justify-center px-7 py-4 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500"
                 >
-                  Join Future Events
+                  View Experiences
                 </a>
               </div>
             </div>

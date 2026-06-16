@@ -13,7 +13,7 @@ export default function Footer() {
               biraajo<span className="italic text-[#D9772B]">.</span>
             </p>
             <p className="mt-6 text-[#B5A79E] max-w-md leading-relaxed">
-              A contemporary Indian supper club by Vidip Shah — Mumbai, on the move.
+              A contemporary dining experience by Vidip Shah — hosted from a restored family apartment in South Calcutta.
             </p>
           </div>
 
