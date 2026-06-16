@@ -1,0 +1,135 @@
+{
+  "project_name": "Biraajo by Vidip Shah - Premium Personal Chef",
+  "theme": "dark",
+  "archetype": "5 (Luxury) with 1 (Organic & Earthy) warmth",
+  "design_vision": "Cinematic, candle-lit supper-club scene. Heritage meets contemporary fine dining. High-contrast editorial layout with deep moody shadows, rich saturation, and food-photography film grain feel.",
+  "color_palette": {
+    "background_base": "#0A0504",
+    "background_surface": "#140A09",
+    "foreground_primary": "#F3EFE7",
+    "foreground_muted": "#B5A79E",
+    "accent_primary": "#9C3527",
+    "accent_secondary": "#D9772B",
+    "border_subtle": "#2D1D1A",
+    "overlay_dark": "rgba(10, 5, 4, 0.6)",
+    "error": "#D94A3D",
+    "success": "#3E6649"
+  },
+  "typography": {
+    "font_families": {
+      "heading": "'Cormorant Garamond', serif",
+      "body": "'Manrope', sans-serif"
+    },
+    "scales": {
+      "h1": "text-5xl sm:text-6xl+ tracking-tighter leading-none font-medium",
+      "h2": "text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-tight",
+      "h3": "text-2xl sm:text-3xl tracking-tight",
+      "body_large": "text-lg leading-relaxed",
+      "body_base": "text-base leading-relaxed",
+      "overline": "text-xs tracking-[0.2em] uppercase font-bold text-accent_secondary"
+    },
+    "urls": [
+      "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Manrope:wght@300;400;500&display=swap"
+    ]
+  },
+  "layout_and_spacing": {
+    "padding_generous": "p-8 sm:p-12 lg:p-24",
+    "grid_bento": "grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8",
+    "borders": "border border-[#2D1D1A]",
+    "radius": "rounded-none sm:rounded-sm",
+    "container_max_width": "max-w-7xl mx-auto"
+  },
+  "components": {
+    "hero": "Full-screen minimum h-screen. Dark gradient overlay at the bottom to transition into content. Large typography, asymmetric placement of name and positioning statement.",
+    "buttons": {
+      "primary": "bg-[#9C3527] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-300 px-6 py-3 rounded-none tracking-wide text-sm font-medium",
+      "secondary": "bg-transparent border border-[#2D1D1A] text-[#F3EFE7] hover:bg-[#2D1D1A] transition-all duration-300 px-6 py-3 rounded-none tracking-wide text-sm"
+    },
+    "cards": "Flat solid surfaces (#140A09), subtle inner borders (1px border-[#2D1D1A]), no drop shadows, clean geometric lines.",
+    "navigation": "Crystal glass effect for sticky header. bg-[#0A0504]/70 backdrop-blur-xl border-b border-[#2D1D1A]. Links hover to accent_secondary.",
+    "forms": "Shadcn components heavily customized. Dark inputs: bg-[#140A09] border border-[#2D1D1A] text-[#F3EFE7] focus:ring-1 focus:ring-[#9C3527].",
+    "masonry_gallery": "Use dense grid layouts, span-varying image containers. Object-cover. Hover opacity change for interaction."
+  },
+  "motion_and_interactions": {
+    "scroll": "Lenis smooth scroll is MANDATORY for premium momentum feel.",
+    "entrance": "Framer motion staggered fade-up for grid items. Use slow ease-out transitions (duration: 0.8s).",
+    "hover": "Images scale slightly on hover (scale 1.05) inside hidden overflow containers."
+  },
+  "media_urls": [
+    {
+      "category": "hero_background",
+      "url": "https://images.unsplash.com/photo-1469234496837-d0101f54be3e",
+      "description": "Wine glasses on top of brown table near window, dark moody vibe."
+    },
+    {
+      "category": "chef_portrait",
+      "url": "https://images.unsplash.com/photo-1566554273541-37a9ca77b91f",
+      "description": "Chef cooking in moody lighting, intense focus."
+    },
+    {
+      "category": "featured_food_1",
+      "url": "https://images.unsplash.com/photo-1728910156510-77488f19b152",
+      "description": "Richly colored Indian feast on a dark table."
+    },
+    {
+      "category": "featured_food_2",
+      "url": "https://images.unsplash.com/photo-1606471191009-63994c53433b",
+      "description": "Warm, earthy toned food on brown round plate."
+    },
+    {
+      "category": "supper_club_ambience",
+      "url": "https://images.unsplash.com/photo-1625668931397-b9c35f63186b",
+      "description": "Clear wine glass on red ceramic plate."
+    },
+    {
+      "category": "supper_club_table",
+      "url": "https://images.unsplash.com/photo-1562050344-f7ad946cee35",
+      "description": "Long dining table setting with plates."
+    },
+    {
+      "category": "gallery_image_1",
+      "url": "https://images.unsplash.com/photo-1541614101331-1a5a3a194e92",
+      "description": "Man cooking in dark setting."
+    },
+    {
+      "category": "gallery_image_2",
+      "url": "https://images.unsplash.com/photo-1588644525273-f37b60d78512",
+      "description": "Cooked rice with vegetables on plate."
+    },
+    {
+      "category": "gallery_image_3",
+      "url": "https://images.unsplash.com/photo-1697659602792-31dcb2a5a4ec",
+      "description": "Chef sprinkling spices."
+    },
+    {
+      "category": "gallery_image_4",
+      "url": "https://images.unsplash.com/photo-1517870662726-c1d98ee36250",
+      "description": "White ceramic plate on brown wooden table."
+    },
+    {
+      "category": "gallery_image_5",
+      "url": "https://images.unsplash.com/photo-1585937421612-70a008356fbe",
+      "description": "Cooked food on stainless steel bowl."
+    },
+    {
+      "category": "gallery_image_6",
+      "url": "https://images.unsplash.com/photo-1606660023296-81d67734170a",
+      "description": "Dining table with plates and drinking glasses in dim lighting."
+    }
+  ],
+  "accessibility_and_testing": {
+    "contrast": "Text elements overlaying images MUST use background overlays (rgba black) or heavy text-shadow to ensure WCAG AA contrast.",
+    "testing_ids": {
+      "hero_cta": "data-testid='hero-view-experiences-button'",
+      "event_register_btn": "data-testid='event-register-button'",
+      "event_form_submit": "data-testid='event-registration-submit'",
+      "newsletter_input": "data-testid='newsletter-email-input'",
+      "newsletter_submit": "data-testid='newsletter-submit-button'",
+      "contact_form_submit": "data-testid='contact-form-submit'",
+      "admin_login_btn": "data-testid='admin-login-button'",
+      "admin_event_create": "data-testid='admin-create-event-button'",
+      "nav_menu_link": "data-testid='nav-menu-link'"
+    }
+  },
+  "instructions_to_main_agent": "Implement a high-end, editorial hybrid platform (landing page + CMS). Do not use generic purple/blue tech gradients. Strictly adhere to the warm, dark garnet/terracotta palette. Use Cormorant Garamond for elegant, large, tightly tracked headlines. Employ heavy grain/noise textures as an overlay on dark background sections. Images MUST be utilized exactly from the provided media_urls list—no placeholders. Admin dashboard should follow a bento grid structure, utilizing the exact same dark theme and UI language (no switching to a light theme for the dashboard). Wrap interactive lists with framer-motion for smooth staggered reveals."
+}
