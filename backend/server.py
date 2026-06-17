@@ -115,6 +115,7 @@ class RegistrationIn(BaseModel):
     email: EmailStr
     phone: str
     instagram_handle: Optional[str] = ""
+    menu_preference: Optional[str] = ""  # Vegetarian | Non-Vegetarian
     dietary_preferences: Optional[str] = ""
     guests: int = 1
     notes: Optional[str] = ""
@@ -368,14 +369,14 @@ async def export_registrations(event_id: Optional[str] = None, user=Depends(get_
     writer = csv.writer(buf)
     writer.writerow([
         "id", "event_id", "full_name", "email", "phone", "instagram_handle",
-        "dietary_preferences", "guests", "notes", "created_at",
+        "menu_preference", "dietary_preferences", "guests", "notes", "created_at",
     ])
     for d in docs:
         writer.writerow([
             d.get("id", ""), d.get("event_id", ""), d.get("full_name", ""),
             d.get("email", ""), d.get("phone", ""), d.get("instagram_handle", ""),
-            d.get("dietary_preferences", ""), d.get("guests", 1),
-            d.get("notes", ""), d.get("created_at", ""),
+            d.get("menu_preference", ""), d.get("dietary_preferences", ""),
+            d.get("guests", 1), d.get("notes", ""), d.get("created_at", ""),
         ])
     buf.seek(0)
     return StreamingResponse(

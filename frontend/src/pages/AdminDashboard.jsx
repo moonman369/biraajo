@@ -285,12 +285,12 @@ function Registrations() {
           <thead className="bg-[#0A0504] text-overline">
             <tr>
               <Th>Event</Th><Th>Name</Th><Th>Email</Th><Th>Phone</Th>
-              <Th>Instagram</Th><Th>Guests</Th><Th>Dietary</Th><Th>Date</Th>
+              <Th>Instagram</Th><Th>Menu</Th><Th>Guests</Th><Th>Dietary</Th><Th>Date</Th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
-              <tr><td colSpan={8} className="p-8 text-center text-[#B5A79E]">No registrations yet.</td></tr>
+              <tr><td colSpan={9} className="p-8 text-center text-[#B5A79E]">No registrations yet.</td></tr>
             )}
             {rows.map((r) => (
               <tr key={r.id} className="border-t border-[#2D1D1A]">
@@ -299,6 +299,7 @@ function Registrations() {
                 <Td>{r.email}</Td>
                 <Td>{r.phone}</Td>
                 <Td>{r.instagram_handle}</Td>
+                <Td>{r.menu_preference}</Td>
                 <Td>{r.guests}</Td>
                 <Td>{r.dietary_preferences}</Td>
                 <Td>{new Date(r.created_at).toLocaleDateString()}</Td>
