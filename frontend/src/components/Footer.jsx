@@ -13,7 +13,7 @@ export default function Footer() {
               biraajo<span className="italic text-[#D9772B]">.</span>
             </p>
             <p className="mt-6 text-[#B5A79E] max-w-md leading-relaxed">
-              A contemporary dining experience by Vidip Shah — hosted from a restored family apartment in South Calcutta.
+              A project by Vidip Shah — a young chef cooking out of a restored family apartment in South Calcutta. Curious about more than one cuisine.
             </p>
           </div>
 

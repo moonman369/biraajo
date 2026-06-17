@@ -3,60 +3,46 @@ import { motion } from "framer-motion";
 const chapters = [
   {
     no: "01",
-    eyebrow: "How it started",
+    eyebrow: "Before there was a name",
     title: (
-      <>It started with a <span className="italic text-[#D9772B]">table.</span></>
+      <>Before there was Biraajo, there was a <span className="italic text-[#D9772B]">dining table.</span></>
     ),
     body: [
-      "Before there was a name, there was a table.",
-      "In 2024, Vidip Shah began hosting informal dinners for friends. There was no grand concept, no business plan and no intention of turning it into anything bigger. It was simply a space to experiment.",
-      "Regional dishes were reimagined through modern techniques. Familiar flavours appeared in unexpected forms. Every gathering became an opportunity to explore new ideas and tell stories through food.",
-      "What began as a few dinners around a shared table slowly became the foundation for something more.",
+      "In 2024, while working in a Bengali restaurant in New Delhi, I started inviting friends over for dinner. There was no concept behind it and certainly no business plan. I just wanted a place to cook.",
+      "Some nights the food leaned Bengali. Other nights it went somewhere else entirely. We'd cook, eat, argue over ideas, open another beer, and spend far too much time discussing food.",
+      "Many of those evenings were shared with other chefs. Looking back, those dinners quietly became the foundation for what would eventually become Biraajo.",
     ],
     image: "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ozdq9xth__DSC4892-2%20%281%29.jpg",
     align: "left",
   },
   {
     no: "02",
-    eyebrow: "The journey",
+    eyebrow: "A borderless kitchen",
     title: (
-      <>From a kitchen in <span className="italic text-[#D9772B]">Switzerland</span> back home.</>
+      <>I don't really think in <span className="italic text-[#D9772B]">cuisines</span> anymore.</>
     ),
     body: [
-      "Curiosity eventually led beyond that table.",
-      "After graduating from culinary school in Switzerland, Vidip spent time working in professional kitchens, refining his craft and expanding his perspective on food, culture and hospitality.",
-      "Exposure to different cuisines, techniques and philosophies reinforced a belief that continues to shape Biraajo today: the most memorable meals are rarely about food alone. They are about people, memories and the conversations that happen around the table.",
+      "Culinary school in Switzerland had a bigger influence on me than any single kitchen ever could.",
+      "For the first time, I was surrounded by people from completely different parts of the world. A conversation over lunch could move from Mexico to Russia, from Turkey to Thailand in a matter of minutes. Everyone carried different memories of home and different ways of cooking, eating and gathering around a table. Watching those worlds collide was fascinating.",
+      "Today I think in terms of ingredients, memories, techniques and ideas that happen to interest me at the time. A childhood favourite might become something entirely different. A family recipe may pick up influences from somewhere unexpected. A dish that appears on one menu may never appear again.",
+      "At twenty-two, I'm still figuring out the kind of cook I want to become. Biraajo gives me a place to do that. Some guests arrive expecting a chef to present his finished philosophy. What they'll find instead is a chef in the middle of the process. The menu changes because I do.",
     ],
     image: "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/knt2zl0v__DSC4971-2%20%281%29.jpg",
     align: "right",
   },
   {
     no: "03",
-    eyebrow: "The house",
+    eyebrow: "A home restored",
     title: (
-      <>A home, <span className="italic text-[#D9772B]">restored.</span></>
+      <>Old furniture. Old stories. <span className="italic text-[#D9772B]">Old Calcutta.</span></>
     ),
     body: [
-      "Today, that idea lives inside a restored family apartment in South Calcutta.",
-      "Rather than building a restaurant from scratch, Vidip chose to restore a space already rich with history. Original details, family memories and old-world character have been carefully preserved, allowing the apartment to remain what it has always been: a home.",
-      "The setting feels familiar, intimate and lived in. The food does not.",
+      "Today, Biraajo takes place inside a restored family apartment in South Calcutta.",
+      "The easier option would have been to find a commercial space. Instead, I chose a place that already had a history. The apartment still carries the character it always had. Very little was stripped away.",
+      "That's what I love about it.",
     ],
     image: "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/xw1h2s8n_IMG_0183%20%283%29%20%281%29.jpg",
     align: "left",
-  },
-  {
-    no: "04",
-    eyebrow: "The food",
-    title: (
-      <>No cuisine is <span className="italic text-[#D9772B]">off limits.</span></>
-    ),
-    body: [
-      "At Biraajo, no cuisine is off limits and no tradition is beyond conversation. The menus are shaped by memories, travels, techniques and curiosity rather than geography.",
-      "A childhood favourite may be smoked. A regional classic may be fermented. A familiar flavour may return in a form you've never encountered before.",
-      "Every menu begins with a story and ends around a shared table.",
-    ],
-    image: "https://customer-assets.emergentagent.com/job_adaec391-d42f-41ce-b775-ff2b784b7b8b/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg",
-    align: "right",
   },
 ];
 
@@ -69,22 +55,22 @@ export default function About() {
     >
       {/* Section opener */}
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 mb-20 lg:mb-32">
-        <p className="text-overline">01 — The Story</p>
+        <p className="text-overline">The Story · So Far</p>
         <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 text-[#F3EFE7] leading-[1.02] tracking-tight max-w-4xl">
-          Not quite a restaurant.
+          A project, not a brand.
           <br />
-          <span className="italic text-[#D9772B]">Not just a home.</span>
+          <span className="italic text-[#D9772B]">Still figuring it out.</span>
         </h2>
       </div>
 
-      {/* Chapters with the bridge quote inserted between 03 (House) and 04 (Food) */}
+      {/* Chapters 01 → 02 → 03 */}
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 space-y-28 lg:space-y-40">
-        {chapters.slice(0, 3).map((c, idx) => (
+        {chapters.map((c, idx) => (
           <Chapter key={c.no} chapter={c} index={idx} />
         ))}
       </div>
 
-      {/* Bridge quote — sits between The House and The Food */}
+      {/* Bridge — the rooted-vs-restless line */}
       <motion.blockquote
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -92,21 +78,18 @@ export default function About() {
         transition={{ duration: 1.2 }}
         className="max-w-5xl mx-auto px-6 sm:px-8 lg:px-12 my-28 lg:my-40 text-center"
       >
-        <p className="text-overline mb-6">A line we live by</p>
+        <p className="text-overline mb-6">A line that fits</p>
         <p className="font-display text-3xl sm:text-5xl lg:text-6xl text-[#F3EFE7] leading-[1.1] tracking-tight">
-          The house <span className="italic text-[#B5A79E]">preserves</span> memories.
+          The setting feels familiar and <span className="italic text-[#B5A79E]">rooted.</span>
           <br />
-          The kitchen <span className="italic text-[#D9772B]">plays</span> with them.
+          The food often <span className="italic text-[#D9772B]">doesn't.</span>
+        </p>
+        <p className="mt-8 text-[#B5A79E] max-w-xl mx-auto leading-relaxed">
+          Somewhere between the two is where Biraajo lives.
         </p>
       </motion.blockquote>
 
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 space-y-28 lg:space-y-40">
-        {chapters.slice(3).map((c, idx) => (
-          <Chapter key={c.no} chapter={c} index={idx + 3} />
-        ))}
-      </div>
-
-      {/* Why Biraajo */}
+      {/* Section 04 — The meaning of Biraajo (closer) */}
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -116,24 +99,21 @@ export default function About() {
         data-testid="why-biraajo"
       >
         <div className="lg:col-span-5">
-          <p className="text-overline">05 — Why Biraajo</p>
+          <p className="text-overline">04 — The meaning of Biraajo</p>
           <h3 className="font-display text-5xl sm:text-6xl mt-6 text-[#F3EFE7] leading-[1.02] tracking-tight">
             An invitation to <span className="italic text-[#D9772B]">take a seat.</span>
           </h3>
         </div>
         <div className="lg:col-span-7 space-y-5 text-[#B5A79E] text-base lg:text-lg leading-relaxed lg:pt-8">
           <p>
-            The name comes from the Sanskrit word{" "}
-            <em className="font-display not-italic text-[#F3EFE7]">Biraajo</em> — an invitation to take a seat.
+            The name <em className="font-display not-italic text-[#F3EFE7]">Biraajo</em> comes from a Sanskrit word used to invite someone to take a seat.
           </p>
+          <p>It's a simple gesture, but an important one.</p>
           <p>
-            Traditionally, it is offered with warmth and reverence, often to honoured guests, respected elders and even the divine. More than hospitality, it is an invitation to belong.
-          </p>
-          <p>
-            That idea sits at the heart of everything we do. Guests are welcomed into a home rather than a venue. The experience is designed to feel nostalgic yet unexpected, comforting yet playful.
+            More than anything else, that's what this project is about. Not a restaurant. Not fine dining. Not a performance. Just a table, a home, and whatever I've been curious about lately.
           </p>
           <p className="font-display text-2xl text-[#F3EFE7] italic leading-snug pt-2">
-            A little old Calcutta. A little experimentation. And just enough quirk to keep things interesting.
+            A little old Calcutta. A little experimentation. And always a place for one more person.
           </p>
           <div className="pt-6 flex flex-wrap gap-4">
             <a
@@ -141,13 +121,13 @@ export default function About() {
               className="inline-flex items-center justify-center px-7 py-4 bg-[#9C3527] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500"
               data-testid="about-join-table"
             >
-              Join the Table
+              Pull up a chair
             </a>
             <a
-              href="#experiences"
+              href="#gallery"
               className="inline-flex items-center justify-center px-7 py-4 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500"
             >
-              View Experiences
+              See past suppers
             </a>
           </div>
         </div>
@@ -189,8 +169,8 @@ function Chapter({ chapter, index }) {
           {chapter.title}
         </h3>
         <div className="mt-7 space-y-4 text-[#B5A79E] text-base lg:text-lg leading-relaxed">
-          {chapter.body.map((p, i) => (
-            <p key={i}>{p}</p>
+          {chapter.body.map((p) => (
+            <p key={p.slice(0, 40)}>{p}</p>
           ))}
         </div>
       </div>

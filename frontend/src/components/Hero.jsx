@@ -86,7 +86,7 @@ export default function Hero() {
               <p className="font-display text-2xl sm:text-3xl lg:text-4xl text-[#F3EFE7] leading-snug italic font-light">
                 Not quite a restaurant.{" "}
                 <span className="not-italic text-[#B5A79E]">
-                  Not just a home. Hosted from a restored family apartment in South Calcutta.
+                  Not just a home. A young chef cooking out of a restored family apartment in South Calcutta — and inviting you in.
                 </span>
               </p>
             </div>
