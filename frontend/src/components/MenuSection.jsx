@@ -81,7 +81,7 @@ export default function MenuSection() {
 
           <ul className="space-y-8">
             {(current.items || []).map((it, idx) => (
-              <li key={idx} data-testid={`menu-item-${idx}`}>
+              <li key={`${current.id}-${it.name}`} data-testid={`menu-item-${idx}`}>
                 <div className="flex items-baseline justify-between gap-6">
                   <h4 className="font-display text-2xl text-[#F3EFE7] tracking-tight">
                     {it.name}

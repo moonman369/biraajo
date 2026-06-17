@@ -47,7 +47,7 @@ export default function InstagramFeed() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
           {tiles.map((src, i) => (
             <motion.a
-              key={i}
+              key={src}
               href="https://www.instagram.com/biraajo_/"
               target="_blank"
               rel="noreferrer"

@@ -46,7 +46,14 @@ export default function EventRegistrationModal({ event, onClose, onSuccess }) {
   };
 
   const copyUpi = async () => {
-    try { await navigator.clipboard.writeText(UPI_ID); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch {}
+    try {
+      await navigator.clipboard.writeText(UPI_ID);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.warn("Clipboard write failed:", err);
+      toast.error("Couldn't copy. Long-press the UPI ID to copy manually.");
+    }
   };
 
   const close = () => { setConfirmation(null); onSuccess?.(); };
