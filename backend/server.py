@@ -8,7 +8,9 @@ import os
 import io
 import csv
 import uuid
+import asyncio
 import logging
+import httpx
 import bcrypt
 import jwt
 from datetime import datetime, timezone, timedelta
@@ -76,6 +78,26 @@ async def get_current_admin(request: Request) -> dict:
         raise HTTPException(status_code=401, detail="User not found")
     user.pop("password_hash", None)
     return user
+
+
+# ---------- Google Sheets webhook (fire-and-forget) ----------
+async def _send_to_sheet(payload_type: str, data: dict) -> None:
+    url = os.environ.get("GOOGLE_SHEETS_WEBHOOK_URL", "").strip()
+    if not url:
+        return
+    try:
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as c:
+            await c.post(url, json={"type": payload_type, "data": data})
+    except Exception as e:
+        logger.warning(f"Sheets webhook failed for {payload_type}: {e}")
+
+
+def push_to_sheet(payload_type: str, data: dict) -> None:
+    """Schedule a non-blocking send to Google Sheets."""
+    try:
+        asyncio.create_task(_send_to_sheet(payload_type, data))
+    except RuntimeError:
+        pass
 
 
 # ---------- Models ----------
@@ -395,6 +417,11 @@ async def newsletter_subscribe(body: SubscriberIn):
         return {"ok": True, "message": "Already subscribed"}
     sub = Subscriber(email=email, name=body.name or "")
     await db.subscribers.insert_one(sub.model_dump())
+    push_to_sheet("newsletter", {
+        "created_at": sub.created_at,
+        "email": sub.email,
+        "name": sub.name or "",
+    })
     return {"ok": True, "id": sub.id}
 
 
@@ -425,6 +452,13 @@ async def export_subscribers(user=Depends(get_current_admin)):
 async def contact_create(body: ContactIn):
     msg = ContactMessage(**body.model_dump())
     await db.contacts.insert_one(msg.model_dump())
+    push_to_sheet("contact", {
+        "created_at": msg.created_at,
+        "name": msg.name,
+        "email": msg.email,
+        "phone": msg.phone or "",
+        "message": msg.message,
+    })
     return {"ok": True, "id": msg.id}
 
 
@@ -503,6 +537,22 @@ async def stats(user=Depends(get_current_admin)):
 @api.get("/")
 async def health():
     return {"status": "ok", "name": "Biraajo API"}
+
+
+app.include_router(api)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=False,
+    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    client.close()
 
 
 app.include_router(api)
