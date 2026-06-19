@@ -123,8 +123,11 @@ export default function Events() {
                   <div className="mt-7 flex items-end justify-between pt-5 border-t border-[#2D1D1A]">
                     <div>
                       <p className="text-overline">Per seat</p>
-                      <p className="font-display text-2xl text-[#F3EFE7] mt-1">
-                        ₹{Number(ev.price).toLocaleString("en-IN")}
+                      <p className="font-display text-2xl text-[#F3EFE7] mt-1 leading-tight">
+                        ₹2,200 <span className="text-sm text-[#B5A79E]">veg</span>
+                      </p>
+                      <p className="font-display text-2xl text-[#F3EFE7] leading-tight">
+                        ₹2,500 <span className="text-sm text-[#B5A79E]">non-veg</span>
                       </p>
                     </div>
                     <div className="text-right">
