@@ -81,23 +81,26 @@ function Overview() {
     { label: "Total Events", value: stats.total_events, icon: Calendar },
     { label: "Upcoming", value: stats.upcoming_events, icon: Calendar },
     { label: "Registrations", value: stats.total_registrations, icon: Users },
+    { label: "Confirmed", value: stats.confirmed_registrations ?? 0, icon: Users },
+    { label: "Pending", value: stats.pending_registrations ?? 0, icon: Users },
+    { label: "Revenue", value: `₹${Number(stats.revenue ?? 0).toLocaleString("en-IN")}`, icon: Users },
     { label: "Subscribers", value: stats.total_subscribers, icon: Mail },
     { label: "Messages", value: stats.total_contacts, icon: MessageSquare },
   ];
   return (
     <div>
       <h2 className="font-display text-4xl mb-8">At a glance</h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px bg-[#2D1D1A]">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#2D1D1A]">
         {cards.map((c) => (
           <motion.div
             key={c.label}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-[#140A09] p-7"
-            data-testid={`stat-${c.label.toLowerCase()}`}
+            data-testid={`stat-${c.label.toLowerCase().replace(/\s/g, "-")}`}
           >
             <c.icon size={20} className="text-[#D9772B]" />
-            <p className="font-display text-5xl mt-4">{c.value}</p>
+            <p className="font-display text-4xl mt-4">{c.value}</p>
             <p className="text-overline mt-3 text-[#B5A79E]">{c.label}</p>
           </motion.div>
         ))}
@@ -249,19 +252,70 @@ function Registrations() {
   const [rows, setRows] = useState([]);
   const [events, setEvents] = useState([]);
   const [eventId, setEventId] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [viewing, setViewing] = useState(null); // {id, blobUrl}
 
   useEffect(() => { api.get("/events").then((r) => setEvents(r.data)); }, []);
-  useEffect(() => {
-    api.get("/registrations", { params: eventId ? { event_id: eventId } : {} }).then((r) => setRows(r.data));
-  }, [eventId]);
+
+  const load = () => {
+    const params = {};
+    if (eventId) params.event_id = eventId;
+    if (statusFilter) params.payment_status = statusFilter;
+    api.get("/registrations", { params }).then((r) => setRows(r.data));
+  };
+  useEffect(load, [eventId, statusFilter]);
 
   const titleOf = (id) => events.find((e) => e.id === id)?.title || id;
+
+  const viewScreenshot = async (reg) => {
+    try {
+      const token = localStorage.getItem("biraajo_admin_token");
+      const res = await fetch(`${BACKEND_URL}/api/registrations/${reg.id}/screenshot`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Not available");
+      const blob = await res.blob();
+      setViewing({ id: reg.id, blobUrl: URL.createObjectURL(blob), name: reg.full_name });
+    } catch {
+      toast.error("Screenshot not available");
+    }
+  };
+
+  const closeViewer = () => {
+    if (viewing?.blobUrl) URL.revokeObjectURL(viewing.blobUrl);
+    setViewing(null);
+  };
+
+  const remind = (r) => {
+    const phone = (r.phone || "").replace(/\D/g, "");
+    if (!phone) { toast.error("No phone on file"); return; }
+    const msg = encodeURIComponent(
+      `Hi ${r.full_name.split(" ")[0]}, just a gentle nudge — your Biraajo seat for "${titleOf(r.event_id)}" is held but payment is pending. Pay ₹${Number(r.total_amount || 0).toLocaleString("en-IN")} to UPI: vidipshah14-1@oksbi and reply with the screenshot to lock it. — Biraajo`
+    );
+    window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+  };
+
+  const del = async (r) => {
+    if (!window.confirm(`Delete registration for ${r.full_name}? This releases the seats.`)) return;
+    await api.delete(`/registrations/${r.id}`);
+    toast.success("Deleted");
+    load();
+  };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <h2 className="font-display text-4xl">Registrations</h2>
-        <div className="flex gap-3 items-center">
+        <div className="flex gap-3 items-center flex-wrap">
+          <select
+            value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+            data-testid="reg-filter-status"
+            className="bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-sm text-[#F3EFE7]"
+          >
+            <option value="">All payments</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="pending">Pending</option>
+          </select>
           <select
             value={eventId} onChange={(e) => setEventId(e.target.value)}
             data-testid="reg-filter-event"
@@ -271,7 +325,12 @@ function Registrations() {
             {events.map((e) => <option key={e.id} value={e.id}>{e.title}</option>)}
           </select>
           <button
-            onClick={() => downloadFromApi(`/registrations/export${eventId ? `?event_id=${eventId}` : ""}`, "registrations.csv")}
+            onClick={() => {
+              const qs = new URLSearchParams();
+              if (eventId) qs.set("event_id", eventId);
+              if (statusFilter) qs.set("payment_status", statusFilter);
+              downloadFromApi(`/registrations/export${qs.toString() ? `?${qs}` : ""}`, "registrations.csv");
+            }}
             data-testid="reg-export-csv"
             className="px-4 py-3 border border-[#2D1D1A] text-[11px] tracking-[0.22em] uppercase inline-flex items-center gap-2 hover:border-[#D9772B]"
           >
@@ -284,16 +343,18 @@ function Registrations() {
         <table className="w-full text-sm">
           <thead className="bg-[#0A0504] text-overline">
             <tr>
-              <Th>Event</Th><Th>Name</Th><Th>Email</Th><Th>Phone</Th>
-              <Th>Instagram</Th><Th>Menu</Th><Th>Guests</Th><Th>Dietary</Th><Th>Date</Th>
+              <Th>Status</Th><Th>Event</Th><Th>Name</Th><Th>Email</Th><Th>Phone</Th>
+              <Th>Instagram</Th><Th>Menu</Th><Th>Guests</Th><Th>Total</Th><Th>Dietary</Th>
+              <Th>Submitted</Th><Th>Actions</Th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
-              <tr><td colSpan={9} className="p-8 text-center text-[#B5A79E]">No registrations yet.</td></tr>
+              <tr><td colSpan={12} className="p-8 text-center text-[#B5A79E]">No registrations match.</td></tr>
             )}
             {rows.map((r) => (
-              <tr key={r.id} className="border-t border-[#2D1D1A]">
+              <tr key={r.id} className="border-t border-[#2D1D1A]" data-testid={`reg-row-${r.id}`}>
+                <Td><PaymentBadge status={r.payment_status} /></Td>
                 <Td>{titleOf(r.event_id)}</Td>
                 <Td>{r.full_name}</Td>
                 <Td>{r.email}</Td>
@@ -301,14 +362,61 @@ function Registrations() {
                 <Td>{r.instagram_handle}</Td>
                 <Td>{r.menu_preference}</Td>
                 <Td>{r.guests}</Td>
+                <Td>₹{Number(r.total_amount || 0).toLocaleString("en-IN")}</Td>
                 <Td>{r.dietary_preferences}</Td>
                 <Td>{new Date(r.created_at).toLocaleDateString()}</Td>
+                <Td>
+                  <div className="flex gap-2 flex-wrap">
+                    {r.payment_status === "confirmed" && r.payment_screenshot_path && (
+                      <button onClick={() => viewScreenshot(r)} data-testid={`view-screenshot-${r.id}`}
+                        className="px-2 py-1 border border-[#2D1D1A] text-[10px] tracking-[0.18em] uppercase hover:border-[#D9772B]">
+                        Receipt
+                      </button>
+                    )}
+                    {r.payment_status === "pending" && (
+                      <button onClick={() => remind(r)} data-testid={`remind-${r.id}`}
+                        className="px-2 py-1 border border-[#D9772B] text-[10px] tracking-[0.18em] uppercase text-[#D9772B] hover:bg-[#D9772B] hover:text-[#0A0504]">
+                        Nudge
+                      </button>
+                    )}
+                    <button onClick={() => del(r)} data-testid={`delete-reg-${r.id}`}
+                      className="px-2 py-1 border border-[#2D1D1A] text-[10px] tracking-[0.18em] uppercase hover:border-[#D94A3D] hover:text-[#D94A3D]">
+                      Del
+                    </button>
+                  </div>
+                </Td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {viewing && (
+        <div className="fixed inset-0 z-[100] bg-[#0A0504]/95 backdrop-blur-md flex items-center justify-center p-6"
+          onClick={closeViewer} data-testid="screenshot-viewer">
+          <div className="max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-overline text-[#D9772B]">{viewing.name} · Payment receipt</p>
+              <button onClick={closeViewer} className="text-[#F3EFE7]" data-testid="close-screenshot">Close</button>
+            </div>
+            <img src={viewing.blobUrl} alt="Payment screenshot" className="w-full max-h-[80vh] object-contain border border-[#2D1D1A] bg-[#140A09]" />
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+function PaymentBadge({ status }) {
+  const isConfirmed = status === "confirmed";
+  return (
+    <span className={`px-2 py-1 text-[10px] tracking-[0.18em] uppercase border inline-block ${
+      isConfirmed
+        ? "border-[#3A7D44] text-[#9FD79F] bg-[#3A7D44]/10"
+        : "border-[#D9772B] text-[#D9772B] bg-[#D9772B]/10"
+    }`}>
+      {isConfirmed ? "Confirmed" : "Pending"}
+    </span>
   );
 }
 

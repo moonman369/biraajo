@@ -13,14 +13,75 @@ import logging
 import httpx
 import bcrypt
 import jwt
+import requests
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request, UploadFile, File, Header, Query
+from fastapi.responses import StreamingResponse, Response
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
+
+
+# ---------- Pricing ----------
+PRICE_VEG = 2200
+PRICE_NONVEG = 2500
+UPI_ID = os.environ.get("UPI_ID", "vidipshah14-1@oksbi")
+
+
+# ---------- Object Storage (payment screenshots) ----------
+STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
+APP_NAME = os.environ.get("APP_NAME", "biraajo")
+_storage_key: Optional[str] = None
+
+
+def init_storage() -> Optional[str]:
+    global _storage_key
+    if _storage_key:
+        return _storage_key
+    key = os.environ.get("EMERGENT_LLM_KEY", "").strip()
+    if not key:
+        return None
+    try:
+        r = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": key}, timeout=30)
+        r.raise_for_status()
+        _storage_key = r.json()["storage_key"]
+        return _storage_key
+    except Exception as e:
+        logging.getLogger("biraajo").error(f"Storage init failed: {e}")
+        return None
+
+
+def put_object(path: str, data: bytes, content_type: str) -> dict:
+    key = init_storage()
+    if not key:
+        raise HTTPException(status_code=500, detail="Storage not configured")
+    r = requests.put(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key, "Content-Type": content_type},
+        data=data,
+        timeout=120,
+    )
+    r.raise_for_status()
+    return r.json()
+
+
+def get_object(path: str) -> tuple[bytes, str]:
+    key = init_storage()
+    if not key:
+        raise HTTPException(status_code=500, detail="Storage not configured")
+    r = requests.get(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key}, timeout=60)
+    r.raise_for_status()
+    return r.content, r.headers.get("Content-Type", "application/octet-stream")
+
+
+# ---------- Email (welcome / confirmation) — stub until Resend key is supplied ----------
+async def send_welcome_email(to_email: str, name: str, event_title: str, total_amount: int) -> None:
+    """Logs only for now. Will swap to Resend once API key is available."""
+    logging.getLogger("biraajo").info(
+        f"[EMAIL STUB] welcome -> {to_email} | {name} | {event_title} | ₹{total_amount}"
+    )
 
 
 # ---------- DB ----------
@@ -145,6 +206,11 @@ class RegistrationIn(BaseModel):
 
 class Registration(RegistrationIn):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    total_amount: int = 0
+    payment_status: str = "pending"  # pending | confirmed
+    payment_screenshot_path: str = ""
+    payment_confirmed_at: Optional[str] = None
+    welcome_email_sent: bool = False
     created_at: str = Field(default_factory=_now_iso)
 
 
@@ -196,10 +262,21 @@ class GalleryImage(GalleryImageIn):
 # ---------- Startup ----------
 @app.on_event("startup")
 async def on_startup():
+    # Drop legacy unique index if present (allow pending re-submissions)
+    try:
+        await db.registrations.drop_index("event_id_1_email_1")
+    except Exception:
+        pass
+
     # Indexes
     await db.admins.create_index("email", unique=True)
     await db.subscribers.create_index("email", unique=True)
-    await db.registrations.create_index([("event_id", 1), ("email", 1)], unique=True)
+
+    # Object storage
+    if init_storage():
+        logger.info("Object storage initialized")
+    else:
+        logger.warning("Object storage NOT initialized — screenshot uploads will fail")
 
     # Seed admin
     admin_email = os.environ["ADMIN_EMAIL"].lower()
@@ -348,6 +425,11 @@ async def delete_event(event_id: str, user=Depends(get_current_admin)):
 
 
 # ---------- Registrations ----------
+def _calc_total(menu_preference: str, guests: int) -> int:
+    per_seat = PRICE_VEG if menu_preference == "Vegetarian" else PRICE_NONVEG
+    return per_seat * max(1, int(guests))
+
+
 @api.post("/events/{event_id}/register")
 async def register_event(event_id: str, body: RegistrationIn):
     event = await db.events.find_one({"id": event_id}, {"_id": 0})
@@ -358,47 +440,169 @@ async def register_event(event_id: str, body: RegistrationIn):
     if body.guests > available:
         raise HTTPException(status_code=400, detail=f"Only {available} seat(s) available")
 
-    # Force event_id from path
     payload = body.model_dump()
     payload["event_id"] = event_id
     payload["email"] = payload["email"].lower()
-    reg = Registration(**payload)
 
-    existing = await db.registrations.find_one({"event_id": event_id, "email": reg.email})
+    total = _calc_total(payload.get("menu_preference", ""), payload.get("guests", 1))
+
+    # If a PENDING registration already exists for this (event, email), update it instead of duplicating
+    existing = await db.registrations.find_one({"event_id": event_id, "email": payload["email"]})
     if existing:
-        raise HTTPException(status_code=409, detail="You have already registered for this event")
+        if existing.get("payment_status") == "confirmed":
+            raise HTTPException(status_code=409, detail="You're already confirmed for this event")
+        # Update pending in-place; adjust seat counter for delta in guests
+        delta_guests = int(payload.get("guests", 1)) - int(existing.get("guests", 1))
+        if delta_guests > available:
+            raise HTTPException(status_code=400, detail=f"Only {available} more seat(s) available")
+        await db.registrations.update_one(
+            {"id": existing["id"]},
+            {"$set": {**payload, "total_amount": total}},
+        )
+        if delta_guests != 0:
+            await db.events.update_one({"id": event_id}, {"$inc": {"seats_booked": delta_guests}})
+        doc = await db.registrations.find_one({"id": existing["id"]}, {"_id": 0})
+        return {**doc, "upi_id": UPI_ID}
 
+    reg = Registration(**payload, total_amount=total)
     await db.registrations.insert_one(reg.model_dump())
     await db.events.update_one(
         {"id": event_id}, {"$inc": {"seats_booked": reg.guests}}
     )
-    return reg.model_dump()
+
+    # Fire welcome email (stub) and Google Sheets sync — non-blocking
+    asyncio.create_task(send_welcome_email(reg.email, reg.full_name, event["title"], total))
+    await db.registrations.update_one({"id": reg.id}, {"$set": {"welcome_email_sent": True}})
+    push_to_sheet("registration_pending", {
+        "created_at": reg.created_at,
+        "event": event["title"],
+        "name": reg.full_name,
+        "email": reg.email,
+        "phone": reg.phone,
+        "instagram": reg.instagram_handle or "",
+        "menu": reg.menu_preference or "",
+        "guests": reg.guests,
+        "dietary": reg.dietary_preferences or "",
+        "notes": reg.notes or "",
+        "total_amount": total,
+        "payment_status": "pending",
+    })
+
+    return {**reg.model_dump(), "upi_id": UPI_ID}
+
+
+@api.post("/registrations/{reg_id}/payment-screenshot")
+async def upload_payment_screenshot(reg_id: str, file: UploadFile = File(...)):
+    reg = await db.registrations.find_one({"id": reg_id}, {"_id": 0})
+    if not reg:
+        raise HTTPException(status_code=404, detail="Registration not found")
+
+    ct = (file.content_type or "").lower()
+    if not ct.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Please upload an image (JPG/PNG)")
+
+    data = await file.read()
+    if len(data) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image too large (max 10MB)")
+
+    ext = (file.filename.rsplit(".", 1)[-1] if "." in (file.filename or "") else "jpg").lower()
+    path = f"{APP_NAME}/payments/{reg_id}/{uuid.uuid4()}.{ext}"
+    result = put_object(path, data, ct or "image/jpeg")
+
+    now = _now_iso()
+    await db.registrations.update_one(
+        {"id": reg_id},
+        {"$set": {
+            "payment_screenshot_path": result["path"],
+            "payment_status": "confirmed",
+            "payment_confirmed_at": now,
+        }},
+    )
+
+    event = await db.events.find_one({"id": reg.get("event_id")}, {"_id": 0}) or {}
+    push_to_sheet("registration_confirmed", {
+        "created_at": reg.get("created_at"),
+        "confirmed_at": now,
+        "event": event.get("title", ""),
+        "name": reg.get("full_name", ""),
+        "email": reg.get("email", ""),
+        "phone": reg.get("phone", ""),
+        "instagram": reg.get("instagram_handle", ""),
+        "menu": reg.get("menu_preference", ""),
+        "guests": reg.get("guests", 1),
+        "total_amount": reg.get("total_amount", 0),
+        "payment_status": "confirmed",
+    })
+
+    return {"ok": True, "payment_status": "confirmed"}
+
+
+@api.get("/registrations/{reg_id}/screenshot")
+async def get_payment_screenshot(reg_id: str, user=Depends(get_current_admin)):
+    reg = await db.registrations.find_one({"id": reg_id}, {"_id": 0})
+    if not reg or not reg.get("payment_screenshot_path"):
+        raise HTTPException(status_code=404, detail="Screenshot not found")
+    data, ct = get_object(reg["payment_screenshot_path"])
+    return Response(content=data, media_type=ct)
 
 
 @api.get("/registrations")
-async def list_registrations(event_id: Optional[str] = None, user=Depends(get_current_admin)):
-    q = {"event_id": event_id} if event_id else {}
+async def list_registrations(
+    event_id: Optional[str] = None,
+    payment_status: Optional[str] = None,
+    user=Depends(get_current_admin),
+):
+    q: dict = {}
+    if event_id:
+        q["event_id"] = event_id
+    if payment_status in ("pending", "confirmed"):
+        q["payment_status"] = payment_status
     docs = await db.registrations.find(q, {"_id": 0}).sort("created_at", -1).to_list(2000)
     return docs
 
 
+@api.delete("/registrations/{reg_id}")
+async def delete_registration(reg_id: str, user=Depends(get_current_admin)):
+    reg = await db.registrations.find_one({"id": reg_id}, {"_id": 0})
+    if not reg:
+        raise HTTPException(status_code=404, detail="Registration not found")
+    await db.registrations.delete_one({"id": reg_id})
+    # Release seats
+    await db.events.update_one(
+        {"id": reg.get("event_id")},
+        {"$inc": {"seats_booked": -int(reg.get("guests", 1))}},
+    )
+    return {"ok": True}
+
+
 @api.get("/registrations/export")
-async def export_registrations(event_id: Optional[str] = None, user=Depends(get_current_admin)):
-    q = {"event_id": event_id} if event_id else {}
+async def export_registrations(
+    event_id: Optional[str] = None,
+    payment_status: Optional[str] = None,
+    user=Depends(get_current_admin),
+):
+    q: dict = {}
+    if event_id:
+        q["event_id"] = event_id
+    if payment_status in ("pending", "confirmed"):
+        q["payment_status"] = payment_status
     docs = await db.registrations.find(q, {"_id": 0}).sort("created_at", -1).to_list(5000)
 
     buf = io.StringIO()
     writer = csv.writer(buf)
     writer.writerow([
         "id", "event_id", "full_name", "email", "phone", "instagram_handle",
-        "menu_preference", "dietary_preferences", "guests", "notes", "created_at",
+        "menu_preference", "dietary_preferences", "guests", "notes",
+        "total_amount", "payment_status", "payment_confirmed_at", "created_at",
     ])
     for d in docs:
         writer.writerow([
             d.get("id", ""), d.get("event_id", ""), d.get("full_name", ""),
             d.get("email", ""), d.get("phone", ""), d.get("instagram_handle", ""),
             d.get("menu_preference", ""), d.get("dietary_preferences", ""),
-            d.get("guests", 1), d.get("notes", ""), d.get("created_at", ""),
+            d.get("guests", 1), d.get("notes", ""),
+            d.get("total_amount", 0), d.get("payment_status", ""),
+            d.get("payment_confirmed_at", "") or "", d.get("created_at", ""),
         ])
     buf.seek(0)
     return StreamingResponse(
@@ -523,36 +727,35 @@ async def stats(user=Depends(get_current_admin)):
     total_events = await db.events.count_documents({})
     upcoming_events = await db.events.count_documents({"date": {"$gte": today}})
     total_regs = await db.registrations.count_documents({})
+    confirmed_regs = await db.registrations.count_documents({"payment_status": "confirmed"})
+    pending_regs = await db.registrations.count_documents({"payment_status": "pending"})
     total_subs = await db.subscribers.count_documents({})
     total_contacts = await db.contacts.count_documents({})
+
+    # Revenue from confirmed registrations
+    pipeline = [
+        {"$match": {"payment_status": "confirmed"}},
+        {"$group": {"_id": None, "total": {"$sum": "$total_amount"}}},
+    ]
+    rev_cursor = db.registrations.aggregate(pipeline)
+    rev_doc = await rev_cursor.to_list(1)
+    revenue = int(rev_doc[0]["total"]) if rev_doc else 0
+
     return {
         "total_events": total_events,
         "upcoming_events": upcoming_events,
         "total_registrations": total_regs,
+        "confirmed_registrations": confirmed_regs,
+        "pending_registrations": pending_regs,
         "total_subscribers": total_subs,
         "total_contacts": total_contacts,
+        "revenue": revenue,
     }
 
 
 @api.get("/")
 async def health():
     return {"status": "ok", "name": "Biraajo API"}
-
-
-app.include_router(api)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=False,
-    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-@app.on_event("shutdown")
-async def on_shutdown():
-    client.close()
 
 
 app.include_router(api)
