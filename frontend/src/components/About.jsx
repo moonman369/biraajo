@@ -9,7 +9,7 @@ const chapters = [
     ),
     body: [
       "In 2024, while working in a Bengali restaurant in New Delhi, I started inviting friends over for dinner. There was no concept behind it and certainly no business plan. I just wanted a place to cook.",
-      "Some nights the food leaned Bengali. Other nights it went somewhere else entirely. We'd cook, eat, argue over ideas, open another beer, and spend far too much time discussing food.",
+      "Some nights the food leaned Bengali. Other nights it went somewhere else entirely. We'd cook, eat, argue over ideas, lose track of time, and spend far too much of it talking about food.",
       "Many of those evenings were shared with other chefs. Looking back, those dinners quietly became the foundation for what would eventually become Biraajo.",
     ],
     image: "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ozdq9xth__DSC4892-2%20%281%29.jpg",
@@ -56,10 +56,12 @@ export default function About() {
       {/* Section opener */}
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 mb-20 lg:mb-32">
         <p className="text-overline">The Story · So Far</p>
-        <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 text-[#F3EFE7] leading-[1.02] tracking-tight max-w-4xl">
-          A project, not a brand.
+        <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 text-[#F3EFE7] leading-[1.02] tracking-tight max-w-5xl">
+          Still becoming something,
           <br />
-          <span className="italic text-[#D9772B]">Still figuring it out.</span>
+          a project, not a brand.
+          <br />
+          <span className="italic text-[#D9772B]">Come witness.</span>
         </h2>
       </div>
 
@@ -110,7 +112,7 @@ export default function About() {
           </p>
           <p>It's a simple gesture, but an important one.</p>
           <p>
-            More than anything else, that's what this project is about. Not a restaurant. Not fine dining. Not a performance. Just a table, a home, and whatever I've been curious about lately.
+            More than anything, this is an ongoing project. Not a restaurant that has found its final form. A table that's still being set — by someone who thinks the process of setting it is as interesting as the meal itself. That's what this is about.
           </p>
           <p className="font-display text-2xl text-[#F3EFE7] italic leading-snug pt-2">
             A little old Calcutta. A little experimentation. And always a place for one more person.
@@ -118,7 +120,7 @@ export default function About() {
           <div className="pt-6 flex flex-wrap gap-4">
             <a
               href="#events"
-              className="inline-flex items-center justify-center px-7 py-4 bg-[#9C3527] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500"
+              className="inline-flex items-center justify-center px-7 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500"
               data-testid="about-join-table"
             >
               Pull up a chair

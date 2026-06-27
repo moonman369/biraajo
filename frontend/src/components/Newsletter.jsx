@@ -54,7 +54,7 @@ export default function Newsletter() {
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
               data-testid="newsletter-name-input"
-              className="sm:col-span-5 bg-[#0A0504] border border-[#2D1D1A] px-4 py-4 text-[#F3EFE7] placeholder-[#B5A79E] focus:border-[#9C3527] outline-none"
+              className="sm:col-span-5 bg-[#0A0504] border border-[#2D1D1A] px-4 py-4 text-[#F3EFE7] placeholder-[#B5A79E] focus:border-[#5A1A1F] outline-none"
             />
             <input
               required
@@ -63,13 +63,13 @@ export default function Newsletter() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Your email"
               data-testid="newsletter-email-input"
-              className="sm:col-span-7 bg-[#0A0504] border border-[#2D1D1A] px-4 py-4 text-[#F3EFE7] placeholder-[#B5A79E] focus:border-[#9C3527] outline-none"
+              className="sm:col-span-7 bg-[#0A0504] border border-[#2D1D1A] px-4 py-4 text-[#F3EFE7] placeholder-[#B5A79E] focus:border-[#5A1A1F] outline-none"
             />
             <button
               type="submit"
               disabled={submitting}
               data-testid="newsletter-submit-button"
-              className="sm:col-span-12 px-6 py-4 bg-[#9C3527] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 tracking-[0.18em] uppercase text-[11px] disabled:opacity-60"
+              className="sm:col-span-12 px-6 py-4 bg-[#5A1A1F] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 tracking-[0.18em] uppercase text-[11px] disabled:opacity-60"
             >
               {submitting ? "Adding you..." : "Save me a seat in your inbox"}
             </button>

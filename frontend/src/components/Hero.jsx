@@ -63,7 +63,7 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
           >
-            <p className="text-overline mb-6">Chef · Storyteller · Culinary Consultant</p>
+            <p className="text-overline mb-6">Chef · Storyteller</p>
           </motion.div>
 
           <motion.h1
@@ -97,7 +97,7 @@ export default function Hero() {
                 <a
                   href="#events"
                   data-testid="hero-view-experiences-button"
-                  className="inline-flex items-center justify-center px-7 py-4 bg-[#9C3527] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500"
+                  className="inline-flex items-center justify-center px-7 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500"
                 >
                   Join the Table
                 </a>

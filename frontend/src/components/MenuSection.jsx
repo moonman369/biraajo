@@ -45,8 +45,8 @@ export default function MenuSection() {
               onClick={() => setActive(i)}
               className={`px-5 py-3 text-[11px] tracking-[0.22em] uppercase border transition-all duration-500 ${
                 active === i
-                  ? "bg-[#9C3527] border-[#9C3527] text-[#F3EFE7]"
-                  : "bg-transparent border-[#2D1D1A] text-[#B5A79E] hover:text-[#F3EFE7] hover:border-[#9C3527]"
+                  ? "bg-[#5A1A1F] border-[#5A1A1F] text-[#F3EFE7]"
+                  : "bg-transparent border-[#2D1D1A] text-[#B5A79E] hover:text-[#F3EFE7] hover:border-[#5A1A1F]"
               }`}
             >
               {s.title}

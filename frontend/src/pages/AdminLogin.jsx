@@ -45,7 +45,7 @@ export default function AdminLogin() {
             <input
               required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
               data-testid="admin-email-input"
-              className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#9C3527] outline-none"
+              className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
             />
           </label>
           <label className="block">
@@ -53,13 +53,13 @@ export default function AdminLogin() {
             <input
               required type="password" value={password} onChange={(e) => setPassword(e.target.value)}
               data-testid="admin-password-input"
-              className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#9C3527] outline-none"
+              className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
             />
           </label>
           <button
             type="submit" disabled={submitting}
             data-testid="admin-login-button"
-            className="w-full px-6 py-4 bg-[#9C3527] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 tracking-[0.18em] uppercase text-[11px] disabled:opacity-60"
+            className="w-full px-6 py-4 bg-[#5A1A1F] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 tracking-[0.18em] uppercase text-[11px] disabled:opacity-60"
           >
             {submitting ? "Signing in..." : "Sign in"}
           </button>

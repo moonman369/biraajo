@@ -42,8 +42,7 @@ export default function Events() {
           </div>
           <div className="lg:col-span-4">
             <p className="text-[#B5A79E] leading-relaxed">
-              Twelve seats per evening. Menus revealed at the table. Bring
-              someone who eats slowly.
+              Eight seats per evening. (Up to ten for private gatherings.) Menus revealed at the table. Bring someone who eats slowly.
             </p>
           </div>
         </div>
@@ -145,7 +144,7 @@ export default function Events() {
                     className={`mt-6 w-full px-6 py-4 tracking-[0.18em] uppercase text-[11px] transition-all duration-500 ${
                       soldOut
                         ? "border border-[#2D1D1A] text-[#B5A79E] cursor-not-allowed"
-                        : "bg-[#9C3527] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504]"
+                        : "bg-[#5A1A1F] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504]"
                     }`}
                   >
                     {soldOut ? "Sold out" : "Reserve my seat"}

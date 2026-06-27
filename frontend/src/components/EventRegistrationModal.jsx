@@ -130,8 +130,8 @@ export default function EventRegistrationModal({ event, onClose, onSuccess }) {
                         data-testid={`reg-menu-${o.v.toLowerCase()}`}
                         className={`text-left p-4 border transition-all duration-300 ${
                           form.menu_preference === o.v
-                            ? "border-[#D9772B] bg-[#9C3527]/20 text-[#F3EFE7]"
-                            : "border-[#2D1D1A] text-[#B5A79E] hover:border-[#9C3527] hover:text-[#F3EFE7]"
+                            ? "border-[#D9772B] bg-[#5A1A1F]/20 text-[#F3EFE7]"
+                            : "border-[#2D1D1A] text-[#B5A79E] hover:border-[#5A1A1F] hover:text-[#F3EFE7]"
                         }`}>
                         <span className="block text-overline">{o.price}</span>
                         <span className="block font-display text-xl mt-1">{o.v}</span>
@@ -162,7 +162,7 @@ export default function EventRegistrationModal({ event, onClose, onSuccess }) {
                 <div className="sm:col-span-2 mt-2">
                   <button type="submit" disabled={submitting}
                     data-testid="event-registration-submit"
-                    className="w-full px-6 py-4 bg-[#9C3527] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 tracking-[0.18em] uppercase text-[11px] disabled:opacity-60">
+                    className="w-full px-6 py-4 bg-[#5A1A1F] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 tracking-[0.18em] uppercase text-[11px] disabled:opacity-60">
                     {submitting ? "Reserving..." : "Confirm my seat"}
                   </button>
                   <p className="mt-3 text-[11px] tracking-[0.12em] text-[#B5A79E] text-center">
@@ -220,7 +220,7 @@ export default function EventRegistrationModal({ event, onClose, onSuccess }) {
 }
 
 const inputCls =
-  "w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#9C3527] outline-none";
+  "w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none";
 
 function Field({ label, required, children }) {
   return (

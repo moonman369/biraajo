@@ -95,14 +95,14 @@ export default function Contact() {
             <textarea
               required rows={5} value={form.message} onChange={handle("message")}
               data-testid="contact-message-input"
-              className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#9C3527] outline-none resize-none"
+              className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none resize-none"
             />
           </div>
           <button
             type="submit"
             disabled={submitting}
             data-testid="contact-form-submit"
-            className="w-full px-6 py-4 bg-[#9C3527] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 tracking-[0.18em] uppercase text-[11px] disabled:opacity-60"
+            className="w-full px-6 py-4 bg-[#5A1A1F] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 tracking-[0.18em] uppercase text-[11px] disabled:opacity-60"
           >
             {submitting ? "Sending..." : "Send message"}
           </button>
@@ -141,7 +141,7 @@ function Input({ label, required, testid, ...props }) {
         required={required}
         data-testid={testid}
         {...props}
-        className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#9C3527] outline-none"
+        className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
       />
     </label>
   );

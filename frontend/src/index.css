@@ -95,7 +95,7 @@ body {
 
 /* Custom selection */
 ::selection {
-  background: #9C3527;
+  background: #5A1A1F;
   color: #F3EFE7;
 }
 
@@ -103,7 +103,7 @@ body {
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: #0A0504; }
 ::-webkit-scrollbar-thumb { background: #2D1D1A; border-radius: 0; }
-::-webkit-scrollbar-thumb:hover { background: #9C3527; }
+::-webkit-scrollbar-thumb:hover { background: #5A1A1F; }
 
 /* Hover lift */
 .hover-lift {
@@ -156,6 +156,6 @@ body {
   height: 6px;
   border-radius: 999px;
   background: #D9772B;
-  box-shadow: 0 0 12px #D9772B, 0 0 24px #9C3527;
+  box-shadow: 0 0 12px #D9772B, 0 0 24px #5A1A1F;
   display: inline-block;
 }

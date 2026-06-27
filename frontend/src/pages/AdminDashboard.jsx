@@ -41,8 +41,8 @@ export default function AdminDashboard() {
                 data-testid={`admin-tab-${t.id}`}
                 className={`px-4 py-2 text-[11px] tracking-[0.22em] uppercase border transition-all ${
                   tab === t.id
-                    ? "bg-[#9C3527] border-[#9C3527] text-[#F3EFE7]"
-                    : "bg-transparent border-[#2D1D1A] text-[#B5A79E] hover:text-[#F3EFE7] hover:border-[#9C3527]"
+                    ? "bg-[#5A1A1F] border-[#5A1A1F] text-[#F3EFE7]"
+                    : "bg-transparent border-[#2D1D1A] text-[#B5A79E] hover:text-[#F3EFE7] hover:border-[#5A1A1F]"
                 }`}
               >
                 {t.label}
@@ -151,7 +151,7 @@ function Events() {
         <button
           onClick={() => setEditing(emptyEvent())}
           data-testid="admin-create-event-button"
-          className="px-5 py-3 bg-[#9C3527] hover:bg-[#D9772B] hover:text-[#0A0504] text-[11px] tracking-[0.22em] uppercase inline-flex items-center gap-2 transition-all"
+          className="px-5 py-3 bg-[#5A1A1F] hover:bg-[#D9772B] hover:text-[#0A0504] text-[11px] tracking-[0.22em] uppercase inline-flex items-center gap-2 transition-all"
         >
           <Plus size={14} /> New event
         </button>
@@ -212,11 +212,11 @@ function EventForm({ event, onCancel, onSave }) {
         <span className="text-overline block mb-2">Description</span>
         <textarea
           rows={4} value={f.description} onChange={h("description")} required
-          className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#9C3527] outline-none"
+          className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
         />
       </div>
       <div className="sm:col-span-2 flex gap-3">
-        <button type="submit" data-testid="admin-event-save" className="px-6 py-3 bg-[#9C3527] hover:bg-[#D9772B] hover:text-[#0A0504] text-[11px] tracking-[0.22em] uppercase">Save event</button>
+        <button type="submit" data-testid="admin-event-save" className="px-6 py-3 bg-[#5A1A1F] hover:bg-[#D9772B] hover:text-[#0A0504] text-[11px] tracking-[0.22em] uppercase">Save event</button>
         <button type="button" onClick={onCancel} className="px-6 py-3 border border-[#2D1D1A] text-[11px] tracking-[0.22em] uppercase text-[#B5A79E] hover:text-[#F3EFE7]">Cancel</button>
       </div>
     </form>
@@ -229,7 +229,7 @@ function Inp({ label, ...props }) {
       <span className="text-overline block mb-2">{label}</span>
       <input
         {...props}
-        className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#9C3527] outline-none"
+        className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
       />
     </label>
   );
@@ -395,13 +395,13 @@ function GalleryAdmin() {
         <input
           required value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Image or video URL (.jpg / .png / .mp4 / .webm)"
           data-testid="gallery-url-input"
-          className="sm:col-span-6 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#9C3527] outline-none"
+          className="sm:col-span-6 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
         />
         <input
           value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Caption (optional)"
-          className="sm:col-span-4 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#9C3527] outline-none"
+          className="sm:col-span-4 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
         />
-        <button type="submit" data-testid="gallery-add-button" className="sm:col-span-2 px-4 py-3 bg-[#9C3527] hover:bg-[#D9772B] hover:text-[#0A0504] text-[11px] tracking-[0.22em] uppercase">Add</button>
+        <button type="submit" data-testid="gallery-add-button" className="sm:col-span-2 px-4 py-3 bg-[#5A1A1F] hover:bg-[#D9772B] hover:text-[#0A0504] text-[11px] tracking-[0.22em] uppercase">Add</button>
       </form>
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {items.map((i) => (
