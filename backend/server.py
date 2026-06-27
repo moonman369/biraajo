@@ -259,26 +259,52 @@ class GalleryImage(GalleryImageIn):
     created_at: str = Field(default_factory=_now_iso)
 
 
-# ---------- Startup ----------
-@app.on_event("startup")
-async def on_startup():
-    # Drop legacy unique index if present (allow pending re-submissions)
+# ---------- Startup helpers ----------
+_STARTER_GALLERY = [
+    "https://images.unsplash.com/photo-1728910156510-77488f19b152",
+    "https://images.unsplash.com/photo-1606471191009-63994c53433b",
+    "https://images.unsplash.com/photo-1625668931397-b9c35f63186b",
+    "https://images.unsplash.com/photo-1562050344-f7ad946cee35",
+    "https://images.unsplash.com/photo-1541614101331-1a5a3a194e92",
+    "https://images.unsplash.com/photo-1588644525273-f37b60d78512",
+    "https://images.unsplash.com/photo-1697659602792-31dcb2a5a4ec",
+    "https://images.unsplash.com/photo-1517870662726-c1d98ee36250",
+    "https://images.unsplash.com/photo-1585937421612-70a008356fbe",
+    "https://images.unsplash.com/photo-1606660023296-81d67734170a",
+]
+
+_STARTER_MENU = [
+    {"title": "Amuse", "subtitle": "A whisper to begin", "order": 0, "items": [
+        {"name": "Bel-Phuljhadi", "description": "Wood-apple sphere, kala namak air, mustard oil pearls", "price": ""},
+        {"name": "Smoked Kokum Shot", "description": "Cold-pressed kokum, curry leaf oil, jaggery foam", "price": ""},
+    ]},
+    {"title": "Small Plates", "subtitle": "Stories from home, retold", "order": 1, "items": [
+        {"name": "Bombil Croquette", "description": "Konkan bombay duck, gunpowder, lime aioli", "price": ""},
+        {"name": "Chana Chaat 2.0", "description": "Black chickpea, tomato confit, mint emulsion, papdi shards", "price": ""},
+        {"name": "Bharli Vangi Bao", "description": "Maharashtrian stuffed aubergine, peanut goda, milk bun", "price": ""},
+    ]},
+    {"title": "The Main", "subtitle": "A long, slow conversation", "order": 2, "items": [
+        {"name": "Dak Bungalow Lamb", "description": "Slow-braised lamb shank, raj masala, burnt onion jus", "price": ""},
+        {"name": "Malvani Pomfret", "description": "Whole roasted pomfret, kokum-coconut curry, red rice", "price": ""},
+        {"name": "Saoji Mushroom", "description": "Nagpuri saoji, forest mushrooms, smoked ghee rice", "price": ""},
+    ]},
+    {"title": "Sweet Endings", "subtitle": "The last word", "order": 3, "items": [
+        {"name": "Mishti Doi Cheesecake", "description": "Bengali jaggery yoghurt, nolen gur, palm sugar tuile", "price": ""},
+        {"name": "Phirni de la Maison", "description": "Saffron rice pudding, rose, pistachio brittle", "price": ""},
+    ]},
+]
+
+
+async def _setup_indexes() -> None:
     try:
         await db.registrations.drop_index("event_id_1_email_1")
     except Exception:
         pass
-
-    # Indexes
     await db.admins.create_index("email", unique=True)
     await db.subscribers.create_index("email", unique=True)
 
-    # Object storage
-    if init_storage():
-        logger.info("Object storage initialized")
-    else:
-        logger.warning("Object storage NOT initialized — screenshot uploads will fail")
 
-    # Seed admin
+async def _seed_admin() -> None:
     admin_email = os.environ["ADMIN_EMAIL"].lower()
     admin_password = os.environ["ADMIN_PASSWORD"]
     existing = await db.admins.find_one({"email": admin_email})
@@ -292,74 +318,39 @@ async def on_startup():
             "created_at": _now_iso(),
         })
         logger.info(f"Seeded admin: {admin_email}")
+    elif not verify_password(admin_password, existing["password_hash"]):
+        await db.admins.update_one(
+            {"email": admin_email},
+            {"$set": {"password_hash": hash_password(admin_password)}},
+        )
+        logger.info("Updated admin password from .env")
+
+
+async def _seed_gallery() -> None:
+    if await db.gallery.count_documents({}) > 0:
+        return
+    for i, url in enumerate(_STARTER_GALLERY):
+        await db.gallery.insert_one(GalleryImage(url=url, order=i).model_dump())
+
+
+async def _seed_menu() -> None:
+    if await db.menus.count_documents({}) > 0:
+        return
+    for s in _STARTER_MENU:
+        await db.menus.insert_one(MenuSection(**s).model_dump())
+
+
+# ---------- Startup ----------
+@app.on_event("startup")
+async def on_startup() -> None:
+    await _setup_indexes()
+    if init_storage():
+        logger.info("Object storage initialized")
     else:
-        if not verify_password(admin_password, existing["password_hash"]):
-            await db.admins.update_one(
-                {"email": admin_email},
-                {"$set": {"password_hash": hash_password(admin_password)}},
-            )
-            logger.info("Updated admin password from .env")
-
-    # Seed initial gallery & menu if empty (optional starter content)
-    if await db.gallery.count_documents({}) == 0:
-        starter_gallery = [
-            "https://images.unsplash.com/photo-1728910156510-77488f19b152",
-            "https://images.unsplash.com/photo-1606471191009-63994c53433b",
-            "https://images.unsplash.com/photo-1625668931397-b9c35f63186b",
-            "https://images.unsplash.com/photo-1562050344-f7ad946cee35",
-            "https://images.unsplash.com/photo-1541614101331-1a5a3a194e92",
-            "https://images.unsplash.com/photo-1588644525273-f37b60d78512",
-            "https://images.unsplash.com/photo-1697659602792-31dcb2a5a4ec",
-            "https://images.unsplash.com/photo-1517870662726-c1d98ee36250",
-            "https://images.unsplash.com/photo-1585937421612-70a008356fbe",
-            "https://images.unsplash.com/photo-1606660023296-81d67734170a",
-        ]
-        for i, url in enumerate(starter_gallery):
-            await db.gallery.insert_one(GalleryImage(url=url, order=i).model_dump())
-
-    if await db.menus.count_documents({}) == 0:
-        starter_menu = [
-            MenuSection(
-                title="Amuse",
-                subtitle="A whisper to begin",
-                order=0,
-                items=[
-                    {"name": "Bel-Phuljhadi", "description": "Wood-apple sphere, kala namak air, mustard oil pearls", "price": ""},
-                    {"name": "Smoked Kokum Shot", "description": "Cold-pressed kokum, curry leaf oil, jaggery foam", "price": ""},
-                ],
-            ),
-            MenuSection(
-                title="Small Plates",
-                subtitle="Stories from home, retold",
-                order=1,
-                items=[
-                    {"name": "Bombil Croquette", "description": "Konkan bombay duck, gunpowder, lime aioli", "price": ""},
-                    {"name": "Chana Chaat 2.0", "description": "Black chickpea, tomato confit, mint emulsion, papdi shards", "price": ""},
-                    {"name": "Bharli Vangi Bao", "description": "Maharashtrian stuffed aubergine, peanut goda, milk bun", "price": ""},
-                ],
-            ),
-            MenuSection(
-                title="The Main",
-                subtitle="A long, slow conversation",
-                order=2,
-                items=[
-                    {"name": "Dak Bungalow Lamb", "description": "Slow-braised lamb shank, raj masala, burnt onion jus", "price": ""},
-                    {"name": "Malvani Pomfret", "description": "Whole roasted pomfret, kokum-coconut curry, red rice", "price": ""},
-                    {"name": "Saoji Mushroom", "description": "Nagpuri saoji, forest mushrooms, smoked ghee rice", "price": ""},
-                ],
-            ),
-            MenuSection(
-                title="Sweet Endings",
-                subtitle="The last word",
-                order=3,
-                items=[
-                    {"name": "Mishti Doi Cheesecake", "description": "Bengali jaggery yoghurt, nolen gur, palm sugar tuile", "price": ""},
-                    {"name": "Phirni de la Maison", "description": "Saffron rice pudding, rose, pistachio brittle", "price": ""},
-                ],
-            ),
-        ]
-        for s in starter_menu:
-            await db.menus.insert_one(s.model_dump())
+        logger.warning("Object storage NOT initialized — screenshot uploads will fail")
+    await _seed_admin()
+    await _seed_gallery()
+    await _seed_menu()
 
 
 # ---------- Auth Routes ----------
@@ -430,47 +421,34 @@ def _calc_total(menu_preference: str, guests: int) -> int:
     return per_seat * max(1, int(guests))
 
 
-@api.post("/events/{event_id}/register")
-async def register_event(event_id: str, body: RegistrationIn):
-    event = await db.events.find_one({"id": event_id}, {"_id": 0})
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
-
-    available = event["seats_total"] - event.get("seats_booked", 0)
-    if body.guests > available:
+def _check_seats(event: dict, requested: int, baseline_guests: int = 0) -> int:
+    """Return available seats after baseline; raise if requested exceeds available."""
+    available = event["seats_total"] - event.get("seats_booked", 0) + baseline_guests
+    if requested > available:
         raise HTTPException(status_code=400, detail=f"Only {available} seat(s) available")
+    return available
 
-    payload = body.model_dump()
-    payload["event_id"] = event_id
-    payload["email"] = payload["email"].lower()
 
-    total = _calc_total(payload.get("menu_preference", ""), payload.get("guests", 1))
+async def _update_pending_registration(existing: dict, payload: dict, total: int, event_id: str) -> dict:
+    event = await db.events.find_one({"id": event_id}, {"_id": 0})
+    requested = int(payload.get("guests", 1))
+    _check_seats(event, requested, baseline_guests=int(existing.get("guests", 1)))
+    await db.registrations.update_one(
+        {"id": existing["id"]},
+        {"$set": {**payload, "total_amount": total}},
+    )
+    delta_guests = requested - int(existing.get("guests", 1))
+    if delta_guests != 0:
+        await db.events.update_one({"id": event_id}, {"$inc": {"seats_booked": delta_guests}})
+    return await db.registrations.find_one({"id": existing["id"]}, {"_id": 0})
 
-    # If a PENDING registration already exists for this (event, email), update it instead of duplicating
-    existing = await db.registrations.find_one({"event_id": event_id, "email": payload["email"]})
-    if existing:
-        if existing.get("payment_status") == "confirmed":
-            raise HTTPException(status_code=409, detail="You're already confirmed for this event")
-        # Update pending in-place; adjust seat counter for delta in guests
-        delta_guests = int(payload.get("guests", 1)) - int(existing.get("guests", 1))
-        if delta_guests > available:
-            raise HTTPException(status_code=400, detail=f"Only {available} more seat(s) available")
-        await db.registrations.update_one(
-            {"id": existing["id"]},
-            {"$set": {**payload, "total_amount": total}},
-        )
-        if delta_guests != 0:
-            await db.events.update_one({"id": event_id}, {"$inc": {"seats_booked": delta_guests}})
-        doc = await db.registrations.find_one({"id": existing["id"]}, {"_id": 0})
-        return {**doc, "upi_id": UPI_ID}
 
+async def _create_pending_registration(payload: dict, total: int, event: dict) -> Registration:
     reg = Registration(**payload, total_amount=total)
     await db.registrations.insert_one(reg.model_dump())
     await db.events.update_one(
-        {"id": event_id}, {"$inc": {"seats_booked": reg.guests}}
+        {"id": event["id"]}, {"$inc": {"seats_booked": reg.guests}}
     )
-
-    # Fire welcome email (stub) and Google Sheets sync — non-blocking
     asyncio.create_task(send_welcome_email(reg.email, reg.full_name, event["title"], total))
     await db.registrations.update_one({"id": reg.id}, {"$set": {"welcome_email_sent": True}})
     push_to_sheet("registration_pending", {
@@ -487,7 +465,30 @@ async def register_event(event_id: str, body: RegistrationIn):
         "total_amount": total,
         "payment_status": "pending",
     })
+    return reg
 
+
+@api.post("/events/{event_id}/register")
+async def register_event(event_id: str, body: RegistrationIn):
+    event = await db.events.find_one({"id": event_id}, {"_id": 0})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    _check_seats(event, body.guests)
+
+    payload = body.model_dump()
+    payload["event_id"] = event_id
+    payload["email"] = payload["email"].lower()
+    total = _calc_total(payload.get("menu_preference", ""), payload.get("guests", 1))
+
+    existing = await db.registrations.find_one({"event_id": event_id, "email": payload["email"]})
+    if existing and existing.get("payment_status") == "confirmed":
+        raise HTTPException(status_code=409, detail="You're already confirmed for this event")
+    if existing:
+        doc = await _update_pending_registration(existing, payload, total, event_id)
+        return {**doc, "upi_id": UPI_ID}
+
+    reg = await _create_pending_registration(payload, total, event)
     return {**reg.model_dump(), "upi_id": UPI_ID}
 
 

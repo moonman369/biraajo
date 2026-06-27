@@ -1,0 +1,39 @@
+{
+  "summary": "Ran refactored pytest suite (27 tests) against live preview backend. 26/27 PASSED. One real regression found in the refactored register_event flow: re-submitting a pending registration with a HIGHER guest count returns 400 'Only N seat(s) available' instead of updating the pending record. Root cause: the extracted _check_seats() is called at line 477 BEFORE looking up the existing registration, so it doesn't pass baseline_guests, treating the re-submit as a brand new booking that competes with the user's own already-booked seats.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/events/{event_id}/register",
+        "issue": "Re-submitting same email for same pending event with INCREASED guests returns 400 instead of updating the existing pending registration. Bug introduced/preserved by refactor: server.py line 477 calls `_check_seats(event, body.guests)` without baseline_guests, BEFORE the existing-registration lookup at line 484. Reproduced via curl: event with 2 seats, register guests=1 (success, seats_booked=1), re-register same email guests=2 -> 400 {'detail':'Only 1 seat(s) available'}. The internal _update_pending_registration() correctly passes baseline, but the upfront check at line 477 already rejects the request. Per problem statement this MUST succeed (req: 'Re-submitting same email for same pending event updates the existing record; guests/total_amount get updated; seats_booked adjusts accordingly').",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_biraajo_api.py",
+    "/app/test_reports/pytest/biraajo_results.xml"
+  ],
+  "action_items": [
+    "Fix register_event in /app/backend/server.py: remove the upfront `_check_seats(event, body.guests)` at line 477 (it duplicates the check already performed inside _update_pending_registration with baseline, and _create_pending_registration can do its own check). Suggested patch: move the seat check AFTER the existing-registration lookup. For NEW registrations call `_check_seats(event, body.guests)` (no baseline); for UPDATES rely on the baseline-aware check inside _update_pending_registration (already correct). Example: ```\nexisting = await db.registrations.find_one(...)\nif existing and existing.get('payment_status') == 'confirmed':\n    raise HTTPException(409, 'You're already confirmed for this event')\nif existing:\n    doc = await _update_pending_registration(existing, payload, total, event_id)\n    return {**doc, 'upi_id': UPI_ID}\n_check_seats(event, body.guests)\nreg = await _create_pending_registration(payload, total, event)\n```"
+  ],
+  "critical_code_review_comments": [
+    "server.py register_event: redundant upfront _check_seats call (line 477) causes regression in resubmit flow. The internal helper already handles baseline-aware checks, so the upfront call is both wrong AND duplicate.",
+    "test_biraajo_api.py line 22-23: uses os.environ[\"ADMIN_EMAIL\"] which raises KeyError if missing from environment instead of a friendlier pytest.skip — minor but consider guarding.",
+    "_update_pending_registration re-fetches the event from DB even though register_event already has it in scope — small inefficiency, could be passed as param to avoid extra round-trip.",
+    "Note: noqa: E712 comments on lines 359/384 suppress the `== True` -> `is True` lint rule. Reviewer originally asked to USE `==`, so this is now consistent with intent (PEP-only quibble, no action needed)."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "96.3% (26/27)", "frontend": "N/A (skipped per request)"},
+  "test_credentials": "Admin reachbiraajo@gmail.com / Biraajo@2026 — loaded from backend/.env, working.",
+  "seed_data_creation": "Each test creates and tears down its own TEST_ prefixed event via fixture; test data is auto-cleaned by event delete cascade.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Refactored pytest at /app/backend/tests/test_biraajo_api.py has 27 focused tests (was 15 combined). All other refactors (extracted _setup_indexes/_seed_admin/_seed_gallery/_seed_menu helpers from on_startup, extracted _check_seats/_update_pending_registration/_create_pending_registration helpers from register_event) work correctly — health, auth, CRUD, payment screenshot upload+retrieval+rejection, registrations list+filter+CSV export, admin delete releases seats, newsletter+contact, gallery+menu admin CRUD, stats with new revenue/confirmed/pending fields are ALL passing. The ONE failing test (test_registration_resubmit_updates_pending) precisely exercises the resubmit-pending-update behavior promised in the problem statement; the regression is a real bug in the refactored register_event, not a test issue. After main agent fix, simply re-run `pytest /app/backend/tests/test_biraajo_api.py -v` — expect 27/27.",
+  "rca_of_the_issue": "Reproduction: 1) admin login, 2) create event with seats_total=2, 3) POST /api/events/{id}/register email=X guests=1 -> 200 (seats_booked=1), 4) POST /api/events/{id}/register email=X guests=2 -> 400 'Only 1 seat(s) available' (expected 200 with updated record). Root cause: register_event at server.py:477 invokes _check_seats(event, body.guests) BEFORE checking for an existing pending registration. With seats_booked=1 from the same user's prior submit, available = 2-1+0 = 1 < requested 2 -> 400. The downstream _update_pending_registration helper (line 432) DOES call _check_seats with baseline_guests=existing.guests which would correctly compute available=2 — but execution never reaches it. Mitigation: remove the upfront _check_seats line, OR move it into the else-branch that handles brand-new registrations, OR look up existing first and pass baseline=existing.guests to the upfront check."
+}
