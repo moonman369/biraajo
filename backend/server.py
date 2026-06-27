@@ -474,8 +474,6 @@ async def register_event(event_id: str, body: RegistrationIn):
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    _check_seats(event, body.guests)
-
     payload = body.model_dump()
     payload["event_id"] = event_id
     payload["email"] = payload["email"].lower()
@@ -488,6 +486,7 @@ async def register_event(event_id: str, body: RegistrationIn):
         doc = await _update_pending_registration(existing, payload, total, event_id)
         return {**doc, "upi_id": UPI_ID}
 
+    _check_seats(event, body.guests)
     reg = await _create_pending_registration(payload, total, event)
     return {**reg.model_dump(), "upi_id": UPI_ID}
 
