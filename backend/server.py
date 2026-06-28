@@ -584,6 +584,9 @@ async def _create_pending_registration(payload: dict, total: int, event: dict) -
 
 @api.post("/events/{event_id}/register")
 async def register_event(event_id: str, body: RegistrationIn):
+    settings = await _get_settings()
+    if not settings.get("registrations_open", True):
+        raise HTTPException(status_code=403, detail="Reservations are currently closed. Please check back soon.")
     event = await db.events.find_one({"id": event_id}, {"_id": 0})
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -970,6 +973,41 @@ async def reset_site_content(user=Depends(get_current_admin)):
             upsert=True,
         )
     return {"ok": True}
+
+
+# ---------- Global settings (registrations toggle, etc.) ----------
+DEFAULT_SETTINGS = {
+    "registrations_open": True,
+}
+
+
+async def _get_settings() -> dict:
+    doc = await db.settings.find_one({"id": "global"}, {"_id": 0})
+    if not doc:
+        await db.settings.insert_one({"id": "global", "data": DEFAULT_SETTINGS, "updated_at": _now_iso()})
+        return dict(DEFAULT_SETTINGS)
+    return {**DEFAULT_SETTINGS, **(doc.get("data") or {})}
+
+
+@api.get("/settings")
+async def public_settings():
+    """Public-readable settings — only safe fields."""
+    s = await _get_settings()
+    return {"registrations_open": bool(s.get("registrations_open", True))}
+
+
+@api.put("/admin/settings")
+async def update_settings(body: dict, user=Depends(get_current_admin)):
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Body must be a JSON object")
+    current = await _get_settings()
+    merged = {**current, **{k: v for k, v in body.items() if k in DEFAULT_SETTINGS}}
+    await db.settings.update_one(
+        {"id": "global"},
+        {"$set": {"data": merged, "updated_at": _now_iso()}},
+        upsert=True,
+    )
+    return merged
 
 
 # ---------- Stats ----------

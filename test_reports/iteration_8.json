@@ -1,0 +1,27 @@
+{
+  "summary": "Verified all 3 UX rewires (Hero Reserve-direct-modal, Hero See-menu -> /suppers chooser, Admin Reservations toggle) end-to-end on backend + frontend. Added 3 new pytest cases for /api/settings + /api/admin/settings + 403-when-closed gate on POST /events/{id}/register. Full backend regression: 44/44 PASS (previous 41 + 3 new). Frontend Playwright verified: (a) hero-see-menu-button navigates to /suppers and renders both 'Series concluded' Naani Ghar and 'Work in progress' Barsaat cards with correct links/buttons, (b) supper-barsaat-prebook opens EventRegistrationModal with a visible 'A note before you reserve' banner carrying data-testid='reg-disclaimer', (c) hero-reserve-seat-button opens EventRegistrationModal directly pre-filled with 'Barsaat — Monsoon Edition' / 2026-08-15 / 19:30-22:00, (d) Admin Overview toggle (registrations-toggle) flips registrations_open in /api/settings instantly with success toast, (e) when closed: hero CTA label becomes 'Reservations closed · Join list', click does NOT open modal, and direct POST /events/{id}/register returns 403 with friendly message 'Reservations are currently closed. Please check back soon.', (f) toggling back ON restores normal flow. Final registrations_open restored to true.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_biraajo_api.py",
+    "/app/test_reports/pytest/pytest_results_iter8.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is now 1065 lines — approaching the soft 700-line cap. Consider splitting into modules (routes_auth.py, routes_events.py, routes_registrations.py, routes_cms.py, routes_settings.py) before adding more endpoints. The settings + CMS sections are natural extraction candidates.",
+    "PUT /api/admin/settings accepts a raw dict and silently drops unknown keys (filter `if k in DEFAULT_SETTINGS`). This is safe but returns 200 even if the client sent only invalid keys (no-op write). Consider returning 400 when no recognized key is present, or at least logging it, to help admins detect typos.",
+    "Suppers.jsx: when registrations_open=false, the pre-book button still appears clickable and only shows a toast on click — visually it would be clearer to dim/disable it (or swap label to 'Join the list') the same way Hero already does. Minor UX polish only.",
+    "The 403 'closed' check in register_event runs BEFORE the event-not-found check. This means an attacker probing for valid event IDs while registrations are closed cannot distinguish existing vs missing events (good for privacy). Keep this ordering.",
+    "_get_settings() merges DEFAULT_SETTINGS into stored data on every read — this is defensive and good: newly-added default keys auto-appear without migration. Same pattern as _deep_merge in CMS. Consistent."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_biraajo_api.py — added test_settings_public_returns_bool, test_settings_put_requires_admin, test_settings_toggle_and_blocks_registration (restores state in finally block)"
+  ],
+  "success_rate": {"backend": "100% (44/44)", "frontend": "100% on all 4 in-scope flows"},
+  "test_credentials": "Admin reachbiraajo@gmail.com / Biraajo@2026 — working.",
+  "seed_data_creation": "None persisted. The settings-toggle test flips registrations_open=false and then restores to original (true) in a finally block. The frontend toggle test ends with /api/settings: {registrations_open: true} as verified by post-test fetch.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend pytest suite is now 44 tests including full settings + CMS coverage. Frontend testids in scope: hero-reserve-seat-button, hero-see-menu-button, page-suppers, supper-card-naani-ghar, supper-naani-view-menu, supper-card-barsaat, supper-barsaat-learn-more, supper-barsaat-prebook, reg-disclaimer, registrations-toggle. Seeded event 'Barsaat — Monsoon Edition' on 2026-08-15 19:30-22:00 with 12 seats — used by Hero Reserve modal and Suppers pre-book modal. Sheets webhook still broken upstream (Apps Script returns 405/HTML) but registrations + newsletter + contact correctly survive this via fire-and-forget (covered by 3 regression tests). To reset settings if any test leaves it stuck off: PUT /api/admin/settings {registrations_open: true} with admin Bearer token.",
+  "rca of the issue": "N/A — no bugs found this iteration. All review-request items work end-to-end."
+}

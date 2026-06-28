@@ -1,13 +1,47 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
+import { api } from "@/lib/api";
 import { useSiteContent, read } from "@/lib/siteContent";
+import EventRegistrationModal from "@/components/EventRegistrationModal";
 
 export default function Hero() {
   const { content } = useSiteContent();
+  const [event, setEvent] = useState(null);
+  const [registrationsOpen, setRegistrationsOpen] = useState(true);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    api.get("/events", { params: { upcoming: "true" } })
+      .then((r) => setEvent((r.data || [])[0] || null)).catch(() => {});
+    api.get("/settings")
+      .then((r) => setRegistrationsOpen(r.data?.registrations_open !== false)).catch(() => {});
+  }, []);
+
+  const onReserveClick = () => {
+    if (!registrationsOpen) {
+      toast.info("Reservations are currently closed — join the list to be notified.");
+      window.location.hash = "#newsletter";
+      return;
+    }
+    if (!event) {
+      toast.info("No supper open for reservations right now — join the list to be notified.");
+      window.location.hash = "#newsletter";
+      return;
+    }
+    setOpen(true);
+  };
+
   const h = content?.landing?.hero;
   if (h && h.visible === false) return null;
 
   const HERO_IMG = read(content, "landing.hero.image", "https://customer-assets.emergentagent.com/job_adaec391-d42f-41ce-b775-ff2b784b7b8b/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg");
   const HERO_VIDEO = "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/6469flkz_biraajo%206th%20june%2000101268_prob4.mp4";
+
+  let primaryLabel = read(content, "landing.hero.primary_cta_label", "Reserve a seat");
+  if (!registrationsOpen) primaryLabel = "Reservations closed · Join list";
+  else if (!event) primaryLabel = "Be first to know · Join list";
 
   return (
     <section id="top" className="relative min-h-screen w-full overflow-hidden" data-testid="hero-section">
@@ -51,12 +85,12 @@ export default function Hero() {
             <div className="lg:col-span-5 lg:text-right">
               <p className="text-overline mb-5 lg:mb-4">Take a seat</p>
               <div className="flex flex-col sm:flex-row gap-4 lg:justify-end">
-                <a href={read(content, "landing.hero.primary_cta_href", "#events")} data-testid="hero-view-experiences-button" className="inline-flex items-center justify-center px-7 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
-                  {read(content, "landing.hero.primary_cta_label", "Reserve a seat")}
-                </a>
-                <a href={read(content, "landing.hero.secondary_cta_href", "#experiences")} data-testid="hero-join-events-button" className="inline-flex items-center justify-center px-7 py-4 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
-                  {read(content, "landing.hero.secondary_cta_label", "View Experiences")}
-                </a>
+                <button onClick={onReserveClick} data-testid="hero-reserve-seat-button" className="inline-flex items-center justify-center px-7 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
+                  {primaryLabel}
+                </button>
+                <Link to="/suppers" data-testid="hero-see-menu-button" className="inline-flex items-center justify-center px-7 py-4 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
+                  {read(content, "landing.hero.secondary_cta_label", "See the menu")}
+                </Link>
               </div>
             </div>
           </motion.div>
@@ -70,6 +104,10 @@ export default function Hero() {
           </span>
         </motion.div>
       </div>
+
+      {open && event && (
+        <EventRegistrationModal event={event} onClose={() => setOpen(false)} onSuccess={() => setOpen(false)} />
+      )}
     </section>
   );
 }

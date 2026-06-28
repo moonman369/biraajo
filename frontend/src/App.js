@@ -8,6 +8,7 @@ import NaaniGhar from "@/pages/NaaniGhar";
 import Barsaat from "@/pages/Barsaat";
 import BookingStatus from "@/pages/BookingStatus";
 import EditWebsite from "@/pages/EditWebsite";
+import Suppers from "@/pages/Suppers";
 import { getToken } from "@/lib/api";
 import "@/App.css";
 
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/supper-club/naani-ghar" element={<NaaniGhar />} />
           <Route path="/supper-club/barsaat" element={<Barsaat />} />
           <Route path="/booking/:id" element={<BookingStatus />} />
+          <Route path="/suppers" element={<Suppers />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/edit" element={<EditWebsite />} />
           <Route

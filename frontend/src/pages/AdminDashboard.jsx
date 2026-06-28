@@ -82,9 +82,28 @@ export default function AdminDashboard() {
 
 function Overview() {
   const [stats, setStats] = useState(null);
+  const [regsOpen, setRegsOpen] = useState(null);
+  const [savingToggle, setSavingToggle] = useState(false);
+
   useEffect(() => {
     api.get("/stats").then((r) => setStats(r.data)).catch(() => {});
+    api.get("/settings").then((r) => setRegsOpen(r.data?.registrations_open !== false)).catch(() => {});
   }, []);
+
+  const toggleRegs = async () => {
+    setSavingToggle(true);
+    try {
+      const next = !regsOpen;
+      await api.put("/admin/settings", { registrations_open: next });
+      setRegsOpen(next);
+      toast.success(next ? "Reservations are now OPEN on the site." : "Reservations are now CLOSED on the site.");
+    } catch {
+      toast.error("Could not save the setting");
+    } finally {
+      setSavingToggle(false);
+    }
+  };
+
   if (!stats) return <p className="text-[#B5A79E]">Loading...</p>;
   const cards = [
     { label: "Total Events", value: stats.total_events, icon: Calendar },
@@ -98,7 +117,29 @@ function Overview() {
   ];
   return (
     <div>
-      <h2 className="font-display text-4xl mb-8">At a glance</h2>
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+        <h2 className="font-display text-4xl">At a glance</h2>
+        {regsOpen !== null && (
+          <div className="flex items-center gap-4 border border-[#2D1D1A] bg-[#140A09] px-5 py-3" data-testid="registrations-toggle-wrap">
+            <div className="text-right">
+              <p className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E]">Site reservations</p>
+              <p className={`font-display text-lg ${regsOpen ? "text-[#9FD79F]" : "text-[#D9772B]"}`}>
+                {regsOpen ? "OPEN — accepting" : "CLOSED — not accepting"}
+              </p>
+            </div>
+            <button
+              onClick={toggleRegs}
+              disabled={savingToggle}
+              data-testid="registrations-toggle"
+              className={`relative w-14 h-7 rounded-full transition-colors ${regsOpen ? "bg-[#3A7D44]" : "bg-[#5A1A1F]"} disabled:opacity-50`}
+              aria-pressed={regsOpen}
+              aria-label="Toggle reservations"
+            >
+              <span className={`absolute top-1 ${regsOpen ? "left-8" : "left-1"} w-5 h-5 bg-[#F3EFE7] rounded-full transition-all`} />
+            </button>
+          </div>
+        )}
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#2D1D1A]">
         {cards.map((c) => (
           <motion.div

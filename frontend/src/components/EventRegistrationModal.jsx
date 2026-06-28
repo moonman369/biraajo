@@ -8,7 +8,7 @@ const UPI_ID = "vidipshah14-1@oksbi";
 const CONTACT = "+91 93313 08405";
 const PAYEE_NAME = "Vidip Shah";
 
-export default function EventRegistrationModal({ event, onClose, onSuccess }) {
+export default function EventRegistrationModal({ event, onClose, onSuccess, disclaimer = "" }) {
   // step: "form" | "payment" | "done"
   const [step, setStep] = useState("form");
   const [form, setForm] = useState({
@@ -143,6 +143,12 @@ export default function EventRegistrationModal({ event, onClose, onSuccess }) {
 
           {step === "form" && (
             <>
+              {disclaimer && (
+                <div className="mb-5 p-4 border border-[#D9772B]/60 bg-[#D9772B]/10 text-sm text-[#F3EFE7] leading-relaxed" data-testid="reg-disclaimer">
+                  <p className="text-overline text-[#D9772B] mb-1">A note before you reserve</p>
+                  {disclaimer}
+                </div>
+              )}
               <p className="text-overline">Reserve your seat</p>
               <h3 className="font-display text-3xl sm:text-4xl mt-3 text-[#F3EFE7] leading-tight">
                 {event.title}

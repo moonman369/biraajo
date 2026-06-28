@@ -646,6 +646,71 @@ def test_site_content_reset_restores_defaults(admin_headers: dict[str, str]) -> 
     assert d["landing"]["hero"]["title"] == "A table is being set"
 
 
+# ---------- Settings (registrations toggle) ----------
+def test_settings_public_returns_bool() -> None:
+    """GET /api/settings returns {registrations_open: bool}."""
+    r = requests.get(f"{API}/settings", timeout=10)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert "registrations_open" in body
+    assert isinstance(body["registrations_open"], bool)
+
+
+def test_settings_put_requires_admin() -> None:
+    r = requests.put(f"{API}/admin/settings", json={"registrations_open": False}, timeout=10)
+    assert r.status_code == 401
+
+
+def test_settings_toggle_and_blocks_registration(
+    admin_headers: dict[str, str], test_event: dict
+) -> None:
+    """Flip registrations_open=false -> register returns 403; flip back -> 200."""
+    # Snapshot original
+    original = requests.get(f"{API}/settings", timeout=10).json().get("registrations_open", True)
+    try:
+        # Close
+        r = requests.put(
+            f"{API}/admin/settings",
+            json={"registrations_open": False},
+            headers=admin_headers,
+            timeout=10,
+        )
+        assert r.status_code == 200, r.text
+        assert r.json()["registrations_open"] is False
+
+        # Public sees closed
+        pub = requests.get(f"{API}/settings", timeout=10).json()
+        assert pub["registrations_open"] is False
+
+        # Registration now returns 403
+        reg = _register(test_event["id"], guests=1)
+        assert reg.status_code == 403, reg.text
+        assert "closed" in reg.json().get("detail", "").lower()
+
+        # Re-open
+        r = requests.put(
+            f"{API}/admin/settings",
+            json={"registrations_open": True},
+            headers=admin_headers,
+            timeout=10,
+        )
+        assert r.status_code == 200
+        assert r.json()["registrations_open"] is True
+
+        # Registration succeeds again
+        reg = _register(test_event["id"], guests=1)
+        assert reg.status_code == 200, reg.text
+        assert reg.json()["payment_status"] == "pending"
+    finally:
+        # Restore original setting
+        requests.put(
+            f"{API}/admin/settings",
+            json={"registrations_open": bool(original)},
+            headers=admin_headers,
+            timeout=10,
+        )
+
+
 def test_newsletter_succeeds_even_when_sheets_webhook_broken() -> None:
     email = f"TEST_sheetsfail_{uuid.uuid4().hex[:8]}@example.com"
     r = requests.post(f"{API}/newsletter", json={"email": email}, timeout=10)
