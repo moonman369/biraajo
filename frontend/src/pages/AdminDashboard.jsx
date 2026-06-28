@@ -9,6 +9,7 @@ const TABS = [
   { id: "overview", label: "Overview" },
   { id: "events", label: "Events" },
   { id: "registrations", label: "Registrations" },
+  { id: "menu", label: "Menu" },
   { id: "newsletter", label: "Newsletter" },
   { id: "contacts", label: "Messages" },
   { id: "gallery", label: "Gallery" },
@@ -70,6 +71,7 @@ export default function AdminDashboard() {
         {tab === "overview" && <Overview />}
         {tab === "events" && <Events />}
         {tab === "registrations" && <Registrations />}
+        {tab === "menu" && <MenuAdmin />}
         {tab === "newsletter" && <Subscribers />}
         {tab === "contacts" && <ContactMessages />}
         {tab === "gallery" && <GalleryAdmin />}
@@ -552,5 +554,156 @@ function GalleryAdmin() {
         ))}
       </div>
     </div>
+  );
+}
+
+
+function MenuAdmin() {
+  const [sections, setSections] = useState([]);
+  const [open, setOpen] = useState(null); // section id currently being edited
+
+  const load = () => api.get("/menu").then((r) => setSections(r.data));
+  useEffect(() => { load(); }, []);
+
+  const addSection = async () => {
+    try {
+      const next = await api.post("/menu", { title: "New section", subtitle: "", items: [], order: sections.length });
+      toast.success("Section added");
+      setOpen(next.data.id);
+      load();
+    } catch (err) { toast.error(formatApiError(err.response?.data?.detail) || "Failed"); }
+  };
+
+  const save = async (sec) => {
+    try {
+      await api.put(`/menu/${sec.id}`, { title: sec.title, subtitle: sec.subtitle, items: sec.items, order: sec.order });
+      toast.success("Saved");
+      load();
+    } catch (err) { toast.error(formatApiError(err.response?.data?.detail) || "Save failed"); }
+  };
+
+  const delSection = async (id) => {
+    if (!window.confirm("Delete this whole menu section?")) return;
+    await api.delete(`/menu/${id}`);
+    load();
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <h2 className="font-display text-4xl">Menu sections</h2>
+        <button
+          onClick={addSection}
+          data-testid="menu-add-section"
+          className="px-4 py-3 bg-[#5A1A1F] text-[#F3EFE7] text-[11px] tracking-[0.22em] uppercase hover:bg-[#D9772B] hover:text-[#0A0504] inline-flex items-center gap-2"
+        >
+          <Plus size={14} /> New section
+        </button>
+      </div>
+
+      {sections.length === 0 && <p className="text-[#B5A79E]">No menu sections yet. Click &ldquo;New section&rdquo; to add your first.</p>}
+
+      <div className="space-y-4">
+        {sections.map((sec) => (
+          <SectionRow
+            key={sec.id}
+            section={sec}
+            isOpen={open === sec.id}
+            onToggle={() => setOpen(open === sec.id ? null : sec.id)}
+            onSave={save}
+            onDelete={() => delSection(sec.id)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SectionRow({ section, isOpen, onToggle, onSave, onDelete }) {
+  const [draft, setDraft] = useState(section);
+  useEffect(() => { setDraft(section); }, [section]);
+
+  const updateItem = (idx, patch) => {
+    const items = [...(draft.items || [])];
+    items[idx] = { ...items[idx], ...patch };
+    setDraft({ ...draft, items });
+  };
+  const addItem = () => setDraft({ ...draft, items: [...(draft.items || []), { name: "New dish", description: "", price: "" }] });
+  const removeItem = (idx) => setDraft({ ...draft, items: draft.items.filter((_, i) => i !== idx) });
+
+  return (
+    <div className="border border-[#2D1D1A] bg-[#140A09]" data-testid={`menu-section-row-${section.id}`}>
+      <div className="flex items-center justify-between px-5 py-4">
+        <button onClick={onToggle} className="text-left flex-1" data-testid={`menu-section-toggle-${section.id}`}>
+          <p className="font-display text-2xl text-[#F3EFE7]">{section.title || "Untitled"}</p>
+          <p className="text-sm text-[#B5A79E]">{(section.items || []).length} item(s){section.subtitle ? ` · ${section.subtitle}` : ""}</p>
+        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onDelete}
+            className="p-2 border border-[#2D1D1A] hover:border-[#D94A3D] hover:text-[#D94A3D]"
+            aria-label="Delete section"
+            data-testid={`menu-section-delete-${section.id}`}
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="px-5 pb-5 space-y-4 border-t border-[#2D1D1A] pt-5">
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+            <Input12 col={6} label="Section title" value={draft.title || ""} onChange={(v) => setDraft({ ...draft, title: v })} testid={`menu-title-${section.id}`} />
+            <Input12 col={4} label="Subtitle" value={draft.subtitle || ""} onChange={(v) => setDraft({ ...draft, subtitle: v })} testid={`menu-subtitle-${section.id}`} />
+            <Input12 col={2} label="Order" value={String(draft.order || 0)} onChange={(v) => setDraft({ ...draft, order: Number(v) || 0 })} testid={`menu-order-${section.id}`} />
+          </div>
+
+          <div>
+            <p className="text-overline mb-3">Dishes</p>
+            <div className="space-y-3">
+              {(draft.items || []).map((it, idx) => (
+                <div key={idx} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start bg-[#0A0504] border border-[#2D1D1A] p-3">
+                  <Input12 col={4} label="Name" value={it.name || ""} onChange={(v) => updateItem(idx, { name: v })} testid={`menu-item-name-${section.id}-${idx}`} />
+                  <Input12 col={5} label="Description" value={it.description || ""} onChange={(v) => updateItem(idx, { description: v })} testid={`menu-item-desc-${section.id}-${idx}`} />
+                  <Input12 col={2} label="Price" value={it.price || ""} onChange={(v) => updateItem(idx, { price: v })} testid={`menu-item-price-${section.id}-${idx}`} />
+                  <div className="sm:col-span-1 flex sm:justify-end sm:pt-7">
+                    <button onClick={() => removeItem(idx)} className="p-2 border border-[#2D1D1A] hover:border-[#D94A3D] hover:text-[#D94A3D]" aria-label="Remove dish" data-testid={`menu-item-remove-${section.id}-${idx}`}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button onClick={addItem} data-testid={`menu-add-item-${section.id}`} className="mt-3 px-3 py-2 border border-[#2D1D1A] text-[11px] tracking-[0.18em] uppercase hover:border-[#D9772B] inline-flex items-center gap-2">
+              <Plus size={12} /> Add dish
+            </button>
+          </div>
+
+          <div className="flex gap-3 justify-end">
+            <button onClick={() => setDraft(section)} className="px-4 py-2 border border-[#2D1D1A] text-[11px] tracking-[0.18em] uppercase hover:border-[#5A1A1F]" data-testid={`menu-revert-${section.id}`}>
+              Revert
+            </button>
+            <button onClick={() => onSave(draft)} className="px-5 py-2 bg-[#D9772B] text-[#0A0504] text-[11px] tracking-[0.18em] uppercase hover:bg-[#F3EFE7]" data-testid={`menu-save-${section.id}`}>
+              Save section
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Input12({ col, label, value, onChange, testid }) {
+  const colMap = { 1: "sm:col-span-1", 2: "sm:col-span-2", 3: "sm:col-span-3", 4: "sm:col-span-4", 5: "sm:col-span-5", 6: "sm:col-span-6", 7: "sm:col-span-7", 8: "sm:col-span-8" };
+  return (
+    <label className={`${colMap[col] || "sm:col-span-6"} block`}>
+      <span className="text-[10px] tracking-[0.18em] uppercase text-[#B5A79E] mb-1 block">{label}</span>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        data-testid={testid}
+        className="w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2 text-sm text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+      />
+    </label>
   );
 }
