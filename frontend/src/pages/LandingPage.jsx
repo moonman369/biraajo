@@ -4,7 +4,6 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
 import Experiences from "@/components/Experiences";
-import MenuSection from "@/components/MenuSection";
 import Gallery from "@/components/Gallery";
 import InstagramFeed from "@/components/InstagramFeed";
 import Events from "@/components/Events";
@@ -31,7 +30,6 @@ export default function LandingPage() {
       <About />
       <Experiences />
       <Events />
-      <MenuSection />
       <Gallery />
       <InstagramFeed />
       <Newsletter />

@@ -14,6 +14,14 @@ Premium personal chef landing page for "Biraajo by Vidip Shah". Dark, luxury hos
 
 ## What's Been Implemented (latest first)
 
+### 2026-06-28 — Menu nav restructure: per-series menu pages
+- Removed AI-generated MenuSection from landing page (the 2 random dishes block is gone)
+- Navbar "Menu" link now routes to a new **`/menus`** chooser page (Naani Ghar / Barsaat cards)
+- New **`/menus/naani-ghar`** page — menu courses only, ends with a disabled **"Series has been concluded"** button
+- New **`/menus/barsaat`** page — "Work in progress" placeholder with functional **"Book Now"** CTA opening the EventRegistrationModal (pre-book flow with disclaimer)
+- Hero "See the menu" button now also points to `/menus` (was `/suppers`)
+
+
 ### 2026-06-28 — Direct reservation flow + Suppers chooser + Admin reservations toggle
 - **Hero "Reserve a seat"** now opens the EventRegistrationModal directly for the next upcoming event (Barsaat — Monsoon Edition seeded)
 - **Hero "See the menu"** now navigates to a new **`/suppers`** chooser page with two cards: Naani Ghar (View menu) and Barsaat (Read about it + Pre-book seats anyway)

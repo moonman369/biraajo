@@ -93,7 +93,7 @@ export default function Navbar() {
             </AnimatePresence>
           </div>
 
-          <a href={href("#menu")} className={linkCls} data-testid="nav-menu">Menu</a>
+          <Link to="/menus" className={linkCls} data-testid="nav-menu">Menu</Link>
           <a href={href("#gallery")} className={linkCls} data-testid="nav-gallery">Gallery</a>
           <a href={href("#contact")} className={linkCls} data-testid="nav-contact">Reach out</a>
         </nav>
@@ -137,7 +137,7 @@ export default function Navbar() {
                 </div>
               )}
 
-              <a href={href("#menu")} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Menu</a>
+              <Link to="/menus" onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Menu</Link>
               <a href={href("#gallery")} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Gallery</a>
               <a href={href("#contact")} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3" data-testid="mobile-nav-link">Reach out</a>
             </div>
