@@ -121,7 +121,8 @@ async def _send_email(to_email: str, subject: str, html: str) -> None:
         result = await asyncio.to_thread(resend.Emails.send, params)
         logging.getLogger("biraajo").info(f"[EMAIL SENT] id={result.get('id')} to={to_email} subj={subject}")
     except Exception as e:
-        logging.getLogger("biraajo").error(f"[EMAIL FAIL] to={to_email} subj={subject} err={e}")
+        # Resend dev-mode rejects non-verified recipients with 4xx — non-blocking, warn only
+        logging.getLogger("biraajo").warning(f"[EMAIL FAIL] to={to_email} subj={subject} err={e}")
 
 
 async def send_welcome_email(to_email: str, name: str, event_title: str, total_amount: int) -> None:
