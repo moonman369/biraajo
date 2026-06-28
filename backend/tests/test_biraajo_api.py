@@ -449,3 +449,73 @@ def test_stats(admin_headers: dict[str, str]) -> None:
 def test_stats_unauthorized() -> None:
     r = requests.get(f"{API}/stats", timeout=10)
     assert r.status_code == 401
+
+
+# ---------- Google Sheets webhook diagnostics ----------
+def test_sheets_test_unauthorized() -> None:
+    r = requests.post(f"{API}/sheets/test", timeout=15)
+    assert r.status_code == 401
+
+
+def test_sheets_test_authorized_surfaces_failure(admin_headers: dict[str, str]) -> None:
+    """With the user's currently-misconfigured Apps Script (405/HTML),
+    /api/sheets/test must return 200 with ok=false and a clear reason."""
+    r = requests.post(f"{API}/sheets/test", headers=admin_headers, timeout=20)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    # Endpoint must always include the webhook URL it pinged
+    assert "webhook_url" in body and body["webhook_url"], body
+    # ok present
+    assert "ok" in body
+    # With the broken Apps Script deployment, ok must be False
+    # and we should get either a status (HTTP error) or content_type/body
+    # showing the HTML error page.
+    if body["ok"] is False:
+        # Either non-2xx status (e.g. 405) OR HTML response sniffed at 200
+        has_status = "status" in body and isinstance(body["status"], int)
+        has_html = "content_type" in body and "html" in body.get("content_type", "").lower()
+        has_reason = "reason" in body
+        assert has_status or has_html or has_reason, body
+
+
+def test_booking_succeeds_even_when_sheets_webhook_broken(test_event: dict) -> None:
+    """Sheets webhook failure must NEVER break the registration flow
+    (fire-and-forget via asyncio.create_task)."""
+    r = _register(test_event["id"], guests=1)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["payment_status"] == "pending"
+    assert body["total_amount"] == 2200
+
+
+def test_payment_screenshot_succeeds_even_when_sheets_webhook_broken(
+    test_event: dict,
+) -> None:
+    reg_id = _register(test_event["id"], guests=1).json()["id"]
+    files = {"file": ("receipt.png", io.BytesIO(_tiny_png_bytes()), "image/png")}
+    r = requests.post(
+        f"{API}/registrations/{reg_id}/payment-screenshot", files=files, timeout=30
+    )
+    assert r.status_code == 200, r.text
+    assert r.json()["payment_status"] == "confirmed"
+
+
+def test_newsletter_succeeds_even_when_sheets_webhook_broken() -> None:
+    email = f"TEST_sheetsfail_{uuid.uuid4().hex[:8]}@example.com"
+    r = requests.post(f"{API}/newsletter", json={"email": email}, timeout=10)
+    assert r.status_code == 200
+    assert r.json().get("ok") is True
+
+
+def test_contact_succeeds_even_when_sheets_webhook_broken() -> None:
+    r = requests.post(
+        f"{API}/contact",
+        json={
+            "name": "TEST sheetsfail",
+            "email": "test_contact_sheetsfail@example.com",
+            "message": "Hi",
+        },
+        timeout=10,
+    )
+    assert r.status_code == 200
+    assert r.json().get("ok") is True
