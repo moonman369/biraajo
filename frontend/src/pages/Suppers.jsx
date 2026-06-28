@@ -118,9 +118,9 @@ export default function Suppers() {
                   className="inline-flex items-center justify-center px-6 py-3 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
                   Read about it
                 </Link>
-                <button onClick={onPrebook} data-testid="supper-barsaat-prebook"
-                  className="inline-flex items-center justify-center px-6 py-3 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
-                  Pre-book seats anyway
+                <button onClick={onPrebook} disabled={!registrationsOpen} data-testid="supper-barsaat-prebook"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {registrationsOpen ? "Pre-book seats anyway" : "Pre-bookings paused"}
                 </button>
               </div>
             </div>
