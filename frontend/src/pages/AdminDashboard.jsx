@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Calendar, Users, Mail, MessageSquare, LogOut, Plus, Trash2, Download, Edit2 } from "lucide-react";
+import { Calendar, Users, Mail, MessageSquare, LogOut, Plus, Trash2, Download, Edit2, Edit3 } from "lucide-react";
 import { api, clearToken, formatApiError } from "@/lib/api";
 
 const TABS = [
@@ -48,6 +48,13 @@ export default function AdminDashboard() {
                 {t.label}
               </button>
             ))}
+            <Link
+              to="/admin/edit"
+              data-testid="admin-tab-edit-website"
+              className="px-4 py-2 text-[11px] tracking-[0.22em] uppercase border border-[#D9772B] text-[#D9772B] hover:bg-[#D9772B] hover:text-[#0A0504] inline-flex items-center gap-2"
+            >
+              <Edit3 size={14} /> Edit Website
+            </Link>
             <button
               onClick={logout}
               data-testid="admin-logout"

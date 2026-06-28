@@ -3,14 +3,20 @@ import { motion } from "framer-motion";
 import { Instagram, Mail, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { api, formatApiError } from "@/lib/api";
-
-const WHATSAPP_NUMBER = "919331308405";
-const EMAIL = "reachbiraajo@gmail.com";
-const IG = "biraajo_";
+import { useSiteContent, read } from "@/lib/siteContent";
 
 export default function Contact() {
+  const { content } = useSiteContent();
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
+
+  if (content?.landing?.contact?.visible === false) return null;
+
+  const phone = read(content, "landing.contact.phone", "+91 93313 08405");
+  const email = read(content, "landing.contact.email", "reachbiraajo@gmail.com");
+  const ig = read(content, "landing.contact.instagram", "@biraajo_");
+  const igUrl = read(content, "landing.contact.instagram_url", `https://www.instagram.com/${ig.replace(/^@/, "")}/`);
+  const wa = phone.replace(/\D/g, "");
 
   const handle = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -42,36 +48,34 @@ export default function Contact() {
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 1 }}
         >
-          <p className="text-overline">08 — Reach Out</p>
+          <p className="text-overline">{read(content, "landing.contact.eyebrow", "Reach out")}</p>
           <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 text-[#F3EFE7] leading-[1.02] tracking-tight">
-            Let's set a<br/>
-            <span className="italic text-[#D9772B]">long table.</span>
+            {read(content, "landing.contact.title", "Drop us a line.")}
           </h2>
           <p className="mt-6 text-[#B5A79E] leading-relaxed">
-            Private dinners, collaborations, consulting briefs, or just to say hi
-            — write to us. Quickest on WhatsApp and Instagram.
+            {read(content, "landing.contact.body", "For private dinners, press, or just to say hi.")}
           </p>
 
           <div className="mt-10 space-y-4">
             <ContactLink
-              href={`https://wa.me/${WHATSAPP_NUMBER}`}
+              href={`https://wa.me/${wa}`}
               icon={<MessageCircle size={18} />}
               label="WhatsApp"
-              value="+91 93313 08405"
+              value={phone}
               testid="contact-whatsapp"
             />
             <ContactLink
-              href={`https://www.instagram.com/${IG}/`}
+              href={igUrl}
               icon={<Instagram size={18} />}
               label="Instagram"
-              value={`@${IG}`}
+              value={ig}
               testid="contact-instagram"
             />
             <ContactLink
-              href={`mailto:${EMAIL}`}
+              href={`mailto:${email}`}
               icon={<Mail size={18} />}
               label="Email"
-              value={EMAIL}
+              value={email}
               testid="contact-email"
             />
           </div>

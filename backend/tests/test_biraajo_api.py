@@ -553,6 +553,99 @@ def test_payment_screenshot_succeeds_even_when_sheets_webhook_broken(
     assert r.json()["payment_status"] == "confirmed"
 
 
+# ---------- Site Content CMS ----------
+def test_site_content_public_published_returns_full_tree() -> None:
+    """GET /api/site-content (default published) returns full content tree."""
+    r = requests.get(f"{API}/site-content", timeout=10)
+    assert r.status_code == 200, r.text
+    data = r.json()
+    for key in ("landing", "about_the_chef", "naani_ghar", "barsaat"):
+        assert key in data, f"missing top key {key}"
+    # Landing has expected sections
+    for sect in ("hero", "about", "experiences", "newsletter", "contact", "footer"):
+        assert sect in data["landing"], f"missing landing.{sect}"
+    # Hero has expected fields
+    hero = data["landing"]["hero"]
+    for f in ("visible", "eyebrow", "title", "title_italic", "body", "image"):
+        assert f in hero
+
+
+def test_site_content_draft_mode_auto_seeds() -> None:
+    """GET /api/site-content?mode=draft returns 200 (auto-seeds if missing)."""
+    r = requests.get(f"{API}/site-content", params={"mode": "draft"}, timeout=10)
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert "landing" in data
+    assert "hero" in data["landing"]
+
+
+def test_site_content_draft_update_requires_admin() -> None:
+    """PUT /api/admin/site-content/draft without auth -> 401."""
+    r = requests.put(f"{API}/admin/site-content/draft", json={"landing": {}}, timeout=10)
+    assert r.status_code == 401
+
+
+def test_site_content_draft_publish_discard_roundtrip(admin_headers: dict[str, str]) -> None:
+    """Edit draft -> publish -> public sees new published -> discard restores draft."""
+    # Snapshot original published so we can restore
+    original = requests.get(f"{API}/site-content", timeout=10).json()
+    marker = f"TEST_CMS_TITLE_{uuid.uuid4().hex[:8]}"
+
+    # Build new draft based on a current draft fetch
+    draft = requests.get(f"{API}/site-content", params={"mode": "draft"}, timeout=10).json()
+    draft["landing"]["hero"]["title"] = marker
+    try:
+        # PUT draft (admin)
+        r = requests.put(
+            f"{API}/admin/site-content/draft",
+            json=draft,
+            headers=admin_headers,
+            timeout=15,
+        )
+        assert r.status_code == 200, r.text
+
+        # Draft now reflects marker
+        d = requests.get(f"{API}/site-content", params={"mode": "draft"}, timeout=10).json()
+        assert d["landing"]["hero"]["title"] == marker
+
+        # Published unchanged so far
+        p = requests.get(f"{API}/site-content", timeout=10).json()
+        assert p["landing"]["hero"]["title"] != marker
+
+        # Publish
+        r = requests.post(
+            f"{API}/admin/site-content/publish", headers=admin_headers, timeout=15
+        )
+        assert r.status_code == 200
+
+        p = requests.get(f"{API}/site-content", timeout=10).json()
+        assert p["landing"]["hero"]["title"] == marker
+    finally:
+        # Restore: write the original tree as draft and publish, then discard
+        requests.put(
+            f"{API}/admin/site-content/draft",
+            json=original,
+            headers=admin_headers,
+            timeout=15,
+        )
+        requests.post(
+            f"{API}/admin/site-content/publish", headers=admin_headers, timeout=15
+        )
+
+
+def test_site_content_reset_restores_defaults(admin_headers: dict[str, str]) -> None:
+    """POST /api/admin/site-content/reset returns 200 and resets draft + published to defaults."""
+    r = requests.post(
+        f"{API}/admin/site-content/reset", headers=admin_headers, timeout=15
+    )
+    assert r.status_code == 200
+    p = requests.get(f"{API}/site-content", timeout=10).json()
+    # Default hero title from site_defaults.py
+    assert p["landing"]["hero"]["title"] == "A table is being set"
+    d = requests.get(f"{API}/site-content", params={"mode": "draft"}, timeout=10).json()
+    assert d["landing"]["hero"]["title"] == "A table is being set"
+
+
 def test_newsletter_succeeds_even_when_sheets_webhook_broken() -> None:
     email = f"TEST_sheetsfail_{uuid.uuid4().hex[:8]}@example.com"
     r = requests.post(f"{API}/newsletter", json={"email": email}, timeout=10)

@@ -2,11 +2,15 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { api, formatApiError } from "@/lib/api";
+import { useSiteContent, read } from "@/lib/siteContent";
 
 export default function Newsletter() {
+  const { content } = useSiteContent();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  if (content?.landing?.newsletter?.visible === false) return null;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -35,14 +39,12 @@ export default function Newsletter() {
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 1 }}
         >
-          <p className="text-overline">07 — The List</p>
+          <p className="text-overline">{read(content, "landing.newsletter.eyebrow", "The list")}</p>
           <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 text-[#F3EFE7] leading-[1.02] tracking-tight">
-            Join the{" "}
-            <span className="italic text-[#D9772B]">guest list.</span>
+            {read(content, "landing.newsletter.title", "Hear when the next supper is")}
           </h2>
           <p className="mt-6 text-[#B5A79E] max-w-xl mx-auto leading-relaxed">
-            Future menus, supper-club drops and the occasional recipe — sent
-            sparingly, never spammed.
+            {read(content, "landing.newsletter.body", "We send one short email a month — only when a new supper opens. No spam, no noise.")}
           </p>
 
           <form
@@ -71,7 +73,7 @@ export default function Newsletter() {
               data-testid="newsletter-submit-button"
               className="sm:col-span-12 px-6 py-4 bg-[#5A1A1F] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 tracking-[0.18em] uppercase text-[11px] disabled:opacity-60"
             >
-              {submitting ? "Adding you..." : "Save me a seat in your inbox"}
+              {submitting ? "Adding you..." : (read(content, "landing.newsletter.button_label", "Join the list"))}
             </button>
           </form>
         </motion.div>

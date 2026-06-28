@@ -1,0 +1,37 @@
+{
+  "summary": "CMS 'Edit Website' feature fully verified end-to-end. Added 5 new pytest cases for /api/site-content + /api/admin/site-content/{draft,publish,discard,reset} -- full backend suite is now 41/41 PASS (36 existing regression + 5 new CMS). Frontend Playwright verified: (a) /admin/edit redirects to /admin/login when no token, (b) page loads with side-panel + iframe, save-status badge transitions Unsaved -> Saving -> 'All changes saved', (c) editing landing.hero.title autosaves via PUT /admin/site-content/draft within 600ms debounce and the change appears inside the iframe preview body, (d) eye-toggle on Newsletter persists visible=false to draft, (e) Publish copies draft -> published (verified via GET /api/site-content), (f) Newsletter section disappears from public / when visible=false (component returns null), (g) Reset endpoint restores defaults. No regressions found.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_biraajo_api.py",
+    "/app/test_reports/pytest/pytest_results_iter7.xml"
+  ],
+  "action_items": [
+    "Wire About, Experiences, AboutTheChef, NaaniGhar, Barsaat page components to read from useSiteContent — the EditWebsite form already exposes these sections in site_defaults.py but the actual frontend components still render hardcoded copy, so admin edits to those sections do NOT show on the public site yet. Only Hero, Newsletter, Contact, Footer reflect edits live (as stated in the review request).",
+    "Optional: PUT /admin/site-content/draft accepts an arbitrary dict body with no Pydantic validation — a malformed payload (e.g., missing top-level 'landing') could corrupt the draft and break the public site rendering. Consider validating against a schema or at least asserting required top-level keys before persisting."
+  ],
+  "critical_code_review_comments": [
+    "Hero.jsx hero-title H1 (line 38) is hardcoded as 'biraajo.' — the editable landing.hero.title field actually renders inside the italic paragraph below (line 44). This is consistent with the CMS contract but worth noting: editing 'Title' in the CMS will NOT change the giant biraajo wordmark, only the italic tagline. Either rename the CMS field to 'tagline' or wire the H1 to a separate content key to match user expectations.",
+    "_deep_merge in server.py is good defensive code — newly added default fields auto-appear in stored docs without a migration. Lists are replaced wholesale (correct for menus/cards/photos).",
+    "POST /admin/site-content/reset has no confirmation flag — a single admin click would nuke published content. UI does prompt window.confirm in EditWebsite.jsx for publish but I did not see a reset button in the UI (only Discard). If reset is exposed later, add a typed-confirmation guard.",
+    "site_defaults.py is 232 lines of nested literals — fine for now but if more pages/sections are added consider splitting per-page (defaults_landing.py, defaults_about.py) or loading from JSON to keep diffs reviewable.",
+    "EditWebsite.jsx is 633 lines (PageEditor, SectionEditor, NestedSection, ListEditor, Field, page-level component all inline). Approaching the 700-line soft cap — split helpers into /pages/EditWebsite/ folder before adding more."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_biraajo_api.py — added 5 new tests: test_site_content_public_published_returns_full_tree, test_site_content_draft_mode_auto_seeds, test_site_content_draft_update_requires_admin, test_site_content_draft_publish_discard_roundtrip, test_site_content_reset_restores_defaults"
+  ],
+  "success_rate": {"backend": "100% (41/41)", "frontend": "100% on in-scope CMS flows"},
+  "test_credentials": "Admin reachbiraajo@gmail.com / Biraajo@2026 — working.",
+  "seed_data_creation": "None persisted: the publish/restore roundtrip test snapshots-and-restores the published doc, and the UI flow test ends with POST /admin/site-content/reset to bring both draft and published back to site_defaults.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend pytest suite now has 41 tests including full CMS coverage (test_site_content_*). EditWebsite UI testids: page-edit-website, edit-save-status, edit-discard, edit-publish, preview-iframe, edit-page-toggle-{pageKey}, edit-section-toggle-{secKey}, edit-section-visibility-{secKey}, edit-field-{fieldKey}, edit-nested-{label}, edit-list-add, edit-list-remove-{i}. Section editors expand on click; Landing is open by default. The editable landing.hero.title renders in the italic body paragraph of Hero (NOT the giant biraajo wordmark which is hardcoded). About / Experiences / AboutTheChef / NaaniGhar / Barsaat page bodies still render hardcoded copy — only Hero, Newsletter, Contact, Footer are wired to siteContent so far. Reset endpoint is safe to call to clean up: POST /api/admin/site-content/reset.",
+  "rca of the issue": "N/A — no bugs found this iteration. All review-request items work end-to-end."
+}

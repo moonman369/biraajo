@@ -854,6 +854,89 @@ async def test_sheets_webhook(user=Depends(get_current_admin)):
     return {"webhook_url": url, **result}
 
 
+# ---------- Site Content CMS ----------
+from site_defaults import get_default_content  # noqa: E402
+
+
+def _deep_merge(base: dict, overrides: dict) -> dict:
+    """Merge overrides into base. Lists are replaced wholesale; dicts are deep-merged."""
+    out = dict(base)
+    for k, v in overrides.items():
+        if isinstance(v, dict) and isinstance(out.get(k), dict):
+            out[k] = _deep_merge(out[k], v)
+        else:
+            out[k] = v
+    return out
+
+
+async def _get_site_doc(mode: str) -> dict:
+    """Return the site_content doc for mode ('published' or 'draft'), seeding from defaults if missing."""
+    doc = await db.site_content.find_one({"id": mode}, {"_id": 0})
+    if doc:
+        # Always merge with defaults so newly-added fields are present
+        return _deep_merge(get_default_content(), doc.get("data", {}))
+    defaults = get_default_content()
+    await db.site_content.insert_one({"id": mode, "data": defaults, "updated_at": _now_iso()})
+    return defaults
+
+
+@api.get("/site-content")
+async def get_site_content(mode: str = "published"):
+    """Public endpoint. mode=published (default) or mode=draft (requires no auth so the preview iframe works)."""
+    if mode not in ("published", "draft"):
+        mode = "published"
+    return await _get_site_doc(mode)
+
+
+@api.put("/admin/site-content/draft")
+async def update_site_content_draft(body: dict, user=Depends(get_current_admin)):
+    """Replace draft content with the provided body (full document)."""
+    await db.site_content.update_one(
+        {"id": "draft"},
+        {"$set": {"data": body, "updated_at": _now_iso()}},
+        upsert=True,
+    )
+    return {"ok": True}
+
+
+@api.post("/admin/site-content/publish")
+async def publish_site_content(user=Depends(get_current_admin)):
+    """Copy current draft → published."""
+    draft = await _get_site_doc("draft")
+    await db.site_content.update_one(
+        {"id": "published"},
+        {"$set": {"data": draft, "updated_at": _now_iso()}},
+        upsert=True,
+    )
+    return {"ok": True, "published_at": _now_iso()}
+
+
+@api.post("/admin/site-content/discard")
+async def discard_site_content_draft(user=Depends(get_current_admin)):
+    """Revert draft to the currently published content."""
+    published = await _get_site_doc("published")
+    await db.site_content.update_one(
+        {"id": "draft"},
+        {"$set": {"data": published, "updated_at": _now_iso()}},
+        upsert=True,
+    )
+    return {"ok": True}
+
+
+@api.post("/admin/site-content/reset")
+async def reset_site_content(user=Depends(get_current_admin)):
+    """Reset both draft and published to the hardcoded defaults (use carefully)."""
+    defaults = get_default_content()
+    now = _now_iso()
+    for m in ("draft", "published"):
+        await db.site_content.update_one(
+            {"id": m},
+            {"$set": {"data": defaults, "updated_at": now}},
+            upsert=True,
+        )
+    return {"ok": True}
+
+
 # ---------- Stats ----------
 @api.get("/stats")
 async def stats(user=Depends(get_current_admin)):
