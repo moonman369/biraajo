@@ -3,6 +3,9 @@ import { Toaster } from "sonner";
 import LandingPage from "@/pages/LandingPage";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
+import AboutTheChef from "@/pages/AboutTheChef";
+import NaaniGhar from "@/pages/NaaniGhar";
+import Barsaat from "@/pages/Barsaat";
 import { getToken } from "@/lib/api";
 import "@/App.css";
 
@@ -16,6 +19,9 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/about-the-chef" element={<AboutTheChef />} />
+          <Route path="/supper-club/naani-ghar" element={<NaaniGhar />} />
+          <Route path="/supper-club/barsaat" element={<Barsaat />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route
             path="/admin"

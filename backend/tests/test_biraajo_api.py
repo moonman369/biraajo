@@ -125,7 +125,12 @@ def test_gallery_seeded() -> None:
     assert r.status_code == 200
     docs = r.json()
     assert isinstance(docs, list)
-    assert len(docs) >= 10
+    # Gallery cleaned to 7 real customer-assets items (no unsplash stock)
+    assert len(docs) >= 7
+    for d in docs:
+        assert "unsplash" not in d.get("url", "").lower(), (
+            f"Unexpected unsplash image in gallery: {d.get('url')}"
+        )
 
 
 # ---------- Public Events ----------

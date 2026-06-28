@@ -14,6 +14,7 @@ import httpx
 import bcrypt
 import jwt
 import requests
+import resend
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 
@@ -76,12 +77,82 @@ def get_object(path: str) -> tuple[bytes, str]:
     return r.content, r.headers.get("Content-Type", "application/octet-stream")
 
 
-# ---------- Email (welcome / confirmation) — stub until Resend key is supplied ----------
+# ---------- Email (Resend) ----------
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+RESEND_FROM = os.environ.get("RESEND_FROM_EMAIL", "Biraajo <onboarding@resend.dev>")
+RESEND_REPLY_TO = os.environ.get("RESEND_REPLY_TO", "")
+if RESEND_API_KEY:
+    resend.api_key = RESEND_API_KEY
+
+
+def _email_shell(title: str, body_html: str) -> str:
+    """Minimal, email-client-friendly HTML wrapper for transactional emails."""
+    return f"""<!DOCTYPE html>
+<html><body style="margin:0;padding:0;background:#0A0504;font-family:Georgia,'Times New Roman',serif;color:#F3EFE7;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0A0504;padding:48px 16px;">
+<tr><td align="center">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#140A09;border:1px solid #2D1D1A;">
+<tr><td style="padding:36px 36px 0 36px;">
+<p style="margin:0 0 14px 0;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#D9772B;">Biraajo · by Vidip Shah</p>
+<h1 style="margin:0;font-size:30px;line-height:1.15;color:#F3EFE7;font-weight:400;">{title}</h1>
+</td></tr>
+<tr><td style="padding:24px 36px 36px 36px;color:#B5A79E;font-size:16px;line-height:1.65;">
+{body_html}
+</td></tr>
+<tr><td style="padding:0 36px 36px 36px;border-top:1px solid #2D1D1A;">
+<p style="margin:24px 0 4px 0;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#B5A79E;">Biraajo House</p>
+<p style="margin:0;font-size:13px;color:#B5A79E;">South Calcutta · India</p>
+<p style="margin:14px 0 0 0;font-size:12px;color:#5A4A41;">If you have questions, simply reply to this email.</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>"""
+
+
+async def _send_email(to_email: str, subject: str, html: str) -> None:
+    if not RESEND_API_KEY:
+        logging.getLogger("biraajo").warning(f"[EMAIL SKIPPED — no RESEND_API_KEY] to={to_email} subj={subject}")
+        return
+    params = {"from": RESEND_FROM, "to": [to_email], "subject": subject, "html": html}
+    if RESEND_REPLY_TO:
+        params["reply_to"] = [RESEND_REPLY_TO]
+    try:
+        result = await asyncio.to_thread(resend.Emails.send, params)
+        logging.getLogger("biraajo").info(f"[EMAIL SENT] id={result.get('id')} to={to_email} subj={subject}")
+    except Exception as e:
+        logging.getLogger("biraajo").error(f"[EMAIL FAIL] to={to_email} subj={subject} err={e}")
+
+
 async def send_welcome_email(to_email: str, name: str, event_title: str, total_amount: int) -> None:
-    """Logs only for now. Will swap to Resend once API key is available."""
-    logging.getLogger("biraajo").info(
-        f"[EMAIL STUB] welcome -> {to_email} | {name} | {event_title} | ₹{total_amount}"
-    )
+    first = name.split(" ")[0] if name else "there"
+    body = f"""
+<p>Dear {first},</p>
+<p>Thank you for reserving a seat at <strong style="color:#F3EFE7;">{event_title}</strong>. Your details are with us — your seat is being held while you complete the UPI payment of <strong style="color:#F3EFE7;">₹{total_amount:,}</strong>.</p>
+<p>Once you upload the payment screenshot on the booking page, you'll receive a final confirmation from us.</p>
+<p style="font-style:italic;color:#F3EFE7;">A table is being set — by someone who thinks the setting of it is as interesting as the meal itself.</p>
+<p>Warmly,<br/>Vidip · Biraajo</p>
+"""
+    await _send_email(to_email, f"You're on the list · {event_title}", _email_shell("You're on the list.", body))
+
+
+async def send_confirmation_email(to_email: str, name: str, event: dict, total_amount: int, guests: int, menu: str) -> None:
+    first = name.split(" ")[0] if name else "there"
+    body = f"""
+<p>Dear {first},</p>
+<p>Your seat is <strong style="color:#F3EFE7;">confirmed</strong>. Thank you for the payment.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:20px 0;border:1px solid #2D1D1A;">
+<tr><td style="padding:14px 18px;border-bottom:1px solid #2D1D1A;"><span style="color:#B5A79E;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">Event</span><br/><span style="color:#F3EFE7;font-size:16px;">{event.get('title','')}</span></td></tr>
+<tr><td style="padding:14px 18px;border-bottom:1px solid #2D1D1A;"><span style="color:#B5A79E;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">When</span><br/><span style="color:#F3EFE7;font-size:16px;">{event.get('date','')} · {event.get('time','')}</span></td></tr>
+<tr><td style="padding:14px 18px;border-bottom:1px solid #2D1D1A;"><span style="color:#B5A79E;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">Where</span><br/><span style="color:#F3EFE7;font-size:16px;">{event.get('venue','')}</span></td></tr>
+<tr><td style="padding:14px 18px;border-bottom:1px solid #2D1D1A;"><span style="color:#B5A79E;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">Guests · Menu</span><br/><span style="color:#F3EFE7;font-size:16px;">{guests} · {menu}</span></td></tr>
+<tr><td style="padding:14px 18px;"><span style="color:#B5A79E;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">Amount paid</span><br/><span style="color:#F3EFE7;font-size:16px;">₹{total_amount:,}</span></td></tr>
+</table>
+<p>If anything changes between now and the evening, we'll reach you on WhatsApp.</p>
+<p>Until then — pull up a chair.</p>
+<p>Warmly,<br/>Vidip · Biraajo</p>
+"""
+    await _send_email(to_email, f"Confirmed · {event.get('title','')}", _email_shell("See you soon.", body))
 
 
 # ---------- DB ----------
@@ -520,6 +591,14 @@ async def upload_payment_screenshot(reg_id: str, file: UploadFile = File(...)):
     )
 
     event = await db.events.find_one({"id": reg.get("event_id")}, {"_id": 0}) or {}
+    asyncio.create_task(send_confirmation_email(
+        to_email=reg.get("email", ""),
+        name=reg.get("full_name", ""),
+        event=event,
+        total_amount=int(reg.get("total_amount", 0)),
+        guests=int(reg.get("guests", 1)),
+        menu=reg.get("menu_preference", ""),
+    ))
     push_to_sheet("registration_confirmed", {
         "created_at": reg.get("created_at"),
         "confirmed_at": now,
