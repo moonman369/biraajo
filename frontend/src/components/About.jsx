@@ -108,7 +108,7 @@ export default function About() {
         </div>
         <div className="lg:col-span-7 space-y-5 text-[#B5A79E] text-base lg:text-lg leading-relaxed lg:pt-8">
           <p>
-            The name <em className="font-display not-italic text-[#F3EFE7]">Biraajo</em> comes from a Sanskrit word used to invite someone to take a seat.
+            The name <em className="font-display italic text-[#F3EFE7]">Biraajo</em> comes from a Sanskrit word used to invite someone to take a seat.
           </p>
           <p>It's a simple gesture, but an important one.</p>
           <p>

@@ -125,12 +125,19 @@ async def _send_email(to_email: str, subject: str, html: str) -> None:
         logging.getLogger("biraajo").warning(f"[EMAIL FAIL] to={to_email} subj={subject} err={e}")
 
 
-async def send_welcome_email(to_email: str, name: str, event_title: str, total_amount: int) -> None:
+PUBLIC_SITE_URL = os.environ.get("PUBLIC_SITE_URL", "https://biraajo-chef.preview.emergentagent.com").rstrip("/")
+
+
+async def send_welcome_email(to_email: str, name: str, event_title: str, total_amount: int, reg_id: str = "") -> None:
     first = name.split(" ")[0] if name else "there"
+    link = f"{PUBLIC_SITE_URL}/booking/{reg_id}" if reg_id else PUBLIC_SITE_URL
     body = f"""
 <p>Dear {first},</p>
 <p>Thank you for reserving a seat at <strong style="color:#F3EFE7;">{event_title}</strong>. Your details are with us — your seat is being held while you complete the UPI payment of <strong style="color:#F3EFE7;">₹{total_amount:,}</strong>.</p>
-<p>Once you upload the payment screenshot on the booking page, you'll receive a final confirmation from us.</p>
+<p style="margin:24px 0;">
+  <a href="{link}" style="display:inline-block;padding:14px 22px;background:#5A1A1F;color:#F3EFE7;text-decoration:none;letter-spacing:0.18em;text-transform:uppercase;font-size:11px;">Complete your booking</a>
+</p>
+<p>The link above takes you back to your booking page, where you can pay via UPI and upload the payment screenshot. Once we receive it, you'll get a final confirmation.</p>
 <p style="font-style:italic;color:#F3EFE7;">A table is being set — by someone who thinks the setting of it is as interesting as the meal itself.</p>
 <p>Warmly,<br/>Vidip · Biraajo</p>
 """
@@ -530,7 +537,7 @@ async def _create_pending_registration(payload: dict, total: int, event: dict) -
     await db.events.update_one(
         {"id": event["id"]}, {"$inc": {"seats_booked": reg.guests}}
     )
-    asyncio.create_task(send_welcome_email(reg.email, reg.full_name, event["title"], total))
+    asyncio.create_task(send_welcome_email(reg.email, reg.full_name, event["title"], total, reg_id=reg.id))
     await db.registrations.update_one({"id": reg.id}, {"$set": {"welcome_email_sent": True}})
     push_to_sheet("registration_pending", {
         "created_at": reg.created_at,
@@ -572,12 +579,39 @@ async def register_event(event_id: str, body: RegistrationIn):
     return {**reg.model_dump(), "upi_id": UPI_ID}
 
 
+@api.get("/registrations/{reg_id}/status")
+async def public_registration_status(reg_id: str):
+    """Public endpoint — returns lightweight booking info so a guest can self-check or re-upload screenshot."""
+    reg = await db.registrations.find_one({"id": reg_id}, {"_id": 0})
+    if not reg:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    event = await db.events.find_one({"id": reg.get("event_id")}, {"_id": 0}) or {}
+    return {
+        "id": reg["id"],
+        "full_name": reg.get("full_name", ""),
+        "email": reg.get("email", ""),
+        "guests": reg.get("guests", 1),
+        "menu_preference": reg.get("menu_preference", ""),
+        "total_amount": reg.get("total_amount", 0),
+        "payment_status": reg.get("payment_status", "pending"),
+        "payment_confirmed_at": reg.get("payment_confirmed_at"),
+        "has_screenshot": bool(reg.get("payment_screenshot_path")),
+        "upi_id": UPI_ID,
+        "event": {
+            "id": event.get("id", ""),
+            "title": event.get("title", ""),
+            "date": event.get("date", ""),
+            "time": event.get("time", ""),
+            "venue": event.get("venue", ""),
+        },
+    }
+
+
 @api.post("/registrations/{reg_id}/payment-screenshot")
 async def upload_payment_screenshot(reg_id: str, file: UploadFile = File(...)):
     reg = await db.registrations.find_one({"id": reg_id}, {"_id": 0})
     if not reg:
         raise HTTPException(status_code=404, detail="Registration not found")
-
     ct = (file.content_type or "").lower()
     if not ct.startswith("image/"):
         raise HTTPException(status_code=400, detail="Please upload an image (JPG/PNG)")

@@ -307,6 +307,26 @@ function Registrations() {
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <h2 className="font-display text-4xl">Registrations</h2>
         <div className="flex gap-3 items-center flex-wrap">
+          <button
+            onClick={() => {
+              const pending = rows.filter((r) => r.payment_status === "pending");
+              if (pending.length === 0) { toast.info("No pending guests right now."); return; }
+              if (!window.confirm(`Open ${pending.length} WhatsApp tab(s) to nudge every pending guest?`)) return;
+              pending.forEach((r) => {
+                const phone = (r.phone || "").replace(/\D/g, "");
+                if (!phone) return;
+                const msg = encodeURIComponent(
+                  `Hi ${r.full_name.split(" ")[0]}, gentle nudge — your Biraajo seat for "${titleOf(r.event_id)}" is held but payment is pending. Pay ₹${Number(r.total_amount || 0).toLocaleString("en-IN")} to UPI: vidipshah14-1@oksbi and reply with the screenshot to lock it. — Biraajo`
+                );
+                window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+              });
+              toast.success(`Opened ${pending.length} WhatsApp tab(s).`);
+            }}
+            data-testid="nudge-all-pending"
+            className="px-4 py-3 border border-[#D9772B] text-[11px] tracking-[0.22em] uppercase text-[#D9772B] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all"
+          >
+            Nudge all pending
+          </button>
           <select
             value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
             data-testid="reg-filter-status"

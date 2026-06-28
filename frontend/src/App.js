@@ -6,6 +6,7 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import AboutTheChef from "@/pages/AboutTheChef";
 import NaaniGhar from "@/pages/NaaniGhar";
 import Barsaat from "@/pages/Barsaat";
+import BookingStatus from "@/pages/BookingStatus";
 import { getToken } from "@/lib/api";
 import "@/App.css";
 
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/about-the-chef" element={<AboutTheChef />} />
           <Route path="/supper-club/naani-ghar" element={<NaaniGhar />} />
           <Route path="/supper-club/barsaat" element={<Barsaat />} />
+          <Route path="/booking/:id" element={<BookingStatus />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route
             path="/admin"

@@ -297,6 +297,59 @@ def test_payment_screenshot_confirms(test_event: dict, admin_headers: dict[str, 
     assert r.headers.get("content-type", "").startswith("image/")
 
 
+def test_public_status_returns_full_shape(test_event: dict) -> None:
+    """PUBLIC /api/registrations/{id}/status — no auth, returns booking + event info."""
+    reg = _register(test_event["id"], guests=1).json()
+    reg_id = reg["id"]
+
+    # No auth header
+    r = requests.get(f"{API}/registrations/{reg_id}/status", timeout=10)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    # Top-level fields
+    for key in (
+        "id", "full_name", "email", "guests", "menu_preference",
+        "total_amount", "payment_status", "has_screenshot", "upi_id", "event",
+    ):
+        assert key in body, f"missing key {key}"
+    assert body["id"] == reg_id
+    assert body["payment_status"] == "pending"
+    assert body["total_amount"] == 2200
+    assert body["upi_id"]  # non-empty UPI ID
+    assert body["has_screenshot"] is False
+    # Nested event block
+    for key in ("id", "title", "date", "time", "venue"):
+        assert key in body["event"], f"missing event.{key}"
+    assert body["event"]["id"] == test_event["id"]
+    assert body["event"]["title"] == test_event["title"]
+
+
+def test_public_status_404_for_unknown_id() -> None:
+    r = requests.get(f"{API}/registrations/does-not-exist-xyz/status", timeout=10)
+    assert r.status_code == 404
+
+
+def test_public_status_flips_to_confirmed_after_screenshot(test_event: dict) -> None:
+    """End-to-end: pending → upload screenshot → public status reports confirmed."""
+    reg_id = _register(test_event["id"], guests=1).json()["id"]
+
+    # Initially pending
+    r = requests.get(f"{API}/registrations/{reg_id}/status", timeout=10)
+    assert r.json()["payment_status"] == "pending"
+
+    files = {"file": ("receipt.png", io.BytesIO(_tiny_png_bytes()), "image/png")}
+    up = requests.post(
+        f"{API}/registrations/{reg_id}/payment-screenshot", files=files, timeout=30
+    )
+    assert up.status_code == 200
+
+    r = requests.get(f"{API}/registrations/{reg_id}/status", timeout=10)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["payment_status"] == "confirmed"
+    assert body["has_screenshot"] is True
+
+
 def test_payment_screenshot_rejects_non_image(test_event: dict) -> None:
     reg_id = _register(test_event["id"], guests=1).json()["id"]
     files = {"file": ("note.txt", io.BytesIO(b"hello"), "text/plain")}
