@@ -14,6 +14,13 @@ Premium personal chef landing page for "Biraajo by Vidip Shah". Dark, luxury hos
 
 ## What's Been Implemented (latest first)
 
+### 2026-06-28 — Admin menu CRUD + About CTA modal + UPI QR
+- **Admin → Menu tab**: rebuilt to manage per-series menus (Naani Ghar + Barsaat) via site_content. Add, edit, reorder (↑↓), delete courses — saves and publishes instantly. Old `/api/menu` editor retired.
+- **About "Pull up a chair"** CTA now opens the EventRegistrationModal directly (was an anchor to #events). Same Barsaat pre-book flow as Hero and Suppers.
+- **UPI QR Code** on payment step — both `EventRegistrationModal` (booking flow step 2) and `BookingStatus` (public pending payment) now show Vidip Shah's Google Pay QR. UPI ID + copy button retained as fallback. Bypasses the ₹2,000 UPI ID transaction limit.
+- **`/menus/barsaat`** now renders menu items if admin adds them (otherwise still shows "Work in progress" + Book now).
+
+
 ### 2026-06-28 — Menu nav restructure: per-series menu pages
 - Removed AI-generated MenuSection from landing page (the 2 random dishes block is gone)
 - Navbar "Menu" link now routes to a new **`/menus`** chooser page (Naani Ghar / Barsaat cards)

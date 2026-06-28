@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { api, formatApiError } from "@/lib/api";
 
 const UPI_ID = "vidipshah14-1@oksbi";
+const UPI_QR_URL = "https://customer-assets.emergentagent.com/job_8232982a-2ce1-4d83-a683-c7727cd57ba6/artifacts/g9bzx5zc_image.png";
 const CONTACT = "+91 93313 08405";
 const PAYEE_NAME = "Vidip Shah";
 
@@ -279,8 +280,22 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
                 </p>
 
                 <div className="mt-5 pt-5 border-t border-[#2D1D1A]">
-                  <p className="text-overline mb-2">UPI ID</p>
-                  <div className="flex items-center justify-between gap-3 bg-[#140A09] border border-[#2D1D1A] px-4 py-3">
+                  <p className="text-overline mb-3 text-center">Scan to pay · any UPI app</p>
+                  <div className="flex justify-center">
+                    <div className="bg-[#F3EFE7] p-3 inline-block" data-testid="upi-qr-wrap">
+                      <img
+                        src={UPI_QR_URL}
+                        alt="UPI QR code · Vidip Shah"
+                        className="w-56 h-56 sm:w-64 sm:h-64 object-contain"
+                        data-testid="upi-qr-image"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-[#B5A79E] mt-3 text-center">
+                    Or pay using UPI ID below — works with any UPI app.
+                  </p>
+
+                  <div className="mt-4 flex items-center justify-between gap-3 bg-[#140A09] border border-[#2D1D1A] px-4 py-3">
                     <code className="text-[#F3EFE7] text-sm break-all" data-testid="upi-id">{UPI_ID}</code>
                     <button onClick={copyUpi} data-testid="copy-upi"
                       className="text-[#D9772B] hover:text-[#F3EFE7] flex items-center gap-1 text-xs tracking-[0.18em] uppercase">
@@ -293,7 +308,7 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
                     <Smartphone size={14} /> Open UPI app to pay
                   </button>
                   <p className="text-[11px] text-[#B5A79E] mt-2 text-center">
-                    On desktop? Use any UPI app on your phone with the ID above.
+                    On desktop? Scan the QR with your phone&apos;s UPI app.
                   </p>
                 </div>
               </div>

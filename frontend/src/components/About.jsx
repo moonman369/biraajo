@@ -1,4 +1,8 @@
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import EventRegistrationModal from "@/components/EventRegistrationModal";
+import { api } from "@/lib/api";
 import { useSiteContent, read } from "@/lib/siteContent";
 
 // Fallback chapters (used only if CMS hasn't loaded yet)
@@ -15,6 +19,34 @@ const DEFAULT_CHAPTERS = [
 
 export default function About() {
   const { content } = useSiteContent();
+  const [event, setEvent] = useState(null);
+  const [registrationsOpen, setRegistrationsOpen] = useState(true);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    api.get("/events", { params: { upcoming: "true" } })
+      .then((r) => {
+        const list = r.data || [];
+        const match = list.find((e) => /barsaat|monsoon/i.test(`${e.title} ${e.tag || ""}`));
+        setEvent(match || list[0] || null);
+      }).catch(() => {});
+    api.get("/settings")
+      .then((r) => setRegistrationsOpen(r.data?.registrations_open !== false)).catch(() => {});
+  }, []);
+
+  const onReserve = (e) => {
+    e.preventDefault();
+    if (!registrationsOpen) {
+      toast.info("Reservations are paused for now. Please reach out via WhatsApp.");
+      return;
+    }
+    if (!event) {
+      toast.info("No upcoming supper open for reservations right now.");
+      return;
+    }
+    setOpen(true);
+  };
+
   const about = content?.landing?.about;
   if (about && about.visible === false) return null;
 
@@ -65,11 +97,13 @@ export default function About() {
               {read(content, "landing.about.meaning.pull_quote", "A little old Calcutta. A little experimentation. And always a place for one more person.")}
             </p>
             <div className="pt-6 flex flex-wrap gap-4">
-              <a href={read(content, "landing.about.meaning.primary_cta_href", "#events")}
+              <button
+                type="button"
+                onClick={onReserve}
                 className="inline-flex items-center justify-center px-7 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500"
                 data-testid="about-join-table">
                 {read(content, "landing.about.meaning.primary_cta_label", "Pull up a chair")}
-              </a>
+              </button>
               <a href={read(content, "landing.about.meaning.secondary_cta_href", "#gallery")}
                 className="inline-flex items-center justify-center px-7 py-4 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
                 {read(content, "landing.about.meaning.secondary_cta_label", "See past suppers")}
@@ -77,6 +111,14 @@ export default function About() {
             </div>
           </div>
         </motion.div>
+      )}
+
+      {open && event && (
+        <EventRegistrationModal
+          event={event}
+          onClose={() => setOpen(false)}
+          onSuccess={() => setOpen(false)}
+        />
       )}
     </section>
   );

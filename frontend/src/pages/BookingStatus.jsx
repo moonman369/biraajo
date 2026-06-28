@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const UPI_ID = "vidipshah14-1@oksbi";
+const UPI_QR_URL = "https://customer-assets.emergentagent.com/job_8232982a-2ce1-4d83-a683-c7727cd57ba6/artifacts/g9bzx5zc_image.png";
 const PAYEE_NAME = "Vidip Shah";
 
 export default function BookingStatus() {
@@ -138,8 +139,19 @@ export default function BookingStatus() {
                 <div className="mt-8 border border-[#2D1D1A] bg-[#0A0504] p-6" data-testid="booking-pay-section">
                   <p className="text-overline text-[#D9772B]">Step 1 · Pay via UPI</p>
                   <p className="mt-2 text-[#B5A79E] text-sm">
-                    Send <strong className="text-[#F3EFE7]">₹{Number(booking.total_amount).toLocaleString("en-IN")}</strong> to the UPI ID below using any UPI app.
+                    Send <strong className="text-[#F3EFE7]">₹{Number(booking.total_amount).toLocaleString("en-IN")}</strong> using any UPI app — scan the QR or use the UPI ID below.
                   </p>
+
+                  <div className="mt-5 flex justify-center">
+                    <div className="bg-[#F3EFE7] p-3 inline-block" data-testid="booking-upi-qr-wrap">
+                      <img
+                        src={UPI_QR_URL}
+                        alt="UPI QR code · Vidip Shah"
+                        className="w-56 h-56 sm:w-64 sm:h-64 object-contain"
+                        data-testid="booking-upi-qr-image"
+                      />
+                    </div>
+                  </div>
 
                   <div className="mt-4 flex items-center justify-between gap-3 bg-[#140A09] border border-[#2D1D1A] px-4 py-3">
                     <code className="text-[#F3EFE7] text-sm break-all" data-testid="booking-upi-id">{UPI_ID}</code>

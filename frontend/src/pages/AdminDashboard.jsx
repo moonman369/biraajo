@@ -600,136 +600,159 @@ function GalleryAdmin() {
 
 
 function MenuAdmin() {
-  const [sections, setSections] = useState([]);
-  const [open, setOpen] = useState(null); // section id currently being edited
+  const [content, setContent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const load = () => api.get("/menu").then((r) => setSections(r.data));
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    api.get("/site-content", { params: { mode: "draft" } })
+      .then((r) => setContent(r.data))
+      .catch(() => toast.error("Could not load menus"))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const addSection = async () => {
+  const publish = async (next) => {
+    setSaving(true);
     try {
-      const next = await api.post("/menu", { title: "New section", subtitle: "", items: [], order: sections.length });
-      toast.success("Section added");
-      setOpen(next.data.id);
-      load();
-    } catch (err) { toast.error(formatApiError(err.response?.data?.detail) || "Failed"); }
+      await api.put("/admin/site-content/draft", next);
+      await api.post("/admin/site-content/publish");
+      setContent(next);
+      toast.success("Menu saved and published.");
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Save failed");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const save = async (sec) => {
-    try {
-      await api.put(`/menu/${sec.id}`, { title: sec.title, subtitle: sec.subtitle, items: sec.items, order: sec.order });
-      toast.success("Saved");
-      load();
-    } catch (err) { toast.error(formatApiError(err.response?.data?.detail) || "Save failed"); }
+  if (loading) return <p className="text-[#B5A79E]">Loading menus…</p>;
+  if (!content) return <p className="text-[#B5A79E]">Could not load menus.</p>;
+
+  const updateMenu = (pageKey, items) => {
+    const next = JSON.parse(JSON.stringify(content));
+    next[pageKey] = next[pageKey] || {};
+    next[pageKey].menu = { ...(next[pageKey].menu || {}), items };
+    publish(next);
   };
 
-  const delSection = async (id) => {
-    if (!window.confirm("Delete this whole menu section?")) return;
-    await api.delete(`/menu/${id}`);
-    load();
-  };
+  const naaniItems = content?.naani_ghar?.menu?.items || [];
+  const barsaatItems = content?.barsaat?.menu?.items || [];
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-        <h2 className="font-display text-4xl">Menu sections</h2>
-        <button
-          onClick={addSection}
-          data-testid="menu-add-section"
-          className="px-4 py-3 bg-[#5A1A1F] text-[#F3EFE7] text-[11px] tracking-[0.22em] uppercase hover:bg-[#D9772B] hover:text-[#0A0504] inline-flex items-center gap-2"
-        >
-          <Plus size={14} /> New section
-        </button>
+      <div className="mb-6 flex items-baseline justify-between gap-4 flex-wrap">
+        <h2 className="font-display text-4xl">Series menus</h2>
+        <p className="text-[11px] tracking-[0.18em] uppercase text-[#B5A79E]" data-testid="menu-admin-save-state">
+          {saving ? "Saving…" : "Changes publish instantly"}
+        </p>
       </div>
+      <p className="text-[#B5A79E] mb-8 max-w-2xl">
+        Edit the menu courses for each supper series. Adds, edits and deletes are saved and published live.
+      </p>
 
-      {sections.length === 0 && <p className="text-[#B5A79E]">No menu sections yet. Click &ldquo;New section&rdquo; to add your first.</p>}
-
-      <div className="space-y-4">
-        {sections.map((sec) => (
-          <SectionRow
-            key={sec.id}
-            section={sec}
-            isOpen={open === sec.id}
-            onToggle={() => setOpen(open === sec.id ? null : sec.id)}
-            onSave={save}
-            onDelete={() => delSection(sec.id)}
-          />
-        ))}
+      <div className="space-y-10">
+        <SeriesMenuEditor
+          pageKey="naani_ghar"
+          title="Naani Ghar"
+          badge="Series concluded"
+          badgeClass="text-[#9FD79F] border-[#3A7D44]/60"
+          items={naaniItems}
+          onChange={(items) => updateMenu("naani_ghar", items)}
+        />
+        <SeriesMenuEditor
+          pageKey="barsaat"
+          title="Barsaat"
+          badge="Work in progress"
+          badgeClass="text-[#D9772B] border-[#D9772B]/60"
+          items={barsaatItems}
+          onChange={(items) => updateMenu("barsaat", items)}
+        />
       </div>
     </div>
   );
 }
 
-function SectionRow({ section, isOpen, onToggle, onSave, onDelete }) {
-  const [draft, setDraft] = useState(section);
-  useEffect(() => { setDraft(section); }, [section]);
+function SeriesMenuEditor({ pageKey, title, badge, badgeClass, items, onChange }) {
+  const [draft, setDraft] = useState(items);
+  useEffect(() => { setDraft(items); }, [items]);
+
+  const dirty = JSON.stringify(draft) !== JSON.stringify(items);
 
   const updateItem = (idx, patch) => {
-    const items = [...(draft.items || [])];
-    items[idx] = { ...items[idx], ...patch };
-    setDraft({ ...draft, items });
+    const next = [...draft];
+    next[idx] = { ...next[idx], ...patch };
+    setDraft(next);
   };
-  const addItem = () => setDraft({ ...draft, items: [...(draft.items || []), { name: "New dish", description: "", price: "" }] });
-  const removeItem = (idx) => setDraft({ ...draft, items: draft.items.filter((_, i) => i !== idx) });
+  const addItem = () => setDraft([...draft, { course: "Course", dish: "New dish", note: "" }]);
+  const removeItem = (idx) => {
+    if (!window.confirm("Remove this course?")) return;
+    setDraft(draft.filter((_, i) => i !== idx));
+  };
+  const moveItem = (idx, dir) => {
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= draft.length) return;
+    const next = [...draft];
+    [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
+    setDraft(next);
+  };
 
   return (
-    <div className="border border-[#2D1D1A] bg-[#140A09]" data-testid={`menu-section-row-${section.id}`}>
-      <div className="flex items-center justify-between px-5 py-4">
-        <button onClick={onToggle} className="text-left flex-1" data-testid={`menu-section-toggle-${section.id}`}>
-          <p className="font-display text-2xl text-[#F3EFE7]">{section.title || "Untitled"}</p>
-          <p className="text-sm text-[#B5A79E]">{(section.items || []).length} item(s){section.subtitle ? ` · ${section.subtitle}` : ""}</p>
-        </button>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onDelete}
-            className="p-2 border border-[#2D1D1A] hover:border-[#D94A3D] hover:text-[#D94A3D]"
-            aria-label="Delete section"
-            data-testid={`menu-section-delete-${section.id}`}
-          >
-            <Trash2 size={14} />
-          </button>
+    <div className="border border-[#2D1D1A] bg-[#140A09]" data-testid={`menu-series-${pageKey}`}>
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[#2D1D1A] flex-wrap gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <h3 className="font-display text-3xl">{title}</h3>
+          <span className={`text-[10px] tracking-[0.22em] uppercase px-3 py-1 border ${badgeClass}`}>{badge}</span>
         </div>
+        <p className="text-sm text-[#B5A79E]">{draft.length} course{draft.length === 1 ? "" : "s"}</p>
       </div>
 
-      {isOpen && (
-        <div className="px-5 pb-5 space-y-4 border-t border-[#2D1D1A] pt-5">
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-            <Input12 col={6} label="Section title" value={draft.title || ""} onChange={(v) => setDraft({ ...draft, title: v })} testid={`menu-title-${section.id}`} />
-            <Input12 col={4} label="Subtitle" value={draft.subtitle || ""} onChange={(v) => setDraft({ ...draft, subtitle: v })} testid={`menu-subtitle-${section.id}`} />
-            <Input12 col={2} label="Order" value={String(draft.order || 0)} onChange={(v) => setDraft({ ...draft, order: Number(v) || 0 })} testid={`menu-order-${section.id}`} />
-          </div>
+      <div className="p-5 space-y-3">
+        {draft.length === 0 && (
+          <p className="text-sm text-[#B5A79E] italic">No courses yet. Add the first one below.</p>
+        )}
 
-          <div>
-            <p className="text-overline mb-3">Dishes</p>
-            <div className="space-y-3">
-              {(draft.items || []).map((it, idx) => (
-                <div key={idx} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start bg-[#0A0504] border border-[#2D1D1A] p-3">
-                  <Input12 col={4} label="Name" value={it.name || ""} onChange={(v) => updateItem(idx, { name: v })} testid={`menu-item-name-${section.id}-${idx}`} />
-                  <Input12 col={5} label="Description" value={it.description || ""} onChange={(v) => updateItem(idx, { description: v })} testid={`menu-item-desc-${section.id}-${idx}`} />
-                  <Input12 col={2} label="Price" value={it.price || ""} onChange={(v) => updateItem(idx, { price: v })} testid={`menu-item-price-${section.id}-${idx}`} />
-                  <div className="sm:col-span-1 flex sm:justify-end sm:pt-7">
-                    <button onClick={() => removeItem(idx)} className="p-2 border border-[#2D1D1A] hover:border-[#D94A3D] hover:text-[#D94A3D]" aria-label="Remove dish" data-testid={`menu-item-remove-${section.id}-${idx}`}>
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+        {draft.map((it, idx) => (
+          <div key={idx} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start bg-[#0A0504] border border-[#2D1D1A] p-4" data-testid={`menu-${pageKey}-row-${idx}`}>
+            <Input12 col={3} label="Course label" value={it.course || ""} onChange={(v) => updateItem(idx, { course: v })} testid={`menu-${pageKey}-course-${idx}`} />
+            <Input12 col={4} label="Dish" value={it.dish || ""} onChange={(v) => updateItem(idx, { dish: v })} testid={`menu-${pageKey}-dish-${idx}`} />
+            <Input12 col={4} label="Note" value={it.note || ""} onChange={(v) => updateItem(idx, { note: v })} testid={`menu-${pageKey}-note-${idx}`} />
+            <div className="sm:col-span-1 flex sm:flex-col gap-1 sm:justify-start sm:pt-7">
+              <button onClick={() => moveItem(idx, -1)} disabled={idx === 0} className="p-1.5 border border-[#2D1D1A] hover:border-[#D9772B] disabled:opacity-30" aria-label="Move up" data-testid={`menu-${pageKey}-up-${idx}`}>↑</button>
+              <button onClick={() => moveItem(idx, 1)} disabled={idx === draft.length - 1} className="p-1.5 border border-[#2D1D1A] hover:border-[#D9772B] disabled:opacity-30" aria-label="Move down" data-testid={`menu-${pageKey}-down-${idx}`}>↓</button>
+              <button onClick={() => removeItem(idx)} className="p-1.5 border border-[#2D1D1A] hover:border-[#D94A3D] hover:text-[#D94A3D]" aria-label="Remove course" data-testid={`menu-${pageKey}-remove-${idx}`}>
+                <Trash2 size={14} />
+              </button>
             </div>
-            <button onClick={addItem} data-testid={`menu-add-item-${section.id}`} className="mt-3 px-3 py-2 border border-[#2D1D1A] text-[11px] tracking-[0.18em] uppercase hover:border-[#D9772B] inline-flex items-center gap-2">
-              <Plus size={12} /> Add dish
-            </button>
           </div>
+        ))}
 
-          <div className="flex gap-3 justify-end">
-            <button onClick={() => setDraft(section)} className="px-4 py-2 border border-[#2D1D1A] text-[11px] tracking-[0.18em] uppercase hover:border-[#5A1A1F]" data-testid={`menu-revert-${section.id}`}>
+        <div className="flex flex-wrap gap-3 pt-2">
+          <button
+            onClick={addItem}
+            data-testid={`menu-${pageKey}-add`}
+            className="px-4 py-2.5 border border-[#2D1D1A] text-[11px] tracking-[0.18em] uppercase hover:border-[#D9772B] inline-flex items-center gap-2"
+          >
+            <Plus size={12} /> Add course
+          </button>
+          <button
+            onClick={() => onChange(draft)}
+            disabled={!dirty}
+            data-testid={`menu-${pageKey}-save`}
+            className="px-5 py-2.5 bg-[#D9772B] text-[#0A0504] text-[11px] tracking-[0.18em] uppercase hover:bg-[#F3EFE7] disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {dirty ? "Save & publish" : "Saved"}
+          </button>
+          {dirty && (
+            <button
+              onClick={() => setDraft(items)}
+              data-testid={`menu-${pageKey}-revert`}
+              className="px-4 py-2.5 border border-[#2D1D1A] text-[11px] tracking-[0.18em] uppercase hover:border-[#5A1A1F]"
+            >
               Revert
             </button>
-            <button onClick={() => onSave(draft)} className="px-5 py-2 bg-[#D9772B] text-[#0A0504] text-[11px] tracking-[0.18em] uppercase hover:bg-[#F3EFE7]" data-testid={`menu-save-${section.id}`}>
-              Save section
-            </button>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
