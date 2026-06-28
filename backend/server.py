@@ -144,6 +144,31 @@ async def send_welcome_email(to_email: str, name: str, event_title: str, total_a
     await _send_email(to_email, f"You're on the list · {event_title}", _email_shell("You're on the list.", body))
 
 
+async def send_admin_notification(reg: dict, event: dict, kind: str = "pending") -> None:
+    """Notify the site owner (admin) when a new booking comes in (pending) or gets paid (confirmed)."""
+    admin_email = os.environ.get("ADMIN_EMAIL", "").strip()
+    if not admin_email:
+        return
+    status_word = "PAID" if kind == "confirmed" else "PENDING"
+    color = "#9FD79F" if kind == "confirmed" else "#D9772B"
+    body = f"""
+<p style="margin:0 0 4px 0;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:{color};">{status_word} · New booking</p>
+<h2 style="margin:8px 0 18px 0;color:#F3EFE7;font-size:24px;">{reg.get("full_name", "")} · {event.get("title", "")}</h2>
+<table cellpadding="6" cellspacing="0" style="width:100%;color:#B5A79E;font-size:14px;">
+<tr><td style="color:#B5A79E;">Guests</td><td style="color:#F3EFE7;">{reg.get("guests", 1)} · {reg.get("menu_preference", "")}</td></tr>
+<tr><td style="color:#B5A79E;">Amount</td><td style="color:#F3EFE7;">₹{int(reg.get("total_amount", 0)):,}</td></tr>
+<tr><td style="color:#B5A79E;">When</td><td style="color:#F3EFE7;">{event.get("date", "")} · {event.get("time", "")}</td></tr>
+<tr><td style="color:#B5A79E;">Email</td><td style="color:#F3EFE7;">{reg.get("email", "")}</td></tr>
+<tr><td style="color:#B5A79E;">Phone</td><td style="color:#F3EFE7;">{reg.get("phone", "")}</td></tr>
+<tr><td style="color:#B5A79E;">Instagram</td><td style="color:#F3EFE7;">{reg.get("instagram_handle", "—")}</td></tr>
+<tr><td style="color:#B5A79E;">Dietary</td><td style="color:#F3EFE7;">{reg.get("dietary_preferences", "—")}</td></tr>
+</table>
+<p style="margin-top:24px;"><a href="{PUBLIC_SITE_URL}/admin" style="display:inline-block;padding:12px 18px;background:#5A1A1F;color:#F3EFE7;text-decoration:none;letter-spacing:0.18em;text-transform:uppercase;font-size:11px;">Open admin dashboard</a></p>
+"""
+    subject = f"[{status_word}] {reg.get('full_name', '')} · {event.get('title', '')}"
+    await _send_email(admin_email, subject, _email_shell(f"New booking · {status_word.lower()}", body))
+
+
 async def send_confirmation_email(to_email: str, name: str, event: dict, total_amount: int, guests: int, menu: str) -> None:
     first = name.split(" ")[0] if name else "there"
     body = f"""
@@ -538,6 +563,7 @@ async def _create_pending_registration(payload: dict, total: int, event: dict) -
         {"id": event["id"]}, {"$inc": {"seats_booked": reg.guests}}
     )
     asyncio.create_task(send_welcome_email(reg.email, reg.full_name, event["title"], total, reg_id=reg.id))
+    asyncio.create_task(send_admin_notification(reg.model_dump(), event, kind="pending"))
     await db.registrations.update_one({"id": reg.id}, {"$set": {"welcome_email_sent": True}})
     push_to_sheet("registration_pending", {
         "created_at": reg.created_at,
@@ -643,6 +669,7 @@ async def upload_payment_screenshot(reg_id: str, file: UploadFile = File(...)):
         guests=int(reg.get("guests", 1)),
         menu=reg.get("menu_preference", ""),
     ))
+    asyncio.create_task(send_admin_notification({**reg, "payment_status": "confirmed"}, event, kind="confirmed"))
     push_to_sheet("registration_confirmed", {
         "created_at": reg.get("created_at"),
         "confirmed_at": now,
@@ -890,7 +917,15 @@ async def get_site_content(mode: str = "published"):
 
 @api.put("/admin/site-content/draft")
 async def update_site_content_draft(body: dict, user=Depends(get_current_admin)):
-    """Replace draft content with the provided body (full document)."""
+    """Replace draft content with the provided body. Validates required top-level keys."""
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Body must be a JSON object")
+    required_top = {"landing", "about_the_chef", "naani_ghar", "barsaat"}
+    missing = required_top - set(body.keys())
+    if missing:
+        raise HTTPException(status_code=400, detail=f"Missing required top-level keys: {sorted(missing)}")
+    if not isinstance(body.get("landing"), dict):
+        raise HTTPException(status_code=400, detail="'landing' must be a dict")
     await db.site_content.update_one(
         {"id": "draft"},
         {"$set": {"data": body, "updated_at": _now_iso()}},

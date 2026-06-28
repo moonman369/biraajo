@@ -35,7 +35,7 @@ export default function Hero() {
           </motion.div>
 
           <motion.h1 className="font-display text-[15vw] sm:text-[12vw] lg:text-[10rem] leading-[0.92] text-[#F3EFE7] tracking-[-0.04em]" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.55 }} data-testid="hero-title">
-            biraajo<span className="italic text-[#D9772B]">.</span>
+            {read(content, "landing.hero.brand", "biraajo")}<span className="italic text-[#D9772B]">.</span>
           </motion.h1>
 
           <motion.div className="mt-6 sm:mt-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-end" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.85 }}>

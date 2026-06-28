@@ -5,6 +5,7 @@ DEFAULT_CONTENT = {
     "landing": {
         "hero": {
             "visible": True,
+            "brand": "biraajo",
             "eyebrow": "Biraajo · A personal chef supper club",
             "title": "A table is being set",
             "title_italic": "in old Calcutta.",
@@ -160,25 +161,29 @@ DEFAULT_CONTENT = {
     "naani_ghar": {
         "visible": True,
         "hero": {
-            "eyebrow": "Past Supper · A memory",
+            "eyebrow": "Biraajo Suppers · Our first series",
             "title": "Naani Ghar.",
             "title_italic": "Grandmother's house.",
-            "body": "The first Biraajo supper held inside the restored family apartment. A nine-course evening built entirely from the dishes Vidip grew up eating — re-imagined, re-plated, but never re-named.",
-            "meta": "June 2026 · South Calcutta · 12 guests",
+            "body": "Our first supper series, plated inside a restored family apartment in Calcutta. This chapter has now officially ended — but the dishes, the friends, and the memory of those evenings stay on the table.",
+            "meta": "Series concluded · South Calcutta · 12 guests per evening",
             "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ozdq9xth__DSC4892-2%20%281%29.jpg",
         },
         "menu": {
             "visible": True,
             "eyebrow": "The Menu · As it was served",
-            "title": "Nine courses,",
-            "title_italic": "six remembered.",
+            "title": "Eight courses,",
+            "title_italic": "the Biraajo Suppers tasting.",
             "items": [
-                {"course": "Amuse", "dish": "Bel-Phuljhadi", "note": "Wood-apple sphere, kala namak air, mustard oil pearls"},
-                {"course": "Small plate", "dish": "Bombil Croquette", "note": "Konkan bombay duck, gunpowder, lime aioli"},
-                {"course": "Small plate", "dish": "Chana Chaat 2.0", "note": "Black chickpea, tomato confit, mint emulsion"},
-                {"course": "Main", "dish": "Dak Bungalow Lamb", "note": "Slow-braised lamb shank, raj masala, burnt onion jus"},
-                {"course": "Main", "dish": "Malvani Pomfret", "note": "Whole roasted pomfret, kokum-coconut curry, red rice"},
-                {"course": "Dessert", "dish": "Mishti Doi Cheesecake", "note": "Bengali jaggery yoghurt, nolen gur, palm sugar tuile"},
+                {"course": "Welcome", "dish": "Cucumber Ashgourd Soda", "note": "A cool, faintly bitter opener — cucumber, white pumpkin, lime."},
+                {"course": "First plate", "dish": "Dahi Bhalla Summer Salad", "note": "Soft urad dumplings, cool yoghurt, tamarind, mint — a summer remix of the classic."},
+                {"course": "First plate · alt", "dish": "Katla Yam Pla Duk Foo with Kachi Keri nu Kachumber", "note": "Bengali katla treated like Thai pla duk foo — crisp, fragrant, served with raw-mango kachumber."},
+                {"course": "Small plate", "dish": "Smoked Baba Ganoush / House Khakra", "note": "Charcoal-smoked aubergine, tahini, lemon — scooped with our house khakra."},
+                {"course": "Small plate", "dish": "Tameta Na Bhajiya / Tsatziki & Hot Sauce", "note": "Gujarati tomato fritters, cool tsatziki, house hot sauce."},
+                {"course": "Main", "dish": "Shio Koji Fungi & Veggie Stew / Shokupan", "note": "Slow-cooked koji-cured mushrooms and seasonal vegetables, served with milk-bread shokupan."},
+                {"course": "Main · alt", "dish": "Koji Diye Mangsher Stew / Shokupan", "note": "Bengali mutton stew, koji-aged for depth, served with shokupan."},
+                {"course": "Palate cleanser", "dish": "Lacto Fermented Tametu", "note": "House lacto-fermented tomato — bright, tangy, alive."},
+                {"course": "Dessert", "dish": "Coconut & Chickoo Tres Leches", "note": "Coconut milk and chickoo soaked sponge — a Biraajo take on tres leches."},
+                {"course": "Mukhwas", "dish": "Variyali Sherbet / Mithu Paan", "note": "Fennel sherbet and a sweet paan to close the evening."},
             ],
         },
         "photos_block": {
@@ -195,9 +200,9 @@ DEFAULT_CONTENT = {
         },
         "closer": {
             "visible": True,
-            "eyebrow": "Until the next one",
-            "title": "Some suppers are returns.",
-            "title_italic": "This one was a return home.",
+            "eyebrow": "Series concluded",
+            "title": "Biraajo Suppers has",
+            "title_italic": "officially ended.",
         },
     },
 

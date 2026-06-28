@@ -20,6 +20,7 @@ const SCHEMA = {
       hero: {
         label: "Hero",
         fields: [
+          { key: "brand", label: "Giant wordmark", type: "text" },
           { key: "eyebrow", label: "Top meta", type: "text" },
           { key: "title", label: "Main title (italic line)", type: "text" },
           { key: "body", label: "Subtitle / body", type: "textarea" },
