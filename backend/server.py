@@ -214,19 +214,28 @@ async def get_current_admin(request: Request) -> dict:
 
 
 # ---------- Google Sheets webhook (fire-and-forget) ----------
-async def _send_to_sheet(payload_type: str, data: dict) -> None:
+async def _send_to_sheet(payload_type: str, data: dict) -> dict:
     url = os.environ.get("GOOGLE_SHEETS_WEBHOOK_URL", "").strip()
     if not url:
-        return
+        return {"ok": False, "reason": "no_webhook_configured"}
     try:
         async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as c:
-            await c.post(url, json={"type": payload_type, "data": data})
+            r = await c.post(url, json={"type": payload_type, "data": data})
+        ct = r.headers.get("content-type", "")
+        # Apps Script returns HTML error pages with HTTP 200 — sniff content type
+        if r.status_code >= 400 or ("html" in ct.lower() and "json" not in ct.lower()):
+            snippet = r.text[:200].replace("\n", " ")
+            logger.warning(f"Sheets webhook NOT OK for {payload_type}: status={r.status_code} ct={ct} body={snippet!r}")
+            return {"ok": False, "status": r.status_code, "content_type": ct, "body": snippet}
+        logger.info(f"Sheets webhook OK for {payload_type}: status={r.status_code}")
+        return {"ok": True, "status": r.status_code}
     except Exception as e:
-        logger.warning(f"Sheets webhook failed for {payload_type}: {e}")
+        logger.warning(f"Sheets webhook EXCEPTION for {payload_type}: {e}")
+        return {"ok": False, "reason": str(e)}
 
 
 def push_to_sheet(payload_type: str, data: dict) -> None:
-    """Schedule a non-blocking send to Google Sheets."""
+    """Schedule a non-blocking send to Google Sheets. Booking never fails because of this."""
     try:
         asyncio.create_task(_send_to_sheet(payload_type, data))
     except RuntimeError:
@@ -798,6 +807,17 @@ async def create_gallery(body: GalleryImageIn, user=Depends(get_current_admin)):
 async def delete_gallery(image_id: str, user=Depends(get_current_admin)):
     await db.gallery.delete_one({"id": image_id})
     return {"ok": True}
+
+
+# ---------- Sheets webhook diagnostics ----------
+@api.post("/sheets/test")
+async def test_sheets_webhook(user=Depends(get_current_admin)):
+    """Synchronously POST a ping to the configured Sheets webhook so admin can verify it."""
+    url = os.environ.get("GOOGLE_SHEETS_WEBHOOK_URL", "").strip()
+    if not url:
+        return {"ok": False, "reason": "no_webhook_configured"}
+    result = await _send_to_sheet("ping", {"source": "admin_test", "ts": _now_iso()})
+    return {"webhook_url": url, **result}
 
 
 # ---------- Stats ----------
