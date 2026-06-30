@@ -14,6 +14,21 @@ Premium personal chef landing page for "Biraajo by Vidip Shah". Dark, luxury hos
 
 ## What's Been Implemented (latest first)
 
+### 2026-06-30 (late) — CMS data-loss safety net + Off-site sales tab
+- **DATA-LOSS BUG ACKNOWLEDGED**: testing-agent calls + seed script overwrote the user's CMS edits during prior iterations. No backups existed (standalone Mongo, no oplog).
+- **Safety net (now live)**:
+  - Auto-snapshot on every publish, every reset and every restore (collection `site_content_history`, capped at 50 most recent)
+  - New endpoints: GET `/api/admin/site-content/history`, GET `/history/{id}`, POST `/restore/{id}`
+  - Reset now requires `{confirm: true}` body — silent test calls return 400
+  - New CMS UI: "Version history" button in `/admin/edit` toolbar → modal listing snapshots with one-click restore
+- **OFF-SITE SALES TAB (new admin feature)**:
+  - Backend collection `offsite_bookings` + POST/GET/DELETE `/api/admin/offsite-bookings`
+  - Creating/deleting an off-site booking atomically increments/decrements `event.seats_booked`
+  - New Admin Dashboard tab "Off-site sales" with form (date, guest name, guests, preference, source/aggregator, contact, notes) and per-event grouped table view
+  - Public Barsaat date cards reflect off-site bookings in real time
+- testing_agent iteration_11 → 59/60 pytest pass (only pre-existing Google Sheets test fails, out of scope), zero critical/UI issues
+
+
 ### 2026-06-30 (later) — Barsaat immersive experience page + 3 dates + critical menu-default fix
 - **New `/supper-club/barsaat`** page rebuilt as a multi-sensory story:
   - Hero with refreshed copy ("A supper with the rain")
