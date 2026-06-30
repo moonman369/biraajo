@@ -14,6 +14,16 @@ Premium personal chef landing page for "Biraajo by Vidip Shah". Dark, luxury hos
 
 ## What's Been Implemented (latest first)
 
+### 2026-06-30 (later still) — Save-failure rescue: localStorage backup + auth-expiry modal + Save now
+- ROOT CAUSE: user's autosave in /admin/edit was silently 401-ing when the JWT session expired mid-edit. Frontend showed "changes not saved" but never actionable.
+- FIX shipped & verified by testing_agent iteration_12 (no issues):
+  - Every keystroke now backs up content to `localStorage['biraajo_unsaved_draft']`; cleared on successful save
+  - On 401 the auth-expired modal opens; logging back in immediately pushes the in-memory content to the server
+  - "Save now" button next to Publish forces an immediate save
+  - On page load, if a local backup exists, a recovery banner offers Restore / Discard
+  - `window.__biraajoDumpDraft()` exposed in console for emergency JSON download
+
+
 ### 2026-06-30 (late) — CMS data-loss safety net + Off-site sales tab
 - **DATA-LOSS BUG ACKNOWLEDGED**: testing-agent calls + seed script overwrote the user's CMS edits during prior iterations. No backups existed (standalone Mongo, no oplog).
 - **Safety net (now live)**:
