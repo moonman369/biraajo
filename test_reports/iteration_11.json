@@ -1,0 +1,42 @@
+{
+  "summary": "CMS snapshot/restore safety-net and Off-site sales feature both pass end-to-end. Backend pytest: 59/60 pass (only pre-existing out-of-scope Google Sheets test fails — carried over from iter 10). 11 NEW iter-11 tests added and all pass: reset_without_confirm_returns_400, publish_creates_history_snapshot (reason=publish, actor=reachbiraajo@gmail.com), history_get_single_returns_full_payload (includes draft+published), history_get_unknown_returns_404, restore_roundtrip_brings_back_previous_content (baseline → mutate+publish → restore → /api/site-content matches baseline; pre_restore snapshot appears in history), and 6 offsite-bookings tests (create increments seats_booked, list, delete decrements, overbook→400, unauth→401, unknown event→404). Frontend Playwright: admin login OK; /admin/edit shows edit-history button → opens history-modal listing 13 snapshots with restore buttons (modal text contains 'publish' and 'reachbiraajo'), history-close dismisses. /admin admin-tab-offsite renders OffsiteSales with all required testids (offsite-form, offsite-event, offsite-name, offsite-guests, offsite-pref, offsite-source, offsite-submit). End-to-end: submitting offsite booking for a Barsaat event incremented seats_booked from 6 → 7, the offsite-event-block-{id} row showed 'TEST UI Offsite', and the public /supper-club/barsaat page immediately reflected '5 OF 12 LEFT' on the same date card. Cleanup deleted booking; seats decremented 7 → 6.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/sheets/test", "issue": "Pre-existing (iter 9/10 carry-over): when GOOGLE_SHEETS_WEBHOOK_URL is empty the body has webhook_url:'' (empty string), and test_sheets_test_authorized_surfaces_failure asserts truthy. Out-of-scope this iteration."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "AdminDashboard > Off-site sales event <select>", "issues": ["React hydration warning: a <span> from the Emergent dev-mode dynamic-source wrapper (data-ve-dynamic, x-excluded='true') is injected inside <option>. The user code only renders {e.title} so this is a tooling-injected wrapper, but it spams the dev console. Cosmetic only; submission and option value work correctly."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_biraajo_api.py",
+    "/app/test_reports/pytest/pytest_iter11.xml",
+    "/app/test_reports/pytest/pytest_iter11_full.xml"
+  ],
+  "action_items": [
+    "(LOW, carry-over) Decide on POST /api/sheets/test contract — either return non-empty webhook_url or update test assertion to tolerate reason='no_webhook_configured'.",
+    "(LOW, cosmetic) The dev-mode dynamic-source wrapper injects a <span> inside <option> for the offsite event select — investigate or suppress the hydration warning, or wrap {e.title} differently so the wrapper doesn't trigger inside <option>."
+  ],
+  "critical_code_review_comments": [
+    "Snapshot/restore implementation in server.py is clean: _snapshot_site_content captures both draft + published, auto-prunes to 50 entries, and is called on publish, reset, and pre_restore — round-trip restore test confirms correctness.",
+    "Reset endpoint correctly hard-gates on confirm:true (returns 400 with 'Confirmation required' otherwise). This addresses the iter 9 data-loss class of bug at the API layer too.",
+    "Off-site bookings correctly increment/decrement event.seats_booked atomically via $inc, and overbook returns 400 — public seat counts on /supper-club/barsaat update immediately as confirmed in browser test.",
+    "server.py is now ~1192 lines — still recommend splitting into routes_cms.py + routes_offsite.py + routes_settings.py for maintainability."
+  ],
+  "updated_files": ["/app/backend/tests/test_biraajo_api.py"],
+  "success_rate": {
+    "backend": "59/60 (98.3%) — 11/11 new iter-11 tests pass; only failure is pre-existing out-of-scope Google Sheets test",
+    "frontend": "100% on all in-scope flows (CMS history modal open/restore-list/close, Offsite tab + form + submit + event block + seat-count update on public page + cleanup decrement)"
+  },
+  "test_credentials": "Admin reachbiraajo@gmail.com / Biraajo@2026 — working.",
+  "seed_data_creation": "No seed data created. Playwright test created 1 offsite booking via UI (TEST UI Offsite, 1 guest, Jul 5 Barsaat event) and DELETED it via API immediately after verifying public seat count. Final seats_booked restored to its pre-test value (6). No registrations touched. Pytest also fully cleans up its TEST_Offsite_Event via the fixture teardown.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "iter-11 features (CMS snapshot/restore safety-net + Off-site sales) are fully verified end-to-end. Key new testids: edit-history, history-modal, history-restore-{id}, history-close, admin-tab-offsite, offsite-sales, offsite-form, offsite-event, offsite-name, offsite-guests, offsite-pref, offsite-source, offsite-submit, offsite-event-block-{event_id}. Key new endpoints: GET /api/admin/site-content/history (list, scope=session, auth required), GET /api/admin/site-content/history/{id} (full snapshot), POST /api/admin/site-content/restore/{id} (round-trip restore, takes pre_restore snapshot), POST /api/admin/site-content/reset now REQUIRES body {confirm:true} (returns 400 otherwise), POST/GET/DELETE /api/admin/offsite-bookings. The pre-existing pytest failure on test_sheets_test_authorized_surfaces_failure is the only failing test and is explicitly out-of-scope (Sheets webhook). All 3 Barsaat events (Jul 5/18/26 2026, seats_total=12), barsaat.menu.items length=10 with 4 alt_dish entries, and settings (price_veg=2200, price_nonveg=2800) all still intact.",
+  "rca of the issue": "N/A — features implemented correctly. Round-trip test specifically verifies the iter-9 data-loss class of bug can no longer happen: any publish/reset/restore action snapshots the prior state, and the admin can restore from any of the most-recent 50 snapshots with one click. Reset is also now gated behind explicit confirm:true."
+}

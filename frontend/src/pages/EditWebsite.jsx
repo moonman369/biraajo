@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronRight, Eye, EyeOff, ExternalLink, RotateCcw, Send } from "lucide-react";
+import { ChevronDown, ChevronRight, Eye, EyeOff, ExternalLink, History, RotateCcw, Send, X } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 
@@ -363,6 +363,44 @@ export default function EditWebsite() {
     }
   };
 
+  // ─── Version history ───
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const loadHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const r = await api.get("/admin/site-content/history");
+      setHistory(r.data || []);
+    } catch { toast.error("Could not load history"); }
+    finally { setHistoryLoading(false); }
+  };
+
+  const openHistory = async () => {
+    setHistoryOpen(true);
+    await loadHistory();
+  };
+
+  const restoreSnapshot = async (snapId) => {
+    if (!window.confirm("Restore this version? Your current draft will be snapshotted first so you can undo this.")) return;
+    try {
+      await api.post(`/admin/site-content/restore/${snapId}`);
+      const { data } = await api.get("/site-content", { params: { mode: "draft" } });
+      setContent(data);
+      setDirty(false);
+      setPreviewKey((k) => k + 1);
+      setHistoryOpen(false);
+      toast.success("Version restored. Live site updated.");
+    } catch { toast.error("Restore failed"); }
+  };
+
+  const fmtTime = (iso) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    return d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  };
+
   if (loading) return <div className="p-12 text-[#B5A79E] bg-[#0A0504] min-h-screen">Loading content…</div>;
   if (!content) return <div className="p-12 text-[#B5A79E] bg-[#0A0504] min-h-screen">Could not load content.</div>;
 
@@ -378,6 +416,9 @@ export default function EditWebsite() {
           </span>
         </div>
         <div className="flex items-center gap-3">
+          <button onClick={openHistory} data-testid="edit-history" className="px-4 py-2 border border-[#2D1D1A] text-[11px] tracking-[0.18em] uppercase hover:border-[#D9772B] hover:text-[#D9772B] inline-flex items-center gap-2">
+            <History size={12} /> Version history
+          </button>
           <button onClick={discard} data-testid="edit-discard" className="px-4 py-2 border border-[#2D1D1A] text-[11px] tracking-[0.18em] uppercase hover:border-[#D94A3D] hover:text-[#D94A3D] inline-flex items-center gap-2">
             <RotateCcw size={12} /> Discard draft
           </button>
@@ -442,6 +483,52 @@ export default function EditWebsite() {
           />
         </div>
       </div>
+
+      {/* ─── Version history modal ─── */}
+      {historyOpen && (
+        <div className="fixed inset-0 z-50 bg-[#0A0504]/85 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6" data-testid="history-modal">
+          <div className="bg-[#140A09] border border-[#2D1D1A] w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#2D1D1A]">
+              <div>
+                <p className="text-overline">Version history</p>
+                <h2 className="font-display text-2xl mt-1">Restore a previous version</h2>
+              </div>
+              <button onClick={() => setHistoryOpen(false)} data-testid="history-close" className="p-2 border border-[#2D1D1A] hover:border-[#D9772B]">
+                <X size={16} />
+              </button>
+            </div>
+            <p className="px-6 pt-4 text-sm text-[#B5A79E]">
+              A snapshot is taken automatically every time you publish or reset. Pick a version to restore — your current draft will also be snapshotted first so this is reversible.
+            </p>
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-2">
+              {historyLoading && <p className="text-[#B5A79E]">Loading…</p>}
+              {!historyLoading && history.length === 0 && (
+                <p className="text-[#B5A79E] italic">No snapshots yet — publish or reset once and your first snapshot will appear here.</p>
+              )}
+              {!historyLoading && history.map((h) => (
+                <div key={h.id} className="grid grid-cols-12 gap-3 items-center p-3 bg-[#0A0504] border border-[#2D1D1A]" data-testid={`history-row-${h.id}`}>
+                  <div className="col-span-7">
+                    <p className="font-display text-base text-[#F3EFE7]">{fmtTime(h.created_at)}</p>
+                    <p className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E] mt-1">
+                      {h.reason === "publish" ? "Before publish" : h.reason === "reset" ? "Before reset" : h.reason === "pre_restore" ? "Before restore" : h.reason}
+                      {h.actor && h.actor !== "system" ? ` · ${h.actor}` : ""}
+                    </p>
+                  </div>
+                  <div className="col-span-5 text-right">
+                    <button
+                      onClick={() => restoreSnapshot(h.id)}
+                      data-testid={`history-restore-${h.id}`}
+                      className="px-4 py-2 bg-[#5A1A1F] text-[#F3EFE7] text-[10px] tracking-[0.22em] uppercase hover:bg-[#D9772B] hover:text-[#0A0504]"
+                    >
+                      Restore
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

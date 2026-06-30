@@ -732,6 +732,62 @@ async def delete_registration(reg_id: str, user=Depends(get_current_admin)):
     return {"ok": True}
 
 
+# ---------- Off-site bookings (aggregators, partners, manual seats) ----------
+class OffsiteBookingIn(BaseModel):
+    event_id: str
+    full_name: str
+    guests: int = 1
+    menu_preference: str = ""        # "Vegetarian" / "Non-Vegetarian" / ""
+    source: str = ""                  # aggregator / partner name
+    contact: Optional[str] = None     # phone or email (optional)
+    notes: Optional[str] = None
+
+
+class OffsiteBooking(OffsiteBookingIn):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: str = Field(default_factory=_now_iso)
+
+
+@api.post("/admin/offsite-bookings", response_model=OffsiteBooking)
+async def create_offsite_booking(payload: OffsiteBookingIn, user=Depends(get_current_admin)):
+    event = await db.events.find_one({"id": payload.event_id}, {"_id": 0})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    requested = max(1, int(payload.guests or 1))
+    available = event.get("seats_total", 0) - event.get("seats_booked", 0)
+    if requested > available:
+        raise HTTPException(status_code=400, detail=f"Only {available} seat(s) left for this date")
+    booking = OffsiteBooking(**payload.model_dump())
+    booking.guests = requested
+    await db.offsite_bookings.insert_one(booking.model_dump())
+    await db.events.update_one({"id": payload.event_id}, {"$inc": {"seats_booked": requested}})
+    return booking
+
+
+@api.get("/admin/offsite-bookings")
+async def list_offsite_bookings(event_id: Optional[str] = None, user=Depends(get_current_admin)):
+    q = {}
+    if event_id:
+        q["event_id"] = event_id
+    docs = await db.offsite_bookings.find(q, {"_id": 0}).sort("created_at", -1).to_list(2000)
+    return docs
+
+
+@api.delete("/admin/offsite-bookings/{booking_id}")
+async def delete_offsite_booking(booking_id: str, user=Depends(get_current_admin)):
+    booking = await db.offsite_bookings.find_one({"id": booking_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Off-site booking not found")
+    await db.offsite_bookings.delete_one({"id": booking_id})
+    await db.events.update_one(
+        {"id": booking.get("event_id")},
+        {"$inc": {"seats_booked": -int(booking.get("guests", 1))}},
+    )
+    return {"ok": True}
+
+
+
+
 @api.get("/registrations/export")
 async def export_registrations(
     event_id: Optional[str] = None,
@@ -943,7 +999,8 @@ async def update_site_content_draft(body: dict, user=Depends(get_current_admin))
 
 @api.post("/admin/site-content/publish")
 async def publish_site_content(user=Depends(get_current_admin)):
-    """Copy current draft → published."""
+    """Copy current draft → published. Snapshots the previous published into history first."""
+    await _snapshot_site_content("publish", actor=user.get("email") if isinstance(user, dict) else None)
     draft = await _get_site_doc("draft")
     await db.site_content.update_one(
         {"id": "published"},
@@ -966,8 +1023,11 @@ async def discard_site_content_draft(user=Depends(get_current_admin)):
 
 
 @api.post("/admin/site-content/reset")
-async def reset_site_content(user=Depends(get_current_admin)):
-    """Reset both draft and published to the hardcoded defaults (use carefully)."""
+async def reset_site_content(body: dict = None, user=Depends(get_current_admin)):
+    """Reset both draft and published to the hardcoded defaults. Requires `confirm: true` in body."""
+    if not isinstance(body, dict) or body.get("confirm") is not True:
+        raise HTTPException(status_code=400, detail="Confirmation required: send {\"confirm\": true} to reset to factory defaults.")
+    await _snapshot_site_content("reset", actor=user.get("email") if isinstance(user, dict) else None)
     defaults = get_default_content()
     now = _now_iso()
     for m in ("draft", "published"):
@@ -977,6 +1037,63 @@ async def reset_site_content(user=Depends(get_current_admin)):
             upsert=True,
         )
     return {"ok": True}
+
+
+# ---------- Site content history (auto-snapshots before destructive ops) ----------
+async def _snapshot_site_content(reason: str, actor: Optional[str] = None) -> None:
+    """Save a timestamped snapshot of BOTH draft & published into site_content_history."""
+    draft = await db.site_content.find_one({"id": "draft"}, {"_id": 0}) or {}
+    published = await db.site_content.find_one({"id": "published"}, {"_id": 0}) or {}
+    snap = {
+        "id": str(uuid.uuid4()),
+        "reason": reason,
+        "actor": actor or "system",
+        "created_at": _now_iso(),
+        "draft": draft.get("data"),
+        "published": published.get("data"),
+    }
+    await db.site_content_history.insert_one(snap)
+    # Keep only the most recent 50 snapshots to avoid unbounded growth.
+    extras = await db.site_content_history.find({}, {"_id": 1}).sort("created_at", -1).skip(50).to_list(2000)
+    if extras:
+        await db.site_content_history.delete_many({"_id": {"$in": [e["_id"] for e in extras]}})
+
+
+@api.get("/admin/site-content/history")
+async def list_site_content_history(user=Depends(get_current_admin)):
+    """List recent CMS snapshots so admin can restore a previous version."""
+    docs = await db.site_content_history.find(
+        {}, {"_id": 0, "id": 1, "reason": 1, "actor": 1, "created_at": 1}
+    ).sort("created_at", -1).to_list(50)
+    return docs
+
+
+@api.get("/admin/site-content/history/{snapshot_id}")
+async def get_site_content_snapshot(snapshot_id: str, user=Depends(get_current_admin)):
+    """Fetch a single snapshot in full."""
+    doc = await db.site_content_history.find_one({"id": snapshot_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Snapshot not found")
+    return doc
+
+
+@api.post("/admin/site-content/restore/{snapshot_id}")
+async def restore_site_content(snapshot_id: str, user=Depends(get_current_admin)):
+    """Restore both draft & published from a snapshot. A pre-restore snapshot is also taken."""
+    doc = await db.site_content_history.find_one({"id": snapshot_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Snapshot not found")
+    await _snapshot_site_content("pre_restore", actor=user.get("email") if isinstance(user, dict) else None)
+    now = _now_iso()
+    if doc.get("published"):
+        await db.site_content.update_one(
+            {"id": "published"}, {"$set": {"data": doc["published"], "updated_at": now}}, upsert=True
+        )
+    if doc.get("draft"):
+        await db.site_content.update_one(
+            {"id": "draft"}, {"$set": {"data": doc["draft"], "updated_at": now}}, upsert=True
+        )
+    return {"ok": True, "restored_from": snapshot_id, "restored_at": now}
 
 
 # ---------- Global settings (registrations toggle, etc.) ----------

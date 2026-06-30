@@ -9,6 +9,7 @@ const TABS = [
   { id: "overview", label: "Overview" },
   { id: "events", label: "Events" },
   { id: "registrations", label: "Registrations" },
+  { id: "offsite", label: "Off-site sales" },
   { id: "menu", label: "Menu" },
   { id: "newsletter", label: "Newsletter" },
   { id: "contacts", label: "Messages" },
@@ -71,6 +72,7 @@ export default function AdminDashboard() {
         {tab === "overview" && <Overview />}
         {tab === "events" && <Events />}
         {tab === "registrations" && <Registrations />}
+        {tab === "offsite" && <OffsiteSales />}
         {tab === "menu" && <MenuAdmin />}
         {tab === "newsletter" && <Subscribers />}
         {tab === "contacts" && <ContactMessages />}
@@ -492,6 +494,185 @@ function PaymentBadge({ status }) {
 
 function Th({ children }) { return <th className="text-left p-4 font-medium">{children}</th>; }
 function Td({ children }) { return <td className="p-4 text-[#F3EFE7]/90">{children || "—"}</td>; }
+
+function OffsiteSales() {
+  const [events, setEvents] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [form, setForm] = useState({ event_id: "", full_name: "", guests: 1, menu_preference: "Vegetarian", source: "", contact: "", notes: "" });
+  const [submitting, setSubmitting] = useState(false);
+
+  const load = async () => {
+    const [evRes, bkRes] = await Promise.all([
+      api.get("/events", { params: { upcoming: "true" } }),
+      api.get("/admin/offsite-bookings"),
+    ]);
+    setEvents(evRes.data || []);
+    setBookings(bkRes.data || []);
+    if (!form.event_id && (evRes.data || []).length) {
+      setForm((f) => ({ ...f, event_id: (evRes.data[0] || {}).id || "" }));
+    }
+  };
+  useEffect(() => { load(); }, []);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!form.event_id) return toast.error("Pick a date");
+    if (!form.full_name.trim()) return toast.error("Guest name is required");
+    setSubmitting(true);
+    try {
+      await api.post("/admin/offsite-bookings", { ...form, guests: Math.max(1, Number(form.guests) || 1) });
+      toast.success(`Added ${form.guests} seat(s) for ${form.full_name}`);
+      setForm({ ...form, full_name: "", guests: 1, source: form.source, contact: "", notes: "" });
+      load();
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Could not add booking");
+    } finally { setSubmitting(false); }
+  };
+
+  const remove = async (id) => {
+    if (!window.confirm("Remove this off-site booking? The seats will be released.")) return;
+    try {
+      await api.delete(`/admin/offsite-bookings/${id}`);
+      toast.success("Removed.");
+      load();
+    } catch { toast.error("Could not remove"); }
+  };
+
+  // Group bookings by event for the list view
+  const byEvent = bookings.reduce((m, b) => { (m[b.event_id] = m[b.event_id] || []).push(b); return m; }, {});
+
+  return (
+    <div data-testid="offsite-sales">
+      <div className="mb-8 flex items-baseline justify-between gap-4 flex-wrap">
+        <div>
+          <h2 className="font-display text-4xl">Off-site sales</h2>
+          <p className="text-[#B5A79E] mt-2 max-w-xl">
+            Add seats sold through aggregators, partners or direct DMs. These count toward total booked seats in real-time.
+          </p>
+        </div>
+      </div>
+
+      {/* Add form */}
+      <form onSubmit={submit} className="border border-[#2D1D1A] bg-[#140A09] p-6 mb-10" data-testid="offsite-form">
+        <p className="text-overline mb-5">Log a new off-site seat</p>
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+          <div className="sm:col-span-4">
+            <label className="text-overline">Date</label>
+            <select
+              required
+              value={form.event_id}
+              onChange={(e) => setForm({ ...form, event_id: e.target.value })}
+              data-testid="offsite-event"
+              className="mt-2 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-none"
+            >
+              <option value="">— pick a date —</option>
+              {events.map((e) => {
+                const left = Math.max(0, e.seats_total - (e.seats_booked || 0));
+                return (
+                  <option key={e.id} value={e.id} disabled={left === 0}>
+                    {e.title} · {e.date} {left === 0 ? "· SOLD OUT" : `· ${left} left`}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+          <Inp12 col={4} label="Guest name" value={form.full_name} onChange={(v) => setForm({ ...form, full_name: v })} testid="offsite-name" required />
+          <Inp12 col={2} label="Guests" type="number" min={1} value={form.guests} onChange={(v) => setForm({ ...form, guests: v })} testid="offsite-guests" />
+          <div className="sm:col-span-2">
+            <label className="text-overline">Preference</label>
+            <select
+              value={form.menu_preference}
+              onChange={(e) => setForm({ ...form, menu_preference: e.target.value })}
+              data-testid="offsite-pref"
+              className="mt-2 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-none"
+            >
+              <option value="Vegetarian">Vegetarian</option>
+              <option value="Non-Vegetarian">Non-Vegetarian</option>
+              <option value="Mixed">Mixed</option>
+            </select>
+          </div>
+          <Inp12 col={4} label="Source / Aggregator" placeholder="e.g. SupperClubsIN" value={form.source} onChange={(v) => setForm({ ...form, source: v })} testid="offsite-source" />
+          <Inp12 col={4} label="Contact (optional)" value={form.contact || ""} onChange={(v) => setForm({ ...form, contact: v })} testid="offsite-contact" />
+          <Inp12 col={4} label="Notes (optional)" value={form.notes || ""} onChange={(v) => setForm({ ...form, notes: v })} testid="offsite-notes" />
+        </div>
+        <div className="mt-6 flex justify-end">
+          <button type="submit" disabled={submitting} data-testid="offsite-submit"
+            className="px-5 py-3 bg-[#D9772B] text-[#0A0504] text-[11px] tracking-[0.22em] uppercase hover:bg-[#F3EFE7] disabled:opacity-50 inline-flex items-center gap-2">
+            <Plus size={14} /> {submitting ? "Adding…" : "Add off-site booking"}
+          </button>
+        </div>
+      </form>
+
+      {/* List grouped by event */}
+      {events.length === 0 && <p className="text-[#B5A79E]">No upcoming events.</p>}
+      <div className="space-y-8">
+        {events.map((e) => {
+          const list = byEvent[e.id] || [];
+          const offsiteSeats = list.reduce((s, b) => s + Number(b.guests || 1), 0);
+          const left = Math.max(0, e.seats_total - (e.seats_booked || 0));
+          return (
+            <div key={e.id} className="border border-[#2D1D1A] bg-[#140A09]" data-testid={`offsite-event-block-${e.id}`}>
+              <div className="px-5 py-4 flex items-center justify-between flex-wrap gap-3 border-b border-[#2D1D1A]">
+                <div>
+                  <p className="font-display text-2xl text-[#F3EFE7]">{e.title}</p>
+                  <p className="text-[11px] tracking-[0.18em] uppercase text-[#B5A79E] mt-1">
+                    {e.date} · total booked {e.seats_booked || 0}/{e.seats_total} · {left} left · off-site contribution {offsiteSeats}
+                  </p>
+                </div>
+              </div>
+              {list.length === 0 ? (
+                <p className="px-5 py-5 text-[#B5A79E] italic text-sm">No off-site bookings yet for this date.</p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="bg-[#0A0504] text-[#B5A79E]">
+                    <tr><Th>Name</Th><Th>Guests</Th><Th>Preference</Th><Th>Source</Th><Th>Contact</Th><Th>Notes</Th><Th></Th></tr>
+                  </thead>
+                  <tbody>
+                    {list.map((b) => (
+                      <tr key={b.id} className="border-t border-[#2D1D1A]" data-testid={`offsite-row-${b.id}`}>
+                        <Td>{b.full_name}</Td>
+                        <Td>{b.guests}</Td>
+                        <Td>{b.menu_preference || "—"}</Td>
+                        <Td>{b.source || "—"}</Td>
+                        <Td>{b.contact || "—"}</Td>
+                        <Td>{b.notes || "—"}</Td>
+                        <Td>
+                          <button onClick={() => remove(b.id)} data-testid={`offsite-delete-${b.id}`} className="p-2 border border-[#2D1D1A] hover:border-[#D94A3D] hover:text-[#D94A3D]">
+                            <Trash2 size={14} />
+                          </button>
+                        </Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Inp12({ col, label, value, onChange, testid, type = "text", placeholder, required, min }) {
+  return (
+    <div className={`sm:col-span-${col}`}>
+      <label className="text-overline">{label}</label>
+      <input
+        type={type}
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        data-testid={testid}
+        placeholder={placeholder}
+        required={required}
+        min={min}
+        className="mt-2 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-none"
+      />
+    </div>
+  );
+}
+
+
 
 function Subscribers() {
   const [rows, setRows] = useState([]);

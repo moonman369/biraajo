@@ -646,7 +646,10 @@ def test_site_content_reset_restores_defaults(admin_headers: dict[str, str]) -> 
     ).json()
     try:
         r = requests.post(
-            f"{API}/admin/site-content/reset", headers=admin_headers, timeout=15
+            f"{API}/admin/site-content/reset",
+            json={"confirm": True},
+            headers=admin_headers,
+            timeout=15,
         )
         assert r.status_code == 200
         p = requests.get(f"{API}/site-content", timeout=10).json()
@@ -844,3 +847,294 @@ def test_contact_succeeds_even_when_sheets_webhook_broken() -> None:
     )
     assert r.status_code == 200
     assert r.json().get("ok") is True
+
+
+# ---------- CMS Snapshot / Restore safety-net (iter 11) ----------
+def test_reset_without_confirm_returns_400(admin_headers: dict[str, str]) -> None:
+    """POST /api/admin/site-content/reset with no body must return 400 with 'Confirmation required'."""
+    # No body
+    r = requests.post(f"{API}/admin/site-content/reset", headers=admin_headers, timeout=10)
+    assert r.status_code == 400, r.text
+    assert "confirmation required" in r.json().get("detail", "").lower()
+    # Empty body
+    r2 = requests.post(
+        f"{API}/admin/site-content/reset", json={}, headers=admin_headers, timeout=10
+    )
+    assert r2.status_code == 400
+    # confirm:false
+    r3 = requests.post(
+        f"{API}/admin/site-content/reset",
+        json={"confirm": False},
+        headers=admin_headers,
+        timeout=10,
+    )
+    assert r3.status_code == 400
+
+
+def test_publish_creates_history_snapshot(admin_headers: dict[str, str]) -> None:
+    """POST /api/admin/site-content/publish must take a snapshot with reason=publish and admin actor."""
+    before = requests.get(
+        f"{API}/admin/site-content/history", headers=admin_headers, timeout=10
+    ).json()
+    before_count = len(before) if isinstance(before, list) else 0
+
+    r = requests.post(
+        f"{API}/admin/site-content/publish", headers=admin_headers, timeout=15
+    )
+    assert r.status_code == 200, r.text
+
+    after = requests.get(
+        f"{API}/admin/site-content/history", headers=admin_headers, timeout=10
+    )
+    assert after.status_code == 200
+    after_list = after.json()
+    assert isinstance(after_list, list)
+    assert len(after_list) >= before_count + 1
+    # Latest entry should have reason=publish and actor=admin email
+    latest = after_list[0]
+    assert latest.get("reason") == "publish", latest
+    assert latest.get("actor") == ADMIN_EMAIL.lower() or latest.get("actor") == ADMIN_EMAIL, latest
+    assert "id" in latest and "created_at" in latest
+
+
+def test_history_get_single_returns_full_payload(admin_headers: dict[str, str]) -> None:
+    """GET /api/admin/site-content/history/{id} returns full snapshot incl. draft + published."""
+    hist = requests.get(
+        f"{API}/admin/site-content/history", headers=admin_headers, timeout=10
+    ).json()
+    if not hist:
+        # ensure at least one
+        requests.post(f"{API}/admin/site-content/publish", headers=admin_headers, timeout=15)
+        hist = requests.get(
+            f"{API}/admin/site-content/history", headers=admin_headers, timeout=10
+        ).json()
+    sid = hist[0]["id"]
+    r = requests.get(
+        f"{API}/admin/site-content/history/{sid}", headers=admin_headers, timeout=10
+    )
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["id"] == sid
+    assert "draft" in body and "published" in body
+    # at least one of them should be non-null and look like full content
+    pub = body.get("published") or body.get("draft") or {}
+    assert isinstance(pub, dict)
+    # full tree should have core sections
+    assert "landing" in pub or "barsaat" in pub
+
+
+def test_history_get_unknown_returns_404(admin_headers: dict[str, str]) -> None:
+    r = requests.get(
+        f"{API}/admin/site-content/history/nonexistent-id-xyz",
+        headers=admin_headers,
+        timeout=10,
+    )
+    assert r.status_code == 404
+
+
+def test_restore_roundtrip_brings_back_previous_content(admin_headers: dict[str, str]) -> None:
+    """Round-trip: baseline -> mutate+publish -> restore from baseline snapshot -> matches baseline."""
+    # Baseline: capture current published
+    baseline = requests.get(f"{API}/site-content", timeout=10).json()
+    baseline_draft = requests.get(
+        f"{API}/site-content", params={"mode": "draft"}, timeout=10
+    ).json()
+    baseline_hero_title = baseline["landing"]["hero"]["title"]
+    marker_title = f"TEST_RESTORE_MARK_{uuid.uuid4().hex[:8]}"
+
+    # 1) Publish baseline so we have a known snapshot entry
+    pub_resp = requests.post(
+        f"{API}/admin/site-content/publish", headers=admin_headers, timeout=15
+    )
+    assert pub_resp.status_code == 200
+
+    hist = requests.get(
+        f"{API}/admin/site-content/history", headers=admin_headers, timeout=10
+    ).json()
+    baseline_snap_id = hist[0]["id"]  # most recent = baseline-publish
+
+    # 2) Mutate draft + publish (destructive change)
+    mutated = dict(baseline)
+    mutated_landing = dict(mutated.get("landing", {}))
+    mutated_hero = dict(mutated_landing.get("hero", {}))
+    mutated_hero["title"] = marker_title
+    mutated_landing["hero"] = mutated_hero
+    mutated["landing"] = mutated_landing
+    put = requests.put(
+        f"{API}/admin/site-content/draft",
+        json=mutated,
+        headers=admin_headers,
+        timeout=15,
+    )
+    assert put.status_code == 200
+    pub2 = requests.post(
+        f"{API}/admin/site-content/publish", headers=admin_headers, timeout=15
+    )
+    assert pub2.status_code == 200
+    after_mut = requests.get(f"{API}/site-content", timeout=10).json()
+    assert after_mut["landing"]["hero"]["title"] == marker_title
+
+    # history should now have at least 2 entries (baseline-publish + mutated-publish)
+    hist2 = requests.get(
+        f"{API}/admin/site-content/history", headers=admin_headers, timeout=10
+    ).json()
+    assert len(hist2) >= 2, f"expected >=2 history entries, got {len(hist2)}"
+
+    # 3) Restore from the baseline snapshot
+    restore = requests.post(
+        f"{API}/admin/site-content/restore/{baseline_snap_id}",
+        headers=admin_headers,
+        timeout=20,
+    )
+    assert restore.status_code == 200, restore.text
+    body = restore.json()
+    assert body.get("ok") is True
+    assert body.get("restored_from") == baseline_snap_id
+
+    # 4) /api/site-content should match baseline hero title (NOT marker)
+    restored_pub = requests.get(f"{API}/site-content", timeout=10).json()
+    assert restored_pub["landing"]["hero"]["title"] == baseline_hero_title
+
+    # 5) pre_restore snapshot should have been taken
+    hist3 = requests.get(
+        f"{API}/admin/site-content/history", headers=admin_headers, timeout=10
+    ).json()
+    reasons_top3 = [h.get("reason") for h in hist3[:3]]
+    assert "pre_restore" in reasons_top3, reasons_top3
+
+    # Cleanup: re-apply baseline draft so admin draft matches
+    requests.put(
+        f"{API}/admin/site-content/draft",
+        json=baseline_draft,
+        headers=admin_headers,
+        timeout=15,
+    )
+
+
+# ---------- Off-site bookings (iter 11) ----------
+@pytest.fixture
+def offsite_event(admin_headers: dict[str, str]):
+    """Dedicated event for offsite tests so we don't perturb the 3 Barsaat events."""
+    future_date = (datetime.now(timezone.utc) + timedelta(days=120)).date().isoformat()
+    payload = {
+        "title": "TEST_Offsite_Event",
+        "date": future_date,
+        "time": "19:30",
+        "venue": "TEST Offsite Venue",
+        "description": "Offsite test event",
+        "price": 2500.0,
+        "seats_total": 10,
+        "image_url": "https://example.com/img.jpg",
+        "tag": "TestOffsite",
+    }
+    r = requests.post(f"{API}/events", json=payload, headers=admin_headers, timeout=10)
+    assert r.status_code == 200, r.text
+    ev = r.json()
+    yield ev
+    requests.delete(f"{API}/events/{ev['id']}", headers=admin_headers, timeout=10)
+
+
+def test_offsite_create_increments_seats_booked(
+    admin_headers: dict[str, str], offsite_event: dict
+) -> None:
+    eid = offsite_event["id"]
+    before = requests.get(f"{API}/events/{eid}", timeout=10).json()
+    before_booked = int(before.get("seats_booked", 0))
+
+    body = {
+        "event_id": eid,
+        "full_name": "TEST Offsite Guest",
+        "guests": 3,
+        "menu_preference": "Vegetarian",
+        "source": "TEST_Aggregator",
+    }
+    r = requests.post(
+        f"{API}/admin/offsite-bookings", json=body, headers=admin_headers, timeout=10
+    )
+    assert r.status_code == 200, r.text
+    booking = r.json()
+    assert booking["event_id"] == eid
+    assert booking["guests"] == 3
+    assert booking["source"] == "TEST_Aggregator"
+    assert "id" in booking
+
+    after = requests.get(f"{API}/events/{eid}", timeout=10).json()
+    assert int(after["seats_booked"]) == before_booked + 3
+
+    # cleanup
+    requests.delete(
+        f"{API}/admin/offsite-bookings/{booking['id']}", headers=admin_headers, timeout=10
+    )
+
+
+def test_offsite_list_includes_created(
+    admin_headers: dict[str, str], offsite_event: dict
+) -> None:
+    eid = offsite_event["id"]
+    body = {"event_id": eid, "full_name": "TEST List Guest", "guests": 1, "source": "TEST_List"}
+    created = requests.post(
+        f"{API}/admin/offsite-bookings", json=body, headers=admin_headers, timeout=10
+    ).json()
+    try:
+        r = requests.get(
+            f"{API}/admin/offsite-bookings",
+            params={"event_id": eid},
+            headers=admin_headers,
+            timeout=10,
+        )
+        assert r.status_code == 200
+        lst = r.json()
+        assert any(b["id"] == created["id"] for b in lst)
+    finally:
+        requests.delete(
+            f"{API}/admin/offsite-bookings/{created['id']}",
+            headers=admin_headers,
+            timeout=10,
+        )
+
+
+def test_offsite_delete_decrements_seats_booked(
+    admin_headers: dict[str, str], offsite_event: dict
+) -> None:
+    eid = offsite_event["id"]
+    body = {"event_id": eid, "full_name": "TEST Del Guest", "guests": 2, "source": "TEST_Del"}
+    booking = requests.post(
+        f"{API}/admin/offsite-bookings", json=body, headers=admin_headers, timeout=10
+    ).json()
+    mid = requests.get(f"{API}/events/{eid}", timeout=10).json()
+    assert int(mid["seats_booked"]) >= 2
+
+    d = requests.delete(
+        f"{API}/admin/offsite-bookings/{booking['id']}", headers=admin_headers, timeout=10
+    )
+    assert d.status_code == 200
+    after = requests.get(f"{API}/events/{eid}", timeout=10).json()
+    assert int(after["seats_booked"]) == int(mid["seats_booked"]) - 2
+
+
+def test_offsite_overbook_returns_400(
+    admin_headers: dict[str, str], offsite_event: dict
+) -> None:
+    eid = offsite_event["id"]
+    # event has seats_total=10; request 11 -> 400
+    body = {"event_id": eid, "full_name": "TEST Over", "guests": 11, "source": "TEST_Over"}
+    r = requests.post(
+        f"{API}/admin/offsite-bookings", json=body, headers=admin_headers, timeout=10
+    )
+    assert r.status_code == 400, r.text
+
+
+def test_offsite_requires_admin(offsite_event: dict) -> None:
+    body = {"event_id": offsite_event["id"], "full_name": "TEST", "guests": 1}
+    r = requests.post(f"{API}/admin/offsite-bookings", json=body, timeout=10)
+    assert r.status_code == 401
+    r2 = requests.get(f"{API}/admin/offsite-bookings", timeout=10)
+    assert r2.status_code == 401
+
+
+def test_offsite_unknown_event_returns_404(admin_headers: dict[str, str]) -> None:
+    body = {"event_id": "does-not-exist-xyz", "full_name": "TEST", "guests": 1}
+    r = requests.post(
+        f"{API}/admin/offsite-bookings", json=body, headers=admin_headers, timeout=10
+    )
+    assert r.status_code == 404
