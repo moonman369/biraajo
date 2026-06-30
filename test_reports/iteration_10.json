@@ -1,0 +1,41 @@
+{
+  "summary": "CRITICAL DATA-LOSS FIX RE-VERIFIED. site_defaults.py now embeds the full barsaat.menu.items (10 courses with the 4 veg variants). Empirically confirmed: snapshot pub doc -> POST /api/admin/site-content/reset (200) -> GET /api/site-content STILL returns barsaat.menu.items length=10 with exactly 4 alt_dish entries (Dakor Na Gota, Thepla Tacos · Vegetarian, Dal Bhaat · Vegetarian, Sev Ussal · Vegetarian). After restoring original doc, full content intact. Settings still expose price_veg=2200, price_nonveg=2800. 3 upcoming Barsaat events (Jul 5/18/26 2026) with seats_total=12 each remain. Frontend /menus/barsaat renders all 10 items (barsaat-menu-item-0..9) + 4 veg blocks (barsaat-menu-veg-3..6) with NO barsaat-menu-wip placeholder. Frontend /supper-club/barsaat renders all required sections (page-barsaat, barsaat-chef-note, barsaat-sensory, barsaat-rajneesh, barsaat-dates-section, barsaat-date-0/1/2, barsaat-price-box, barsaat-reserve-main-cta). Pytest 48/49 PASS — the single failure is the pre-existing unrelated test_sheets_test_authorized_surfaces_failure (Google Sheets, explicitly out-of-scope this iteration).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/sheets/test",
+        "issue": "Pre-existing (carried over from iter 9): when GOOGLE_SHEETS_WEBHOOK_URL is empty, response is {ok:false, reason:'no_webhook_configured'} with no 'webhook_url' key, so test_sheets_test_authorized_surfaces_failure asserts on missing key. Out of scope this iteration (request said skip Google Sheets / Resend). Either always include webhook_url (possibly empty) in the response, or loosen the assertion to skip when reason='no_webhook_configured'."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_biraajo_api.py",
+    "/app/test_reports/pytest/pytest_results_iter10.xml"
+  ],
+  "action_items": [
+    "LOW (carried over): Decide on POST /api/sheets/test contract — either always include webhook_url in body or update test_sheets_test_authorized_surfaces_failure to tolerate reason='no_webhook_configured'.",
+    "LOW (defence-in-depth): Consider making /admin/site-content/reset deep-merge into defaults (preserving admin-populated fields) and/or gating the destructive reset behind a confirm=true query param so future defaults gaps don't wipe live data."
+  ],
+  "critical_code_review_comments": [
+    "site_defaults.py barsaat.menu.items is now in sync with the live published doc — the iteration_9 gap is closed.",
+    "server.py is still ~1075 lines; splitting routes_cms.py + routes_settings.py would help maintenance.",
+    "Reset endpoint remains overwrite-style. Adding deep-merge or confirm=true would prevent a future repeat of this whole-block-wipe class of bug."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "48/49 (98.0%) — only failure is the pre-existing out-of-scope Sheets test",
+    "frontend": "100% on all in-scope Barsaat flows (menu page 10 items + 4 veg variants, supper-club page all 10 testids present)"
+  },
+  "test_credentials": "Admin reachbiraajo@gmail.com / Biraajo@2026 — working.",
+  "seed_data_creation": "No new seed data created this iteration. Pytest in-suite registrations are self-cleaned within their tests. The reset+restore cycle I ran left the live published content identical to what it was before this run (snapshot -> reset -> reseed via PUT draft + publish). /tmp/seed.sh was NOT needed since defaults already contain the menu and the snapshot-restore in tests already preserves admin-edited fields.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "The critical iteration_9 data-loss bug (admin reset wiping barsaat.menu.items) is fully resolved at the source. site_defaults.py barsaat.menu.items now has 10 courses with the expected 4 alt_dish/alt_note pairs. test_site_content_reset_restores_defaults + test_barsaat_site_content_menu_has_10_items_and_4_veg_variants both pass. Only remaining pytest failure is the pre-existing Google Sheets test which is explicitly out-of-scope. Frontend testids of interest: barsaat-menu-item-0..9, barsaat-menu-veg-3..6, page-barsaat, barsaat-chef-note, barsaat-sensory, barsaat-rajneesh, barsaat-dates-section, barsaat-date-0/1/2, barsaat-price-box, barsaat-reserve-main-cta.",
+  "rca of the issue": "RCA from iter 9 was: backend/site_defaults.py.barsaat had no 'menu' key, so deepcopy(DEFAULT_CONTENT) on /admin/site-content/reset wiped the live 10-course menu. Fix applied in iter 10 by main agent: barsaat.menu (with eyebrow, title, intro, and the full 10-item array including alt_dish/alt_note on items 3-6) was added to DEFAULT_CONTENT. Verified by snapshot -> reset -> assert items==10 with 4 alt_dish -> restore. Bug closed."
+}
