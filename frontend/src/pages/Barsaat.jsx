@@ -68,6 +68,13 @@ export default function Barsaat() {
   const selectedEvent = useMemo(() => events.find((e) => e.id === selectedId) || null, [events, selectedId]);
   const heroImg = read(content, "barsaat.hero.image", "");
   const reelUrl = read(content, "barsaat.reel.video_url", "");
+  const reelVisible = read(content, "barsaat.reel.visible", true);
+  const reelsBlockVisible = read(content, "barsaat.reels.visible", true);
+  const reelsItems = read(content, "barsaat.reels.items", []);
+  const reelsEyebrow = read(content, "barsaat.reels.eyebrow", "Glimpses");
+  const reelsTitle = read(content, "barsaat.reels.title", "From the kitchen,");
+  const reelsTitleItalic = read(content, "barsaat.reels.title_italic", "two evenings ago.");
+  const hasReels = reelsBlockVisible && Array.isArray(reelsItems) && reelsItems.filter((r) => r && r.url).length > 0;
 
   if (content?.barsaat?.visible === false) return null;
 
@@ -211,8 +218,37 @@ export default function Barsaat() {
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────── REEL */}
-      {reelUrl && (
+      {/* ─────────────────────────────────────────── REELS (multi) */}
+      {hasReels && (
+        <section className="py-20 sm:py-28 border-t border-[#2D1D1A]" data-testid="barsaat-reels-section">
+          <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
+            <p className="text-overline">{reelsEyebrow}</p>
+            <h2 className="font-display text-3xl sm:text-4xl mt-4 mb-10">
+              {reelsTitle} <span className="italic text-[#D9772B]">{reelsTitleItalic}</span>
+            </h2>
+            <div className={`grid gap-6 sm:gap-8 ${reelsItems.length > 1 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
+              {reelsItems.filter((r) => r && r.url).map((r, i) => (
+                <div key={`${r.url}-${i}`} className="relative aspect-[9/16] sm:aspect-video w-full overflow-hidden bg-[#0A0504] border border-[#2D1D1A]" data-testid={`barsaat-reel-${i}`}>
+                  <video
+                    src={r.url}
+                    poster={r.poster || undefined}
+                    className="w-full h-full object-cover"
+                    autoPlay muted loop playsInline preload="metadata"
+                  />
+                  {r.label && (
+                    <span className="absolute bottom-3 left-3 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/85 text-[#F3EFE7] border border-[#2D1D1A]">
+                      {r.label}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ─────────────────────────────────────────── LEGACY single REEL fallback */}
+      {!hasReels && reelVisible && reelUrl && (
         <section className="py-20 sm:py-28 border-t border-[#2D1D1A]" data-testid="barsaat-reel-section">
           <div className="max-w-5xl mx-auto px-6 sm:px-8 lg:px-12">
             <p className="text-overline">A glimpse</p>

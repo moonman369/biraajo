@@ -77,7 +77,7 @@ DEFAULT_CONTENT = {
                     "tag": "Supper Club",
                     "title": "Monthly suppers for twelve",
                     "body": "A six-course evening built around what the season is doing. Strangers become diners. Diners become friends.",
-                    "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg",
+                    "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg",
                 },
                 {
                     "visible": True,
@@ -192,7 +192,7 @@ DEFAULT_CONTENT = {
             "title": "How the room",
             "title_italic": "remembered itself.",
             "photos": [
-                "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg",
+                "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg",
                 "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg",
                 "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/knt2zl0v__DSC4971-2%20%281%29.jpg",
                 "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/xw1h2s8n_IMG_0183%20%283%29%20%281%29.jpg",
@@ -213,14 +213,24 @@ DEFAULT_CONTENT = {
             "title": "Barsaat.",
             "title_italic": "A supper with the rain.",
             "body": "Biraajo's monsoon edition. A long, slow evening for twelve, plated entirely from what the season gives — hilsa, jaggery, smoke, foraged green. The kind of meal that asks you to slow down.",
-            "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg",
+            "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg",
         },
         "reel": {
-            "visible": True,
+            "visible": False,
             "eyebrow": "A glimpse",
             "title": "From the kitchen,",
             "title_italic": "last week.",
             "video_url": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/l41d744x_biraajo%206th%20june%2000097020_prob4.mp4",
+        },
+        "reels": {
+            "visible": True,
+            "eyebrow": "Glimpses",
+            "title": "From the kitchen,",
+            "title_italic": "two evenings ago.",
+            "items": [
+                {"url": "https://customer-assets.emergentagent.com/job_8232982a-2ce1-4d83-a683-c7727cd57ba6/artifacts/pampvqbe_Barssat%20Reel%202.MP4", "label": "Behind the menu"},
+                {"url": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/l41d744x_biraajo%206th%20june%2000097020_prob4.mp4", "label": "On the line"},
+            ],
         },
         "menu": {
             "visible": True,

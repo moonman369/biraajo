@@ -1,0 +1,35 @@
+{
+  "summary": "Verified the kpwk8ol3 broken-image fix and the new barsaat reels block. All target pages render with 0 broken images that come from the artifacts CDN and 0 HTTP 403 responses on any *artifacts* URL. The Barsaat page renders the new <barsaat-reels-section> with exactly 2 reel tiles (barsaat-reel-0, barsaat-reel-1) whose <video> src match the spec; both video URLs return 200/206 with content-type: video/mp4 on HEAD. GET /api/site-content confirms barsaat.reels.items.length === 2 and barsaat.hero.image ends with 'ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg'. Regression: /menus/barsaat still renders all 10 courses with 4 veg variants, /supper-club/barsaat still shows 3 dates (barsaat-date-0/1/2). grep 'kpwk8ol3' in /app/backend/site_defaults.py returns 0 matches.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Landing (/)",
+        "issues": [
+          "Unrelated pre-existing issue: <img src=\"https://images.unsplash.com/photo-1585937421612-70a008356fbe\"> in /app/frontend/src/components/InstagramFeed.jsx renders as broken in the headless browser (naturalWidth=0). The URL itself returns 200 via curl, but Unsplash may rate-limit/refuse when the request omits the standard ?auto=format&fit=crop query params or User-Agent. Not part of this task; flag for main agent to either swap the image or add proper Unsplash query params."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "(Optional, unrelated to current task) Replace or add proper query params to the Unsplash URL in /app/frontend/src/components/InstagramFeed.jsx (photo-1585937421612-70a008356fbe) so it loads reliably on the landing page."
+  ],
+  "critical_code_review_comments": [
+    "Barsaat.jsx correctly guards the new reels block with hasReels (visible && array length > 0) and keeps the legacy single-reel fallback — good defensive rendering.",
+    "Suppers.jsx still has the artifact URL hardcoded for Barsaat (line 99). Works because it now points to ctn50bz1 (200 OK), but for resilience this should also come from siteContent (read(content, 'landing.experiences.cards[1].image', ...) or similar) so future CMS edits propagate without code changes."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100% for in-scope checks"},
+  "test_credentials": "Admin: reachbiraajo@gmail.com / Biraajo@2026 (not exercised — task did not require admin UI testing)",
+  "seed_data_creation": "None.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Playwright/Chromium headless that ships with Emergent automation does NOT include proprietary codecs (H.264/AAC), so <video> with .MP4 sources always reports readyState=0 and MediaError code 4 (SRC_NOT_SUPPORTED) in this environment. Do NOT treat this as an app bug — verify videos by (a) reading the <video src> attribute, (b) HEAD-fetching the URL and confirming 200 + content-type: video/mp4, and (c) confirming the URL matches the expected asset. The two Barsaat reel URLs verified this run: pampvqbe_Barssat%20Reel%202.MP4 (200, 11.7MB) and l41d744x_biraajo%206th%20june%2000097020_prob4.mp4 (200, 32.3MB).",
+  "rca of the issue": "Original 403s were caused by the broken artifact key kpwk8ol3__DSC4913-2 (1).jpg appearing in 3 site_content paths (barsaat.hero.image, landing.experiences.cards[0].image, naani_ghar.photos_block.photos[0]) plus hardcoded in Suppers.jsx. Main agent replaced all four occurrences with ctn50bz1__DSC4913-2 (1) (1).jpg (verified 200 OK). Confirmed via grep (0 matches for kpwk8ol3 in site_defaults.py) and via runtime network monitoring (0 artifact 403s across /, /supper-club/barsaat, /supper-club/naani-ghar, /suppers, /menus/barsaat)."
+}
