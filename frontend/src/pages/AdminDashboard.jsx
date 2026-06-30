@@ -713,15 +713,19 @@ function SeriesMenuEditor({ pageKey, title, badge, badgeClass, items, onChange }
 
         {draft.map((it, idx) => (
           <div key={idx} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start bg-[#0A0504] border border-[#2D1D1A] p-4" data-testid={`menu-${pageKey}-row-${idx}`}>
-            <Input12 col={3} label="Course label" value={it.course || ""} onChange={(v) => updateItem(idx, { course: v })} testid={`menu-${pageKey}-course-${idx}`} />
-            <Input12 col={4} label="Dish" value={it.dish || ""} onChange={(v) => updateItem(idx, { dish: v })} testid={`menu-${pageKey}-dish-${idx}`} />
-            <Input12 col={4} label="Note" value={it.note || ""} onChange={(v) => updateItem(idx, { note: v })} testid={`menu-${pageKey}-note-${idx}`} />
+            <Input12 col={2} label="Course" value={it.course || ""} onChange={(v) => updateItem(idx, { course: v })} testid={`menu-${pageKey}-course-${idx}`} />
+            <Input12 col={3} label="Dish" value={it.dish || ""} onChange={(v) => updateItem(idx, { dish: v })} testid={`menu-${pageKey}-dish-${idx}`} />
+            <Input12 col={3} label="Note" value={it.note || ""} onChange={(v) => updateItem(idx, { note: v })} testid={`menu-${pageKey}-note-${idx}`} />
+            <Input12 col={3} label="Veg variant — dish (optional)" value={it.alt_dish || ""} onChange={(v) => updateItem(idx, { alt_dish: v })} testid={`menu-${pageKey}-altdish-${idx}`} />
             <div className="sm:col-span-1 flex sm:flex-col gap-1 sm:justify-start sm:pt-7">
               <button onClick={() => moveItem(idx, -1)} disabled={idx === 0} className="p-1.5 border border-[#2D1D1A] hover:border-[#D9772B] disabled:opacity-30" aria-label="Move up" data-testid={`menu-${pageKey}-up-${idx}`}>↑</button>
               <button onClick={() => moveItem(idx, 1)} disabled={idx === draft.length - 1} className="p-1.5 border border-[#2D1D1A] hover:border-[#D9772B] disabled:opacity-30" aria-label="Move down" data-testid={`menu-${pageKey}-down-${idx}`}>↓</button>
               <button onClick={() => removeItem(idx)} className="p-1.5 border border-[#2D1D1A] hover:border-[#D94A3D] hover:text-[#D94A3D]" aria-label="Remove course" data-testid={`menu-${pageKey}-remove-${idx}`}>
                 <Trash2 size={14} />
               </button>
+            </div>
+            <div className="sm:col-span-11 sm:col-start-1">
+              <Input12 col={8} label="Veg variant — note (optional)" value={it.alt_note || ""} onChange={(v) => updateItem(idx, { alt_note: v })} testid={`menu-${pageKey}-altnote-${idx}`} />
             </div>
           </div>
         ))}

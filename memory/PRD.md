@@ -14,6 +14,13 @@ Premium personal chef landing page for "Biraajo by Vidip Shah". Dark, luxury hos
 
 ## What's Been Implemented (latest first)
 
+### 2026-06-30 — Barsaat menu seeded with veg/non-veg variants
+- Seeded 10-course Barsaat monsoon menu via CMS draft+publish (Khicchu → Caramelised Malai Toast)
+- 4 courses (Panko Bombay Duck, Thepla Tacos, Dal Bhaat, Sev Ussal) include a vegetarian alternative — rendered as a minimal "VEGETARIAN" sub-block under each non-veg dish on `/menus/barsaat`
+- New menu intro line + custom title ("Ten courses, a monsoon told in plates.") wired through CMS so user can edit
+- Admin → Menu editor extended with `alt_dish` and `alt_note` fields so the user can manage veg variants going forward
+
+
 ### 2026-06-28 — Admin menu CRUD + About CTA modal + UPI QR
 - **Admin → Menu tab**: rebuilt to manage per-series menus (Naani Ghar + Barsaat) via site_content. Add, edit, reorder (↑↓), delete courses — saves and publishes instantly. Old `/api/menu` editor retired.
 - **About "Pull up a chair"** CTA now opens the EventRegistrationModal directly (was an anchor to #events). Same Barsaat pre-book flow as Hero and Suppers.

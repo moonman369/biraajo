@@ -31,6 +31,10 @@ export default function BarsaatMenu() {
 
   const items = read(content, "barsaat.menu.items", []);
   const hasMenu = Array.isArray(items) && items.length > 0;
+  const menuEyebrow = read(content, "barsaat.menu.eyebrow", "The Menu");
+  const menuTitle = read(content, "barsaat.menu.title", "");
+  const menuTitleItalic = read(content, "barsaat.menu.title_italic", "");
+  const menuIntro = read(content, "barsaat.menu.intro", "");
 
   const onBook = () => {
     if (!registrationsOpen) {
@@ -53,11 +57,18 @@ export default function BarsaatMenu() {
           <Link to="/menus" className="text-overline inline-flex items-center gap-2 mb-8 hover:text-[#D9772B] transition-colors" data-testid="barsaat-menu-back">
             <ArrowLeft size={14} /> back to menus
           </Link>
-          <p className="text-overline">The Menu</p>
+          <p className="text-overline">{menuEyebrow}</p>
           <h1 className="font-display text-5xl sm:text-6xl mt-6 leading-[1.02] tracking-tight">
-            Barsaat. <span className="italic text-[#D9772B]">The menu.</span>
+            {hasMenu && menuTitle ? (
+              <>{menuTitle}{menuTitleItalic && <> <span className="italic text-[#D9772B]">{menuTitleItalic}</span></>}</>
+            ) : (
+              <>Barsaat. <span className="italic text-[#D9772B]">The menu.</span></>
+            )}
           </h1>
           <p className="mt-4 text-[#B5A79E] text-sm tracking-[0.16em] uppercase">Next series · Monsoon edition</p>
+          {hasMenu && menuIntro && (
+            <p className="mt-6 text-[#B5A79E] leading-relaxed max-w-2xl" data-testid="barsaat-menu-intro">{menuIntro}</p>
+          )}
         </div>
       </section>
 
@@ -73,14 +84,27 @@ export default function BarsaatMenu() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-60px" }}
                     transition={{ duration: 0.6, delay: i * 0.04 }}
-                    className="grid grid-cols-12 gap-4 py-7"
+                    className="grid grid-cols-12 gap-4 py-8 sm:py-10"
                     data-testid={`barsaat-menu-item-${i}`}
                   >
-                    <p className="col-span-12 sm:col-span-3 text-overline">{m.course}</p>
-                    <div className="col-span-12 sm:col-span-9">
-                      <p className="font-display text-2xl text-[#F3EFE7]">{m.dish}</p>
-                      {m.note && (
-                        <p className="text-sm text-[#B5A79E] mt-1 leading-relaxed">{m.note}</p>
+                    <p className="col-span-12 sm:col-span-3 text-overline pt-1">{m.course}</p>
+                    <div className="col-span-12 sm:col-span-9 space-y-5">
+                      <div>
+                        <p className="font-display text-2xl sm:text-3xl text-[#F3EFE7] tracking-tight">{m.dish}</p>
+                        {m.note && (
+                          <p className="text-sm sm:text-base text-[#B5A79E] mt-2 leading-relaxed max-w-2xl">{m.note}</p>
+                        )}
+                      </div>
+                      {(m.alt_dish || m.alt_note) && (
+                        <div className="pt-4 border-t border-dashed border-[#2D1D1A]" data-testid={`barsaat-menu-veg-${i}`}>
+                          <p className="text-[10px] tracking-[0.28em] uppercase text-[#D9772B] mb-1.5">Vegetarian</p>
+                          {m.alt_dish && (
+                            <p className="font-display italic text-lg sm:text-xl text-[#F3EFE7]/90">{m.alt_dish}</p>
+                          )}
+                          {m.alt_note && (
+                            <p className="text-sm text-[#B5A79E] mt-1.5 leading-relaxed max-w-2xl">{m.alt_note}</p>
+                          )}
+                        </div>
                       )}
                     </div>
                   </motion.div>
