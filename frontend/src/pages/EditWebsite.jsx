@@ -308,17 +308,54 @@ export default function EditWebsite() {
     }
   }, [navigate]);
 
-  // Load draft
+  // Recovery flag if a session-recovery banner should show
+  const [recoveryAvailable, setRecoveryAvailable] = useState(false);
+  const [authExpired, setAuthExpired] = useState(false);
+  const [reLoginEmail, setReLoginEmail] = useState("");
+  const [reLoginPwd, setReLoginPwd] = useState("");
+
+  // Load draft + check for unsaved local backup
   useEffect(() => {
     api.get("/site-content", { params: { mode: "draft" } })
-      .then((r) => setContent(r.data))
+      .then((r) => {
+        setContent(r.data);
+        // If we have an unsaved local backup that's newer than server draft, offer to restore
+        try {
+          const raw = localStorage.getItem("biraajo_unsaved_draft");
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.savedAt && parsed.content) setRecoveryAvailable(true);
+          }
+        } catch { /* ignore */ }
+      })
       .catch(() => toast.error("Could not load site content"))
       .finally(() => setLoading(false));
   }, []);
 
+  // Expose for emergency console rescue: window.__biraajoDumpDraft()
+  useEffect(() => {
+    window.__biraajoDumpDraft = () => {
+      try {
+        const blob = new Blob([JSON.stringify(content, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `biraajo-draft-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        return "Downloaded to your Downloads folder.";
+      } catch (e) { return String(e); }
+    };
+    return () => { delete window.__biraajoDumpDraft; };
+  }, [content]);
+
   const queueAutosave = (next) => {
     setContent(next);
     setDirty(true);
+    // Local backup on every change so a browser refresh / network failure cannot lose anything
+    try {
+      localStorage.setItem("biraajo_unsaved_draft", JSON.stringify({ savedAt: Date.now(), content: next }));
+    } catch { /* quota */ }
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => doSave(next), 600);
   };
@@ -328,13 +365,64 @@ export default function EditWebsite() {
     try {
       await api.put("/admin/site-content/draft", data);
       setDirty(false);
+      // Successful — clear local backup
+      try { localStorage.removeItem("biraajo_unsaved_draft"); } catch { /* ignore */ }
       // Tell iframe to refresh content
       iframeRef.current?.contentWindow?.postMessage("biraajo:content-changed", "*");
-    } catch {
-      toast.error("Save failed");
+    } catch (err) {
+      if (err?.response?.status === 401) {
+        setAuthExpired(true);
+        toast.error("Your session expired — re-login to save (your edits are safe).");
+      } else {
+        toast.error("Save failed — your edits are kept locally, click Save now to retry.");
+      }
     } finally {
       setSaving(false);
     }
+  };
+
+  // Re-login from inside the editor without losing in-memory content
+  const reLogin = async (e) => {
+    e?.preventDefault?.();
+    try {
+      const r = await api.post("/auth/login", { email: reLoginEmail, password: reLoginPwd });
+      const tok = r.data?.access_token || r.data?.token;
+      if (!tok) throw new Error("no token");
+      localStorage.setItem("biraajo_admin_token", tok);
+      setAuthExpired(false);
+      setReLoginPwd("");
+      // Immediately push current in-memory state back to server
+      await doSave(content);
+      toast.success("Logged back in and saved.");
+    } catch {
+      toast.error("Login failed. Check email & password.");
+    }
+  };
+
+  const restoreLocalBackup = () => {
+    try {
+      const raw = localStorage.getItem("biraajo_unsaved_draft");
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed?.content) {
+        setContent(parsed.content);
+        setDirty(true);
+        setRecoveryAvailable(false);
+        // Push it to server right away
+        doSave(parsed.content);
+        toast.success("Restored from local backup.");
+      }
+    } catch { toast.error("Could not restore"); }
+  };
+
+  const dismissRecovery = () => {
+    try { localStorage.removeItem("biraajo_unsaved_draft"); } catch { /* ignore */ }
+    setRecoveryAvailable(false);
+  };
+
+  const saveNow = () => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    if (content) doSave(content);
   };
 
   const publish = async () => {
@@ -419,6 +507,9 @@ export default function EditWebsite() {
           <button onClick={openHistory} data-testid="edit-history" className="px-4 py-2 border border-[#2D1D1A] text-[11px] tracking-[0.18em] uppercase hover:border-[#D9772B] hover:text-[#D9772B] inline-flex items-center gap-2">
             <History size={12} /> Version history
           </button>
+          <button onClick={saveNow} data-testid="edit-save-now" disabled={!dirty} className="px-4 py-2 border border-[#D9772B] text-[#D9772B] text-[11px] tracking-[0.18em] uppercase hover:bg-[#D9772B] hover:text-[#0A0504] inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+            <Send size={12} /> Save now
+          </button>
           <button onClick={discard} data-testid="edit-discard" className="px-4 py-2 border border-[#2D1D1A] text-[11px] tracking-[0.18em] uppercase hover:border-[#D94A3D] hover:text-[#D94A3D] inline-flex items-center gap-2">
             <RotateCcw size={12} /> Discard draft
           </button>
@@ -427,6 +518,23 @@ export default function EditWebsite() {
           </button>
         </div>
       </div>
+
+      {/* Recovery banner — appears when a local backup is detected */}
+      {recoveryAvailable && (
+        <div className="bg-[#D9772B]/15 border-y border-[#D9772B]/50 px-6 py-3 flex items-center justify-between gap-3 flex-wrap" data-testid="recovery-banner">
+          <p className="text-sm text-[#F3EFE7]">
+            <strong className="text-[#D9772B]">Unsaved edits found in this browser.</strong> Looks like saves failed previously. Restore them?
+          </p>
+          <div className="flex gap-2">
+            <button onClick={restoreLocalBackup} data-testid="recovery-restore" className="px-4 py-2 bg-[#D9772B] text-[#0A0504] text-[11px] tracking-[0.18em] uppercase hover:bg-[#F3EFE7]">
+              Restore unsaved edits
+            </button>
+            <button onClick={dismissRecovery} data-testid="recovery-dismiss" className="px-4 py-2 border border-[#2D1D1A] text-[11px] tracking-[0.18em] uppercase hover:border-[#D94A3D] hover:text-[#D94A3D]">
+              Discard
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 min-h-[calc(100vh-72px)]">
         {/* Side panel — editor */}
@@ -483,6 +591,42 @@ export default function EditWebsite() {
           />
         </div>
       </div>
+
+      {/* ─── Auth expired modal — keeps in-memory edits, just need to re-login ─── */}
+      {authExpired && (
+        <div className="fixed inset-0 z-50 bg-[#0A0504]/90 backdrop-blur-sm flex items-center justify-center p-6" data-testid="auth-expired-modal">
+          <form onSubmit={reLogin} className="bg-[#140A09] border border-[#D9772B]/60 w-full max-w-md p-7">
+            <p className="text-overline text-[#D9772B]">Session expired</p>
+            <h2 className="font-display text-2xl mt-2 leading-tight">Re-login to save your work</h2>
+            <p className="text-sm text-[#B5A79E] mt-3">
+              Your edits are still here in memory — sign back in and we&apos;ll save them immediately.
+            </p>
+            <input
+              type="email"
+              required
+              autoFocus
+              value={reLoginEmail}
+              onChange={(e) => setReLoginEmail(e.target.value)}
+              placeholder="Email"
+              data-testid="relogin-email"
+              className="mt-5 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-none"
+            />
+            <input
+              type="password"
+              required
+              value={reLoginPwd}
+              onChange={(e) => setReLoginPwd(e.target.value)}
+              placeholder="Password"
+              data-testid="relogin-password"
+              className="mt-3 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-none"
+            />
+            <button type="submit" data-testid="relogin-submit"
+              className="mt-5 w-full px-5 py-3 bg-[#D9772B] text-[#0A0504] text-[11px] tracking-[0.22em] uppercase hover:bg-[#F3EFE7]">
+              Re-login & save
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* ─── Version history modal ─── */}
       {historyOpen && (

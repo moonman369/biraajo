@@ -1,0 +1,33 @@
+{
+  "summary": "ALL iter-12 features verified end-to-end with no issues. Logged in as admin reachbiraajo@gmail.com, opened /admin/edit and confirmed all new testids (edit-save-now, edit-history, edit-discard, edit-publish) are present; edit-save-now is correctly disabled when not dirty. window.__biraajoDumpDraft is exposed on mount. Editing landing.hero.brand (the giant wordmark) wrote biraajo_unsaved_draft to localStorage within 400ms with {savedAt, content} where content.landing.hero.brand reflected the live edit; after the 600ms-debounced PUT /api/admin/site-content/draft returned 200, localStorage was cleared. Save now button: typing → button becomes enabled → click → status flips to 'All changes saved'. CRITICAL AUTH-EXPIRY FLOW: forced localStorage.biraajo_admin_token='invalid.jwt.token', edited the brand again, the autosave PUT returned 401, the auth-expired-modal opened, the React input value retained the latest unsaved char, localStorage backup retained the latest content, and submitting relogin-email/relogin-password/relogin-submit logged back in, the modal closed, the in-memory content was PUT back to the server (verified via GET /api/site-content?mode=draft returning the unsaved 'biraajoXZ' value), and localStorage was cleared. RECOVERY BANNER FLOW: manually wrote a backup with brand='biraajoRECOVERY' to localStorage and reloaded; the recovery-banner appeared with recovery-restore + recovery-dismiss buttons; clicking recovery-restore updated state and PUT it to the server (server GET reflected 'biraajoRECOVERY'). REGRESSION: edit-history opens history-modal which closes via history-close. CLEANUP: brand reverted to original 'biraajo' and saved; final GET confirmed no leftover data.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_12.json"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "EditWebsite.jsx is now ~865 lines — borderline; recommend extracting PageEditor/SectionEditor/NestedSection/ListEditor/Field into a separate file and the relogin/recovery logic into a custom hook (useAdminAutosave) for testability.",
+    "queueAutosave uses a single saveTimer ref but writes localStorage on every keystroke — fine for current size, but for very large content blobs (>1MB) repeated JSON.stringify on every key could become a perf hit; consider debouncing the localStorage write too.",
+    "doSave on 401 sets authExpired but does NOT cancel/clear saveTimer.current; if user is still typing while the modal is up, another doSave will fire and also 401-toast. Cosmetic only — modal is already open. Consider early-return in queueAutosave when authExpired is true.",
+    "reLogin uses localStorage.setItem then immediately doSave(content); api client must pick up the new token synchronously (it does via interceptor reading localStorage at call time). Verified end-to-end — works."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "Not re-run this iteration (no backend changes per files_of_reference); iter-11 baseline 59/60 still valid",
+    "frontend": "18/18 (100%) on all iter-12 in-scope flows"
+  },
+  "test_credentials": "Admin reachbiraajo@gmail.com / Biraajo@2026 — working.",
+  "seed_data_creation": "None. Test mutated landing.hero.brand temporarily (biraajo → biraajoX → biraajoXY → biraajoXZ → biraajoRECOVERY) and reverted to 'biraajo' at the end; final GET /api/site-content?mode=draft confirmed brand=='biraajo'. No registrations, events, or settings touched. No publish was called (snapshot history was NOT incremented). DO-NOT-RESET rule honored.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "iter-12 autosave-resilience features (localStorage shadow backup on every keystroke, 401-handling re-login modal that preserves in-memory state and pushes after relogin, Save now button, recovery banner on next load, and window.__biraajoDumpDraft rescue function) are all verified end-to-end. Key new testids: edit-save-now, auth-expired-modal, relogin-email, relogin-password, relogin-submit, recovery-banner, recovery-restore, recovery-dismiss. Key localStorage keys: biraajo_unsaved_draft (auto-cleared on 200), biraajo_admin_token. Backend endpoints are unchanged from iter-11. To verify the auth-expiry flow in future, set localStorage.biraajo_admin_token to a junk string and then edit any field — the autosave will 401 within ~600ms and the modal will mount.",
+  "rca of the issue": "Original iter-11 bug: autosave silently 401-ed on session expiry and content was only in React state, so a reload would lose everything. Fix is correct and complete: (1) every keystroke shadow-writes to localStorage so a reload/crash can recover, (2) 401 from PUT /admin/site-content/draft is caught in doSave and surfaces the auth-expired-modal instead of disappearing into a toast, (3) re-login from inside the editor preserves React state and immediately re-pushes it to the server, (4) on next mount, if biraajo_unsaved_draft is present the recovery-banner offers a one-click restore-and-save. All four mechanisms verified by Playwright in this run."
+}
