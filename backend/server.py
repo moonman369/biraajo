@@ -883,7 +883,7 @@ async def test_sheets_webhook(user=Depends(get_current_admin)):
     """Synchronously POST a ping to the configured Sheets webhook so admin can verify it."""
     url = os.environ.get("GOOGLE_SHEETS_WEBHOOK_URL", "").strip()
     if not url:
-        return {"ok": False, "reason": "no_webhook_configured"}
+        return {"ok": False, "webhook_url": "", "reason": "no_webhook_configured"}
     result = await _send_to_sheet("ping", {"source": "admin_test", "ts": _now_iso()})
     return {"webhook_url": url, **result}
 

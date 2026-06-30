@@ -14,6 +14,23 @@ Premium personal chef landing page for "Biraajo by Vidip Shah". Dark, luxury hos
 
 ## What's Been Implemented (latest first)
 
+### 2026-06-30 (later) — Barsaat immersive experience page + 3 dates + critical menu-default fix
+- **New `/supper-club/barsaat`** page rebuilt as a multi-sensory story:
+  - Hero with refreshed copy ("A supper with the rain")
+  - Chef's signature quote
+  - "Not just dinner. A monsoon, indoors." — sensory journey: Sight & space / Sound / Smell (camphor + vetiver)
+  - "The soundscape, by Rajneesh" — full collaboration narrative (sound designer credit)
+  - 3-date picker: Sun 5 Jul, Sat 18 Jul, Sun 26 Jul 2026 — 12 seats each, "Selected"/"Choose" interaction, with selected date passed to EventRegistrationModal
+  - Early-bird pricing box: Veg ₹2,200 · Non-veg ₹2,800 (user will raise to ₹2,500 / ₹3,000 after first 10 seats)
+- **Backend pricing now configurable** via /api/settings (price_veg + price_nonveg). _calc_total reads from settings; EventRegistrationModal and Barsaat page read them too.
+- **Hero "Reserve a seat"** now navigates to /supper-club/barsaat#dates so guests pick which date; "Pull up a chair" still opens modal directly.
+- **3 Barsaat events created** in DB; old single Barsaat event removed.
+- **All test registrations cleared** — ready for live customer influx.
+- **CRITICAL DATA-LOSS FIX**: `barsaat.menu` (10 courses + 4 veg variants) added to `site_defaults.py` so any admin "Reset to defaults" no longer wipes it. Verified by testing agent (iteration_10).
+- **Google Sheets** webhook env cleared per user request; backend silently no-ops.
+- **Cosmetic fix**: /api/sheets/test now always includes `webhook_url` field (empty string when not configured) — addresses pre-existing pytest assertion.
+
+
 ### 2026-06-30 — Barsaat menu seeded with veg/non-veg variants
 - Seeded 10-course Barsaat monsoon menu via CMS draft+publish (Khicchu → Caramelised Malai Toast)
 - 4 courses (Panko Bombay Duck, Thepla Tacos, Dal Bhaat, Sev Ussal) include a vegetarian alternative — rendered as a minimal "VEGETARIAN" sub-block under each non-veg dish on `/menus/barsaat`
