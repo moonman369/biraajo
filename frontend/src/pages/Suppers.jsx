@@ -8,9 +8,6 @@ import Footer from "@/components/Footer";
 import EventRegistrationModal from "@/components/EventRegistrationModal";
 import { api } from "@/lib/api";
 
-const PREBOOK_DISCLAIMER =
-  "Barsaat is still being finalised — the menu, the exact date and a few logistical details are not set in stone. By pre-booking now, you're letting us know you want a seat. We will write to you personally with the final details, and you will be among the first invited when the date is confirmed.";
-
 export default function Suppers() {
   const [event, setEvent] = useState(null);
   const [registrationsOpen, setRegistrationsOpen] = useState(true);
@@ -27,13 +24,13 @@ export default function Suppers() {
       .then((r) => setRegistrationsOpen(r.data?.registrations_open !== false)).catch(() => {});
   }, []);
 
-  const onPrebook = () => {
+  const onReserve = () => {
     if (!registrationsOpen) {
-      toast.info("Pre-bookings are paused for now. Please reach out via WhatsApp.");
+      toast.info("Reservations are paused for now. Please reach out via WhatsApp.");
       return;
     }
     if (!event) {
-      toast.info("Barsaat isn't accepting pre-bookings yet — check back soon.");
+      toast.info("No seats are open right now — check back soon.");
       return;
     }
     setOpen(true);
@@ -100,7 +97,7 @@ export default function Suppers() {
           >
             <div className="md:col-span-5 relative aspect-[4/3] md:aspect-auto img-zoom">
               <img src="https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg" alt="Barsaat" className="w-full h-full object-cover" />
-              <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">Work in progress</span>
+              <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">Reservations open</span>
             </div>
             <div className="md:col-span-7 p-8 sm:p-12 flex flex-col justify-between gap-8">
               <div>
@@ -109,18 +106,18 @@ export default function Suppers() {
                   Barsaat. <span className="italic text-[#D9772B]">A supper with the rain.</span>
                 </h2>
                 <p className="mt-4 text-[#B5A79E] leading-relaxed">
-                  Our monsoon edition is taking shape — date, room, and final courses are still being finalised. If
-                  you&apos;d like a seat at the first edition, you can pre-book now and we&apos;ll invite you in.
+                  Our monsoon edition — ten courses written for the rain. Both vegetarian and non-vegetarian
+                  variants are served. Twelve seats only, first come, first served.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link to="/supper-club/barsaat" data-testid="supper-barsaat-learn-more"
+                <Link to="/menus/barsaat" data-testid="supper-barsaat-learn-more"
                   className="inline-flex items-center justify-center px-6 py-3 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
-                  Read about it
+                  View menu
                 </Link>
-                <button onClick={onPrebook} disabled={!registrationsOpen} data-testid="supper-barsaat-prebook"
+                <button onClick={onReserve} disabled={!registrationsOpen} data-testid="supper-barsaat-prebook"
                   className="inline-flex items-center justify-center px-6 py-3 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                  {registrationsOpen ? "Pre-book seats anyway" : "Pre-bookings paused"}
+                  {registrationsOpen ? "Reserve a seat" : "Reservations paused"}
                 </button>
               </div>
             </div>
@@ -133,7 +130,6 @@ export default function Suppers() {
       {open && event && (
         <EventRegistrationModal
           event={event}
-          disclaimer={PREBOOK_DISCLAIMER}
           onClose={() => setOpen(false)}
           onSuccess={() => setOpen(false)}
         />

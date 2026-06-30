@@ -9,9 +9,6 @@ import EventRegistrationModal from "@/components/EventRegistrationModal";
 import { api } from "@/lib/api";
 import { useSiteContent, read } from "@/lib/siteContent";
 
-const PREBOOK_DISCLAIMER =
-  "Barsaat is still being finalised — the menu, the exact date and a few logistical details are not set in stone. By pre-booking now, you're letting us know you want a seat. We will write to you personally with the final details, and you will be among the first invited when the date is confirmed.";
-
 export default function BarsaatMenu() {
   const { content } = useSiteContent();
   const [event, setEvent] = useState(null);
@@ -38,11 +35,11 @@ export default function BarsaatMenu() {
 
   const onBook = () => {
     if (!registrationsOpen) {
-      toast.info("Pre-bookings are paused for now. Please reach out via WhatsApp.");
+      toast.info("Reservations are paused for now. Please reach out via WhatsApp.");
       return;
     }
     if (!event) {
-      toast.info("Barsaat isn't accepting pre-bookings yet — check back soon.");
+      toast.info("No seats are open right now — check back soon.");
       return;
     }
     setOpen(true);
@@ -117,7 +114,7 @@ export default function BarsaatMenu() {
                   data-testid="barsaat-menu-book-btn"
                   className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {registrationsOpen ? "Book now" : "Pre-bookings paused"}
+                  {registrationsOpen ? "Reserve a seat" : "Reservations paused"}
                 </button>
               </div>
             </>
@@ -147,7 +144,7 @@ export default function BarsaatMenu() {
                   data-testid="barsaat-menu-book-btn"
                   className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {registrationsOpen ? "Book now" : "Pre-bookings paused"}
+                  {registrationsOpen ? "Reserve a seat" : "Reservations paused"}
                 </button>
                 <Link
                   to="/supper-club/barsaat"
@@ -167,7 +164,6 @@ export default function BarsaatMenu() {
       {open && event && (
         <EventRegistrationModal
           event={event}
-          disclaimer={PREBOOK_DISCLAIMER}
           onClose={() => setOpen(false)}
           onSuccess={() => setOpen(false)}
         />

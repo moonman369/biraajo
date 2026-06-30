@@ -77,7 +77,7 @@ export default function Menus() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504] via-[#0A0504]/30 to-transparent" />
                 <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">
-                  Work in progress
+                  Reservations open
                 </span>
                 <div className="absolute bottom-0 left-0 right-0 p-7 sm:p-9">
                   <p className="text-overline">Next series</p>
@@ -85,7 +85,7 @@ export default function Menus() {
                     Barsaat. <span className="italic text-[#D9772B]">The menu.</span>
                   </h2>
                   <p className="mt-3 text-[#B5A79E] text-sm leading-relaxed">
-                    Monsoon menu is still being written. Reserve early.
+                    Ten monsoon courses. Veg & non-veg. Reserve early.
                   </p>
                 </div>
               </div>
