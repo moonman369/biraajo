@@ -634,16 +634,48 @@ def test_site_content_draft_publish_discard_roundtrip(admin_headers: dict[str, s
 
 
 def test_site_content_reset_restores_defaults(admin_headers: dict[str, str]) -> None:
-    """POST /api/admin/site-content/reset returns 200 and resets draft + published to defaults."""
-    r = requests.post(
-        f"{API}/admin/site-content/reset", headers=admin_headers, timeout=15
-    )
-    assert r.status_code == 200
-    p = requests.get(f"{API}/site-content", timeout=10).json()
-    # Default hero title from site_defaults.py
-    assert p["landing"]["hero"]["title"] == "A table is being set"
-    d = requests.get(f"{API}/site-content", params={"mode": "draft"}, timeout=10).json()
-    assert d["landing"]["hero"]["title"] == "A table is being set"
+    """POST /api/admin/site-content/reset returns 200 and resets draft + published to defaults.
+
+    NOTE: This test snapshots both published AND draft, asserts reset behaviour, then
+    restores the originals via PUT-draft + publish so user-edited content (e.g. the
+    Barsaat 10-course menu which is NOT in site_defaults.py) is not lost.
+    """
+    original_pub = requests.get(f"{API}/site-content", timeout=10).json()
+    original_draft = requests.get(
+        f"{API}/site-content", params={"mode": "draft"}, timeout=10
+    ).json()
+    try:
+        r = requests.post(
+            f"{API}/admin/site-content/reset", headers=admin_headers, timeout=15
+        )
+        assert r.status_code == 200
+        p = requests.get(f"{API}/site-content", timeout=10).json()
+        # Default hero title from site_defaults.py
+        assert p["landing"]["hero"]["title"] == "A table is being set"
+        d = requests.get(
+            f"{API}/site-content", params={"mode": "draft"}, timeout=10
+        ).json()
+        assert d["landing"]["hero"]["title"] == "A table is being set"
+    finally:
+        # Restore originals so we don't lose admin-edited content (e.g. Barsaat menu)
+        requests.put(
+            f"{API}/admin/site-content/draft",
+            json=original_pub,
+            headers=admin_headers,
+            timeout=15,
+        )
+        requests.post(
+            f"{API}/admin/site-content/publish",
+            headers=admin_headers,
+            timeout=15,
+        )
+        # Restore draft separately if it diverged from published
+        requests.put(
+            f"{API}/admin/site-content/draft",
+            json=original_draft,
+            headers=admin_headers,
+            timeout=15,
+        )
 
 
 # ---------- Settings (registrations toggle) ----------
@@ -709,6 +741,88 @@ def test_settings_toggle_and_blocks_registration(
             headers=admin_headers,
             timeout=10,
         )
+
+
+# ---------- Barsaat new spec (Jul 5/18/26 2026, prices in settings, menu) ----------
+def test_settings_exposes_prices() -> None:
+    """GET /api/settings should return registrations_open, price_veg=2200, price_nonveg=2800."""
+    r = requests.get(f"{API}/settings", timeout=10)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body.get("price_veg") == 2200
+    assert body.get("price_nonveg") == 2800
+    assert "registrations_open" in body
+
+
+def test_three_barsaat_events_present() -> None:
+    """Exactly 3 upcoming Barsaat events on Jul 5/18/26 2026, seats=12, tag=Barsaat."""
+    r = requests.get(f"{API}/events", params={"upcoming": "true"}, timeout=10)
+    assert r.status_code == 200
+    evs = r.json()
+    barsaat = [
+        e for e in evs
+        if e.get("tag") == "Barsaat" and e.get("date", "").startswith("2026-07-")
+    ]
+    dates = sorted(e["date"] for e in barsaat)
+    assert dates == ["2026-07-05", "2026-07-18", "2026-07-26"], dates
+    for e in barsaat:
+        assert e.get("seats_total") == 12, e
+        assert e.get("tag") == "Barsaat"
+
+
+def test_barsaat_site_content_menu_has_10_items_and_4_veg_variants() -> None:
+    """Public site-content has barsaat.menu.items of length 10 with 4 alt_dish entries."""
+    r = requests.get(f"{API}/site-content", timeout=10)
+    assert r.status_code == 200
+    items = r.json().get("barsaat", {}).get("menu", {}).get("items", [])
+    assert len(items) == 10, f"expected 10 items, got {len(items)}"
+    alt = [i for i in items if i.get("alt_dish")]
+    assert len(alt) == 4, f"expected 4 veg variants, got {len(alt)}"
+    alt_names = {i["alt_dish"] for i in alt}
+    # Must include the documented variants (allowing "· Vegetarian" suffix)
+    assert any("Dakor Na Gota" in n for n in alt_names), alt_names
+    assert any("Jackfruit" in n or "Thepla" in n for n in alt_names), alt_names
+    assert any("Mushroom" in n or "Dal Bhaat" in n for n in alt_names), alt_names
+    assert any("Cholar" in n or "Sev Ussal" in n or "Miso" in n for n in alt_names), alt_names
+
+
+def test_register_total_amount_reads_from_settings_veg() -> None:
+    """Vegetarian × 1 guest -> total_amount = price_veg = 2200."""
+    r = requests.get(f"{API}/events", params={"upcoming": "true"}, timeout=10).json()
+    barsaat = next(e for e in r if e.get("tag") == "Barsaat")
+    body = {
+        "event_id": barsaat["id"],
+        "full_name": "TEST Veg User",
+        "email": f"veg_{uuid.uuid4().hex[:8]}@example.com",
+        "phone": "9000000001",
+        "menu_preference": "Vegetarian",
+        "dietary_preferences": "None",
+        "guests": 1,
+    }
+    rr = requests.post(f"{API}/events/{barsaat['id']}/register", json=body, timeout=10)
+    assert rr.status_code == 200, rr.text
+    assert rr.json()["total_amount"] == 2200
+    # do NOT delete: per instructions leave registrations
+    print("LEFT_REG_ID:", rr.json()["id"])
+
+
+def test_register_total_amount_reads_from_settings_nonveg_two_guests() -> None:
+    """Non-Vegetarian × 2 guests -> total_amount = price_nonveg * 2 = 5600."""
+    r = requests.get(f"{API}/events", params={"upcoming": "true"}, timeout=10).json()
+    barsaat = next(e for e in r if e.get("tag") == "Barsaat")
+    body = {
+        "event_id": barsaat["id"],
+        "full_name": "TEST NonVeg User",
+        "email": f"nonveg_{uuid.uuid4().hex[:8]}@example.com",
+        "phone": "9000000002",
+        "menu_preference": "Non-Vegetarian",
+        "dietary_preferences": "None",
+        "guests": 2,
+    }
+    rr = requests.post(f"{API}/events/{barsaat['id']}/register", json=body, timeout=10)
+    assert rr.status_code == 200, rr.text
+    assert rr.json()["total_amount"] == 5600
+    print("LEFT_REG_ID:", rr.json()["id"])
 
 
 def test_newsletter_succeeds_even_when_sheets_webhook_broken() -> None:

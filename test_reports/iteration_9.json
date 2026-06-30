@@ -1,0 +1,51 @@
+{
+  "summary": "Verified Barsaat redesign end-to-end. Backend: settings exposes price_veg=2200/price_nonveg=2800, 3 upcoming Barsaat events (Jul 5/18/26 2026, 12 seats, tag=Barsaat) present, registration total_amount correctly reads from /settings (Veg×1=2200, NonVeg×2=5600). Frontend Barsaat page (/supper-club/barsaat) renders all required sections (page-barsaat, barsaat-chef-note, barsaat-sensory, barsaat-sense-0/1/2, barsaat-rajneesh, barsaat-dates-section, barsaat-date-grid, barsaat-price-box, barsaat-date-0/1/2, barsaat-reserve-main-cta). Date selection works, Reserve CTA opens EventRegistrationModal pre-loaded with chosen Barsaat date. UPI QR image confirmed (src contains 'g9bzx5zc_image.png'); UPI ID 'vidipshah14-1@oksbi' visible with copy button. Hero 'Reserve a seat' navigates to /supper-club/barsaat#dates; About 'Pull up a chair' opens the EventRegistrationModal directly. Admin Menu tab renders both SeriesMenuEditor cards (menu-series-naani_ghar, menu-series-barsaat) with COURSE/DISH/NOTE + VEG-VARIANT DISH + VEG-VARIANT NOTE inputs (alt_dish/alt_note) and Save + move/delete row controls. 47/49 backend tests PASS. CRITICAL DATA-LOSS BUG SURFACED — see backend_issues.critical.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/admin/site-content/reset + backend/site_defaults.py",
+        "issue": "site_defaults.py barsaat block has NO menu.items array. The 10-course Barsaat menu (Khicchu, Panko Bombay Duck → Dakor Na Gota, Thepla Tacos → Jackfruit, Dal Bhaat → Mushroom, Sev Ussal → Cholar Dal Miso, etc.) only existed in the live published site_content document and was never added to defaults. ANY admin click of 'Reset to defaults' (or this iteration's reset test) wipes barsaat.menu.items to []. This was triggered during testing and the live Barsaat menu is now EMPTY — /api/site-content returns barsaat.menu = {} and the public /supper-club/barsaat/menu page will show the WIP placeholder again (the exact bug the user originally complained about).",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "POST /api/sheets/test",
+        "issue": "When GOOGLE_SHEETS_WEBHOOK_URL is empty, response is {ok:false, reason:'no_webhook_configured'} with no 'webhook_url' key. Pre-existing test test_sheets_test_authorized_surfaces_failure still asserts webhook_url presence — fails. Either update endpoint to always include webhook_url (even when blank) OR loosen the test. Cosmetic — endpoint logic is fine."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_biraajo_api.py",
+    "/app/test_reports/pytest/pytest_results_iter9.xml"
+  ],
+  "action_items": [
+    "HIGH: Restore the 10-course Barsaat menu (with the 4 vegetarian variants — Dakor Na Gota, Thepla Tacos · Jackfruit, Dal Bhaat · Mushroom, Sev Ussal · Cholar Dal Miso) by adding a barsaat.menu.items array to backend/site_defaults.py, then run POST /api/admin/site-content/reset (or PUT /api/admin/site-content/draft + /publish) so the live published doc has the items again. Without this the user will once again say 'I cant view the barsaat menu' — exactly the bug we just shipped a fix for.",
+    "LOW: Update /api/sheets/test to always include the (possibly empty) webhook_url in its response, or update test_sheets_test_authorized_surfaces_failure to skip when reason='no_webhook_configured'.",
+    "LOW: Consider making POST /api/admin/site-content/reset a no-op for fields the admin has populated (deep-merge into defaults instead of overwrite) — would prevent future accidental data loss."
+  ],
+  "critical_code_review_comments": [
+    "site_defaults.py is the source-of-truth for /admin/site-content/reset, yet it lags behind the live content tree (missing barsaat.menu.items entirely, missing newer fields). Any field rendered in the admin Edit Website UI that isn't in defaults is at risk of being wiped on reset.",
+    "server.py is now 1075 lines — still approaching the 700-line soft cap. Splitting routes_settings.py + routes_cms.py would help.",
+    "_calc_total is correctly async and reads price_veg/price_nonveg from settings — verified by the two new total_amount tests.",
+    "Reset endpoint is destructive without confirmation in the API contract. Consider returning a diff preview / requiring a confirm=true query param."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_biraajo_api.py — added test_settings_exposes_prices, test_three_barsaat_events_present, test_barsaat_site_content_menu_has_10_items_and_4_veg_variants, test_register_total_amount_reads_from_settings_veg, test_register_total_amount_reads_from_settings_nonveg_two_guests; hardened test_site_content_reset_restores_defaults with snapshot+restore (PUT draft + publish) so it no longer leaves admin-edited content in a wiped state."
+  ],
+  "success_rate": {
+    "backend": "47/49 (95.9%) — 1 critical data-loss bug, 1 pre-existing stale assertion",
+    "frontend": "100% on all in-scope flows (Barsaat page sections, date selection, modal pre-load, UPI QR, Hero nav, About-join-table modal, Admin Menu tab)"
+  },
+  "test_credentials": "Admin reachbiraajo@gmail.com / Biraajo@2026 — working.",
+  "seed_data_creation": "Per the agent-to-agent note, left two registrations on the Jul 5 Barsaat event (event id cdaf83ef-a36f-40bd-821c-b1d096729661) and one on the Jul 18 event (id 4d790a4f-86da-417e-837b-3cd820f10303) for the user to inspect. Emails: qa_barsaat_test@example.com, qa_barsaat_july5@example.com, qa_barsaat_july5_v2@example.com, plus two from pytest (veg_*, nonveg_*). Reg IDs are logged in pytest stdout via print('LEFT_REG_ID:', ...). Main agent can clean them up via DELETE /api/registrations/{id} when ready.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "The Barsaat menu data-loss bug (defaults missing barsaat.menu.items) is the highest-priority blocker. Verify after main-agent fix by curling /api/site-content and asserting barsaat.menu.items has length 10 with 4 alt_dish entries (Dakor Na Gota, Thepla Tacos/Jackfruit, Dal Bhaat/Mushroom, Sev Ussal/Cholar Dal Miso). Pytest 47/49 passing is the new baseline. Backend testids of interest: page-barsaat, barsaat-sense-{0,1,2}, barsaat-date-{0,1,2}, barsaat-reserve-main-cta, upi-qr-image, hero-reserve-seat-button, about-join-table, admin-tab-menu, menu-series-naani_ghar, menu-series-barsaat.",
+  "rca of the issue": "Root cause of the menu wipe: backend/site_defaults.py defines barsaat without a menu key. site_content reset overwrites both draft and published with deepcopy(DEFAULT_CONTENT). The Barsaat 10-item menu was added live via PUT /admin/site-content/draft + publish but never back-ported to defaults. When test_site_content_reset_restores_defaults runs the reset endpoint, the menu is wiped. Mitigation already applied to tests: snapshot original published+draft and PUT-back after reset (so the test alone no longer destroys data going forward). But the underlying defaults gap remains — and right now the live DB still has barsaat.menu.items=[] because the FIRST test run before the hardening had already wiped it. Main agent must (a) populate site_defaults.py with the 10 Barsaat items + alt_dish/alt_note, then (b) run a one-time reset/seed to repopulate the live document."
+}

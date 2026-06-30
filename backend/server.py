@@ -27,7 +27,7 @@ from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
 # ---------- Pricing ----------
 PRICE_VEG = 2200
-PRICE_NONVEG = 2500
+PRICE_NONVEG = 2800
 UPI_ID = os.environ.get("UPI_ID", "vidipshah14-1@oksbi")
 
 
@@ -529,8 +529,12 @@ async def delete_event(event_id: str, user=Depends(get_current_admin)):
 
 
 # ---------- Registrations ----------
-def _calc_total(menu_preference: str, guests: int) -> int:
-    per_seat = PRICE_VEG if menu_preference == "Vegetarian" else PRICE_NONVEG
+async def _calc_total(menu_preference: str, guests: int) -> int:
+    s = await _get_settings()
+    veg = int(s.get("price_veg", PRICE_VEG))
+    nonveg = int(s.get("price_nonveg", PRICE_NONVEG))
+    per_seat = veg if menu_preference == "Vegetarian" else nonveg
+    return int(per_seat) * max(1, int(guests or 1))
     return per_seat * max(1, int(guests))
 
 
@@ -594,7 +598,7 @@ async def register_event(event_id: str, body: RegistrationIn):
     payload = body.model_dump()
     payload["event_id"] = event_id
     payload["email"] = payload["email"].lower()
-    total = _calc_total(payload.get("menu_preference", ""), payload.get("guests", 1))
+    total = await _calc_total(payload.get("menu_preference", ""), payload.get("guests", 1))
 
     existing = await db.registrations.find_one({"event_id": event_id, "email": payload["email"]})
     if existing and existing.get("payment_status") == "confirmed":
@@ -978,6 +982,8 @@ async def reset_site_content(user=Depends(get_current_admin)):
 # ---------- Global settings (registrations toggle, etc.) ----------
 DEFAULT_SETTINGS = {
     "registrations_open": True,
+    "price_veg": PRICE_VEG,
+    "price_nonveg": PRICE_NONVEG,
 }
 
 
@@ -993,7 +999,11 @@ async def _get_settings() -> dict:
 async def public_settings():
     """Public-readable settings — only safe fields."""
     s = await _get_settings()
-    return {"registrations_open": bool(s.get("registrations_open", True))}
+    return {
+        "registrations_open": bool(s.get("registrations_open", True)),
+        "price_veg": int(s.get("price_veg", PRICE_VEG)),
+        "price_nonveg": int(s.get("price_nonveg", PRICE_NONVEG)),
+    }
 
 
 @api.put("/admin/settings")

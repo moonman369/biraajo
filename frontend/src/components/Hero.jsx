@@ -1,20 +1,19 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useSiteContent, read } from "@/lib/siteContent";
-import EventRegistrationModal from "@/components/EventRegistrationModal";
 
 export default function Hero() {
   const { content } = useSiteContent();
-  const [event, setEvent] = useState(null);
+  const [hasUpcoming, setHasUpcoming] = useState(true);
   const [registrationsOpen, setRegistrationsOpen] = useState(true);
-  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.get("/events", { params: { upcoming: "true" } })
-      .then((r) => setEvent((r.data || [])[0] || null)).catch(() => {});
+      .then((r) => setHasUpcoming(((r.data || []).length) > 0)).catch(() => {});
     api.get("/settings")
       .then((r) => setRegistrationsOpen(r.data?.registrations_open !== false)).catch(() => {});
   }, []);
@@ -25,12 +24,12 @@ export default function Hero() {
       window.location.hash = "#newsletter";
       return;
     }
-    if (!event) {
+    if (!hasUpcoming) {
       toast.info("No supper open for reservations right now — join the list to be notified.");
       window.location.hash = "#newsletter";
       return;
     }
-    setOpen(true);
+    navigate("/supper-club/barsaat#dates");
   };
 
   const h = content?.landing?.hero;
@@ -41,7 +40,7 @@ export default function Hero() {
 
   let primaryLabel = read(content, "landing.hero.primary_cta_label", "Reserve a seat");
   if (!registrationsOpen) primaryLabel = "Reservations closed · Join list";
-  else if (!event) primaryLabel = "Be first to know · Join list";
+  else if (!hasUpcoming) primaryLabel = "Be first to know · Join list";
 
   return (
     <section id="top" className="relative min-h-screen w-full overflow-hidden" data-testid="hero-section">
@@ -104,10 +103,6 @@ export default function Hero() {
           </span>
         </motion.div>
       </div>
-
-      {open && event && (
-        <EventRegistrationModal event={event} onClose={() => setOpen(false)} onSuccess={() => setOpen(false)} />
-      )}
     </section>
   );
 }

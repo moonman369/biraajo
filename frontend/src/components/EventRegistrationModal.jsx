@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Copy, Check, Upload, Smartphone } from "lucide-react";
 import { toast } from "sonner";
@@ -27,13 +27,23 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
   const [registration, setRegistration] = useState(null);
   const [copied, setCopied] = useState(false);
   const [screenshotName, setScreenshotName] = useState("");
+  const [prices, setPrices] = useState({ veg: 2200, nonveg: 2800 });
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    api.get("/settings").then((r) => {
+      setPrices({
+        veg: Number(r.data?.price_veg ?? 2200),
+        nonveg: Number(r.data?.price_nonveg ?? 2800),
+      });
+    }).catch(() => {});
+  }, []);
 
   const handle = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const seatsLeft = Math.max(1, event.seats_total - (event.seats_booked || 0));
 
-  const perSeat = form.menu_preference === "Vegetarian" ? 2200 : form.menu_preference === "Non-Vegetarian" ? 2500 : 0;
+  const perSeat = form.menu_preference === "Vegetarian" ? prices.veg : form.menu_preference === "Non-Vegetarian" ? prices.nonveg : 0;
   const total = perSeat * (Number(form.guests) || 1);
 
   const submitForm = async (e) => {
@@ -161,11 +171,11 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
               <div className="mt-5 grid grid-cols-2 gap-px bg-[#2D1D1A] border border-[#2D1D1A]">
                 <div className="bg-[#0A0504] p-4">
                   <p className="text-overline">Vegetarian</p>
-                  <p className="font-display text-2xl text-[#F3EFE7] mt-1">₹2,200<span className="text-sm text-[#B5A79E]"> / person</span></p>
+                  <p className="font-display text-2xl text-[#F3EFE7] mt-1">₹{prices.veg.toLocaleString("en-IN")}<span className="text-sm text-[#B5A79E]"> / person</span></p>
                 </div>
                 <div className="bg-[#0A0504] p-4">
                   <p className="text-overline">Non-Vegetarian</p>
-                  <p className="font-display text-2xl text-[#F3EFE7] mt-1">₹2,500<span className="text-sm text-[#B5A79E]"> / person</span></p>
+                  <p className="font-display text-2xl text-[#F3EFE7] mt-1">₹{prices.nonveg.toLocaleString("en-IN")}<span className="text-sm text-[#B5A79E]"> / person</span></p>
                 </div>
               </div>
 
@@ -191,8 +201,8 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
                   <span className="text-overline block mb-2">Menu Preference<span className="text-[#D9772B]"> *</span></span>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { v: "Vegetarian", price: "₹2,200" },
-                      { v: "Non-Vegetarian", price: "₹2,500" },
+                      { v: "Vegetarian", price: `₹${prices.veg.toLocaleString("en-IN")}` },
+                      { v: "Non-Vegetarian", price: `₹${prices.nonveg.toLocaleString("en-IN")}` },
                     ].map((o) => (
                       <button key={o.v} type="button"
                         onClick={() => setForm((f) => ({ ...f, menu_preference: o.v }))}
