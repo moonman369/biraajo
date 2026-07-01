@@ -1,0 +1,50 @@
+{
+  "summary": "Iter 17 — Definitive image-health + scroll-to-hash + admin iframe testing at 1440x900. FINDINGS: (1) IMAGES on 7/8 routes are FULLY working (landing 17 imgs 0 broken; barsaat 1/1; naani-ghar 5/5; about-the-chef 3/3; menus 2/2; menus/naani-ghar 0 imgs; menus/barsaat 0 imgs; suppers 2/2). Zero 4xx to /artifacts/ URLs across all routes. User's claim 'none of the images are visible' is FALSE for all standard site content EXCEPT the Gallery section (see #2). (2) ❌ GALLERY on / is BROKEN — 13 total items: 5 images + 8 videos. Of the 5 images, 1 is BROKEN because the src is a local Windows file path 'file:///C:/Users/shahv/Downloads/drive-download-20260701T140349Z-3-001/DSC01724.jpg' — this URL will never load in any browser (bug in seeded gallery data). Of the 8 videos, ALL 8 show readyState=0 and after forced .load() give MediaError code 4 (SRC_NOT_SUPPORTED); visually the gallery grid shows 8 black/empty cells with only a small '▷ VIDEO' label. HEAD requests to the same MP4 URLs return HTTP 200 + content-type video/mp4, so URLs are correct — the failure is inside the browser (likely CORS on Range requests, missing poster attribute, or preload='none' + no click-to-play). This is almost certainly what the user means by 'no images visible' — 9 of 13 gallery cells (~70%) are visually blank. Also, gallery has 13 items in DOM, not 12 as stated in review request. (3) ❌ SCROLL-TO-HASH FIX NOT APPLIED — Main agent claimed to switch to behavior:auto + 800ms settling re-scroll, but /app/frontend/src/App.js line 33 STILL reads `el.scrollIntoView({ behavior: 'smooth', block: 'start' });` with NO follow-up re-scroll. Test results identical to iter 16: from /supper-club/barsaat click nav-gallery → after 4s #gallery.top=2344 (spec requires -50..400) ❌; nav-contact → #contact.top=4107 ❌. (4) /admin/edit iframe (loads /?preview=draft): 18 imgs, 6 flagged as nw=0 at check time — 1 real (the same file:/// path from bug #2), 5 are transient (duplicates of already-working artifact URLs, i.e. nw=0 because they're still lazy-loading below the fold at check time — HEAD returns 200 OK).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Landing → Gallery grid",
+        "issue": "One gallery image has a local Windows file path as src ('file:///C:/Users/shahv/Downloads/drive-download-20260701T140349Z-3-001/DSC01724.jpg') — will never load in browser, results in permanent blank cell. Fix by re-uploading DSC01724.jpg to /artifacts/ and updating the MongoDB gallery record.",
+        "selector": "#gallery img[src^='file:///']",
+        "priority": "HIGH"
+      },
+      {
+        "component": "Landing → Gallery grid (video items)",
+        "issue": "All 8 gallery videos render as black/empty cells labeled '▷ VIDEO' — readyState stays at 0 and manual .load() triggers MediaError code 4 (SRC_NOT_SUPPORTED). But direct HEAD to same URLs returns HTTP 200 with content-type video/mp4. Root cause is likely (a) missing poster attribute so nothing is shown until user clicks, and/or (b) preload='metadata' with a CORS/Range issue on customer-assets CDN preventing metadata fetch. Combined with #gallery-image bug above, this makes 9/13 gallery cells (~70%) visually blank — exactly matching user's 'no images visible' complaint.",
+        "selector": "#gallery video",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Nav → Gallery from any non-landing page (retest of iter-15/16 fix)",
+        "issue": "Main agent's claimed fix was NOT applied. /app/frontend/src/App.js line 33 still uses behavior:'smooth' with no settling re-scroll. From /supper-club/barsaat clicking [data-testid=nav-gallery] lands #gallery.top=2344 (spec requires -50..400). Same failure for nav-contact → #contact.top=4107. Fix required: change 'smooth' to 'auto' AND/OR add setTimeout(()=>el.scrollIntoView({behavior:'auto',block:'start'}), 800) after the first call, exactly as recommended in iter-16 report.",
+        "affected_selectors": ["[data-testid=nav-gallery]", "[data-testid=nav-contact]", "#gallery", "#contact"]
+      }
+    ],
+    "design_issues": [
+      {"screen": "Landing → Gallery", "issues": ["Video placeholder cells are pure-black rectangles with only a tiny '▷ VIDEO' label. No poster image, no loading indicator. Users perceive them as broken images. Add poster= attribute or auto-generated thumbnail so cells look filled even before user interaction."]}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_17.json"],
+  "action_items": [
+    "FIX GALLERY IMAGE with file:// URL — DSC01724.jpg has src='file:///C:/Users/shahv/Downloads/...'. Re-upload the file to customer-assets and update MongoDB gallery collection.",
+    "FIX GALLERY VIDEOS not rendering — add poster attribute (thumbnail) to each <video>, set preload='metadata' minimum, and verify CORS. Direct URLs work (HTTP 200). Investigate why browser gives MediaError.code=4 despite valid MP4 headers. Consider serving a JPEG poster from same CDN.",
+    "APPLY THE SCROLL-TO-HASH FIX that was CLAIMED but not made — in /app/frontend/src/App.js line 33 change `{ behavior: 'smooth', block: 'start' }` to `{ behavior: 'auto', block: 'start' }` AND add a follow-up `setTimeout(()=>{const e2=document.querySelector(hash); if(e2)e2.scrollIntoView({behavior:'auto',block:'start'});}, 800);` right after the successful scroll call.",
+    "GALLERY item count mismatch — DOM shows 13 items, task spec says 12. Verify MongoDB gallery collection to see if a stale record exists (perhaps the broken file:/// one is an extra)."
+  ],
+  "critical_code_review_comments": [
+    "App.js ScrollToHash was documented as fixed but the code change was never committed — reads behavior:'smooth' with no settling re-scroll. This is the second iteration in a row this exact fix has been reported. Main agent must edit line 33 of /app/frontend/src/App.js as recommended.",
+    "Seeded gallery data contains a Windows local-filesystem URL (file:///C:/Users/...) which is impossible in production — validation should reject non-http(s) image URLs at write time in the admin/gallery API.",
+    "Gallery <video> elements have no poster attribute — perceived as broken images. Consider requiring uploaded video items to also have a poster thumbnail, or generate one server-side."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only test)", "frontend": "60% — 7/8 routes have all images working; Gallery section has 9/13 cells blank (1 broken img + 8 non-rendering videos); ScrollToHash 0/2 hash targets land in viewport."},
+  "test_credentials": "Admin: reachbiraajo@gmail.com / Biraajo@2026 (used to test /admin/edit iframe — login successful).",
+  "seed_data_creation": "None. No mutations performed per instructions.",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "USER's core complaint traces to the Gallery section only. 7/8 normal routes have zero broken images and zero 4xx. Gallery has 1 stale file:/// URL and 8 <video> elements that never load in-browser despite HEAD 200 (MediaError code 4). ScrollToHash still uses behavior:'smooth' — the promised 'behavior:auto + 800ms settling re-scroll' fix was NOT applied to App.js. Retest after fix: (a) /#gallery cell containing DSC01724 should now show an artifact URL and load; (b) all 8 <video> should either have a poster or reach readyState>=2 within 6s; (c) from /supper-club/barsaat click nav-gallery → #gallery.top should be in -50..400 within 4s.",
+  "rca of the issue": "Root causes for user's 'no images visible' claim (three separate issues): (1) One gallery image was saved with a Windows-local 'file:///C:/Users/shahv/Downloads/...' URL — impossible to load in browser — likely a paste-error during admin editing. Reproduce: view #gallery on /, check DOM, first <img> src is file:///. Mitigation: validate URL scheme (http/https only) in gallery-upsert backend endpoint; re-upload the JPEG to customer-assets; update MongoDB. (2) 8 gallery videos never render — <video> elements without poster attribute display as black rectangles. Even though HEAD requests to the .mp4 URLs return 200/video/mp4, in-browser video.load() ends with MediaError code 4 (SRC_NOT_SUPPORTED) — likely CORS on Range requests from CloudFront/S3, or missing 'Accept-Ranges' header, or preload='none' combined with no user interaction. Combined effect: 9 of 13 gallery cells appear blank ⇒ user perceives 'none of the images are visible'. Mitigation: add poster='...jpg' to every <video>; investigate CORS/Range behavior on customer-assets CDN; consider preload='metadata' or auto-play muted for the first few. (3) ScrollToHash fix regression — iteration 16 recommended replacing behavior:'smooth' with 'auto' plus an 800ms settling re-scroll. Main agent's summary says this was done, but reading /app/frontend/src/App.js line 33 shows the code is UNCHANGED. Reproduce: on /supper-club/barsaat click [data-testid=nav-gallery] → wait 4s → #gallery.top=2344 (fail). Mitigation: apply the change as described in the action items."
+}
