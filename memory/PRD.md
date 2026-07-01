@@ -14,6 +14,15 @@ Premium personal chef landing page for "Biraajo by Vidip Shah". Dark, luxury hos
 
 ## What's Been Implemented (latest first)
 
+### 2026-07-01 — Barsaat page reorg + 5 new reels in gallery & page
+- **Layout reorg**: Dates + Reserve block moved to the TOP of `/supper-club/barsaat` (was at bottom). New order: Hero → Dates → Chef's note → Sensory → Rajneesh → Reels → Closer.
+- **5 new "Barsaat test run" MP4s** uploaded by user, now:
+  - Added to the Gallery (12 total items) with captions
+  - Added to the Barsaat page reels grid (7 total reels — 5 new + 2 existing), responsive 4-column grid on desktop
+- **Hero image regression** patched again — the previous testing-agent restore round-trip had reverted `barsaat.hero.image` to the broken kpwk8ol3 URL; re-patched to the working ctn50bz1 URL.
+- Verified by testing_agent iteration_14 → 0 issues, all pytest and Playwright checks pass.
+
+
 ### 2026-06-30 (later) — Black-image fix + new Barsaat reel
 - ROOT CAUSE of "2 black screens": the artifact URL `kpwk8ol3__DSC4913-2 (1).jpg` under `job_feast-studio-1` returns HTTP 403. It was used as `barsaat.hero.image`, `landing.experiences.cards[0].image`, `naani_ghar.photos_block.photos[0]` and hardcoded in `Suppers.jsx`.
 - FIX: replaced everywhere with the working alternate `ctn50bz1__DSC4913-2 (1) (1).jpg` (200 OK) via CMS publish + `site_defaults.py` + `Suppers.jsx` hardcoded path.
