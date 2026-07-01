@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { Toaster } from "sonner";
 import LandingPage from "@/pages/LandingPage";
 import AdminLogin from "@/pages/AdminLogin";
@@ -19,10 +20,29 @@ function RequireAdmin({ children }) {
   return getToken() ? children : <Navigate to="/admin/login" replace />;
 }
 
+// Scroll to hash on route/hash change (fixes /#gallery, /#contact links from other pages)
+function ScrollToHash() {
+  const { hash, pathname } = useLocation();
+  useEffect(() => {
+    if (hash) {
+      // Wait a tick for the target element to be rendered
+      const t = setTimeout(() => {
+        const el = document.querySelector(hash);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+      return () => clearTimeout(t);
+    } else {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [hash, pathname]);
+  return null;
+}
+
 export default function App() {
   return (
     <div className="App film-grain">
       <BrowserRouter>
+        <ScrollToHash />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/about-the-chef" element={<AboutTheChef />} />

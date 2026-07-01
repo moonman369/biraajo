@@ -10,6 +10,11 @@ function useHashHref() {
   return (hash) => (onLanding ? hash : `/${hash}`);
 }
 
+// For react-router Link: build "/" + "#hash" when off landing, else just "#hash"
+function onLandingPath(id, loc) {
+  return loc.pathname === "/" ? `#${id}` : { pathname: "/", hash: `#${id}` };
+}
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -17,6 +22,7 @@ export default function Navbar() {
   const [mobileEventsOpen, setMobileEventsOpen] = useState(false);
   const eventsRef = useRef(null);
   const href = useHashHref();
+  const loc = useLocation();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -53,7 +59,6 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-8 lg:gap-9">
           <a href={href("#about")} className={linkCls} data-testid="nav-story">Story</a>
           <Link to="/about-the-chef" className={linkCls} data-testid="nav-about-chef">About the Chef</Link>
-          <a href={href("#experiences")} className={linkCls} data-testid="nav-experiences">Experiences</a>
 
           {/* Events dropdown */}
           <div className="relative" ref={eventsRef}>
@@ -94,8 +99,8 @@ export default function Navbar() {
           </div>
 
           <Link to="/menus" className={linkCls} data-testid="nav-menu">Menu</Link>
-          <a href={href("#gallery")} className={linkCls} data-testid="nav-gallery">Gallery</a>
-          <a href={href("#contact")} className={linkCls} data-testid="nav-contact">Reach out</a>
+          <Link to={onLandingPath("gallery", loc)} className={linkCls} data-testid="nav-gallery">Gallery</Link>
+          <Link to={onLandingPath("contact", loc)} className={linkCls} data-testid="nav-contact">Reach out</Link>
         </nav>
 
         <button
@@ -120,7 +125,6 @@ export default function Navbar() {
             <div className="flex flex-col gap-1 px-6 py-6">
               <a href={href("#about")} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Story</a>
               <Link to="/about-the-chef" onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">About the Chef</Link>
-              <a href={href("#experiences")} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Experiences</a>
 
               <button
                 onClick={() => setMobileEventsOpen((v) => !v)}
@@ -138,8 +142,8 @@ export default function Navbar() {
               )}
 
               <Link to="/menus" onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Menu</Link>
-              <a href={href("#gallery")} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Gallery</a>
-              <a href={href("#contact")} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3" data-testid="mobile-nav-link">Reach out</a>
+              <Link to={onLandingPath("gallery", loc)} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Gallery</Link>
+              <Link to={onLandingPath("contact", loc)} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3" data-testid="mobile-nav-link">Reach out</Link>
             </div>
           </motion.div>
         )}

@@ -1,0 +1,34 @@
+{
+  "summary": "Iter 15 — verified Experiences removal from Landing/Navbar, Barsaat CMS schema (6 sections), payment flow end-to-end (register → screenshot upload → confirmed → delete), and image/video health. 5/5 backend pytest cases pass (test_settings, test_barsaat_cms_core, test_upi_qr, test_booking_flow_e2e, test_admin_login). Booking created for TEST_iter15 user at ₹2,200 (1 veg), tiny PNG uploaded via /api/registrations/{id}/payment-screenshot flipped payment_status pending → confirmed, then registration deleted cleanly via admin. Zero broken /artifacts/ images and zero 4xx artifact responses across /supper-club/barsaat, /, /menus/barsaat, /suppers. Admin login + /admin/edit works; Barsaat · page panel expands to reveal all six new sections (Dates & reserve block, Chef's signature quote, Sensory journey, Rajneesh collaboration, Reels grid, Closer) — 'Chef's signature quote' expanded and reveals Eyebrow + The Quote inputs. Barsaat page renders page-barsaat, barsaat-dates-section (y=893) BEFORE barsaat-chef-note (y=1718), plus 7 reel tiles, reels-section, sensory, rajneesh, closer and reserve-main-cta. TWO ISSUES found — see frontend_issues.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Footer.jsx (line 31)", "issue": "Footer still contains a link to '#experiences' labelled 'Experiences' — this link is now dead (Experiences section removed from Landing page). Should be removed to match Navbar + Landing changes.", "selector": "footer a[href='#experiences']", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [
+      {"flow": "Nav → Gallery from non-landing page", "issue": "Clicking [data-testid='nav-gallery'] on /supper-club/barsaat DOES change URL to /#gallery, but the scroll to #gallery does NOT happen (window.scrollY stayed 0, #gallery bounding-top still 6062px). Root cause: App.js ScrollToHash uses setTimeout(100ms) then document.querySelector(hash). When navigating from a supper-club page to Landing, Landing's Gallery component (which is far down) has not yet mounted at 100ms, so the query returns null and scrollIntoView never fires. Nav → Contact partially works (URL changes, page scrolls to 5055 but #contact is at 9162 — still 4107px off-screen).", "affected_selectors": ["[data-testid='nav-gallery']", "[data-testid='nav-contact']", "#gallery", "#contact"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_iter15.py", "/app/test_reports/pytest/pytest_iter15.xml"],
+  "action_items": [
+    "Remove the 'Experiences' link from /app/frontend/src/components/Footer.jsx (line 31) since the section no longer exists.",
+    "Fix ScrollToHash in /app/frontend/src/App.js — 100ms timeout is too short for cross-route navigations where the target section is far down and lazily mounts. Suggest either: (a) increase timeout to 800-1200ms, or (b) use a retry loop / MutationObserver that polls for the target element for up to ~3s before scrollIntoView. Confirm nav-gallery + nav-contact land within 400px of viewport top after 1s from ANY page.",
+    "Optional cleanup: Landing-page 'Experiences' schema block still exists in EditWebsite.jsx (visible in admin left panel under 'Landing page') even though the section is removed from LandingPage.jsx — safe to keep for future re-enable, or remove for tidiness.",
+    "Optional cleanup: backend site_content still has legacy 'barsaat.reel' object (single reel) alongside 'reels' array. Dead data — could be pruned."
+  ],
+  "critical_code_review_comments": [
+    "App.js ScrollToHash uses a fixed 100ms setTimeout — brittle for cross-route hash navigation. Should poll for element or use larger delay with retry.",
+    "Footer.jsx still hard-codes the removed 'Experiences' link — indicates the removal task wasn't audited across all components.",
+    "EventRegistrationModal.jsx hard-codes UPI_ID and UPI_QR_URL as JS constants — better to source from /api/settings so admin can rotate them without a rebuild.",
+    "Backend _calc_total does exact string match menu_preference == 'Vegetarian' — case sensitive. Recommend .lower() comparison to avoid silent nonveg pricing if frontend ever sends lowercase."
+  ],
+  "updated_files": ["/app/backend/tests/test_iter15.py"],
+  "success_rate": {"backend": "100% (5/5 pytest)", "frontend": "90% — 2 bugs: dead footer Experiences link + ScrollToHash not landing on target after cross-route hash nav"},
+  "test_credentials": "Admin: reachbiraajo@gmail.com / Biraajo@2026 (verified /api/auth/login + /api/auth/me + /admin/edit UI).",
+  "seed_data_creation": "Created 1 pending → confirmed test registration for TEST_iter15 user (email test_iter15@example.com, 1 veg guest, ₹2200). DELETED via /api/registrations/{id} in the same test to keep DB clean.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "For the ScrollToHash regression test: don't just assert URL includes '#gallery' — assert document.getElementById('gallery').getBoundingClientRect().top < 400 within ~2s of the click. Test from a supper-club page, not from '/', because the bug only manifests when Landing is remounting. The UPI QR image is hard-coded in EventRegistrationModal.jsx as a customer-assets.emergentagent.com/job_8232982a-.../g9bzx5zc_image.png URL (not from /api/settings). Booking register endpoint is POST /api/events/{event_id}/register (not /api/registrations), and requires 'menu_preference': 'Vegetarian' (case-sensitive) to bill ₹2200.",
+  "rca of the issue": "ScrollToHash bug: In /app/frontend/src/App.js ScrollToHash effect fires on [hash, pathname] change with 100ms setTimeout. When navigating /supper-club/barsaat → /#gallery, React remounts Landing which is a heavy tree — Hero/About/Events/Menu components render before Gallery + Contact (further down the tree with lazy images/videos). At the 100ms mark document.querySelector('#gallery') often returns null, effect exits silently, and no scroll happens. Reproduction: on /supper-club/barsaat, click [data-testid='nav-gallery'], wait 3s → window.scrollY === 0 & #gallery.getBoundingClientRect().top ≈ 6062. Mitigation: replace setTimeout with a retry loop (setInterval up to 3s or requestAnimationFrame poll) that keeps trying until the element mounts, then calls scrollIntoView. Footer bug: legacy static list in Footer.jsx wasn't updated when Experiences was removed."
+}

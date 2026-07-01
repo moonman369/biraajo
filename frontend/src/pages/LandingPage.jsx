@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
-import Experiences from "@/components/Experiences";
 import Gallery from "@/components/Gallery";
 import InstagramFeed from "@/components/InstagramFeed";
 import Events from "@/components/Events";
@@ -28,7 +27,6 @@ export default function LandingPage() {
       <Navbar />
       <Hero />
       <About />
-      <Experiences />
       <Events />
       <Gallery />
       <InstagramFeed />

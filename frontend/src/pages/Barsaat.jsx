@@ -8,35 +8,23 @@ import EventRegistrationModal from "@/components/EventRegistrationModal";
 import { api } from "@/lib/api";
 import { useSiteContent, read } from "@/lib/siteContent";
 
-const SENSES = [
-  {
-    icon: CloudRain,
-    eyebrow: "Sight & space",
-    title: "A room that sounds like rain",
-    body:
-      "The room is dressed so the monsoon feels like it is right outside the window. Light, shadow and a few quiet objects do the rest.",
-  },
-  {
-    icon: Music2,
-    eyebrow: "Sound",
-    title: "A composed chronology",
-    body:
-      "A bespoke soundscape by sound designer Rajneesh — ambient cues open the evening, nostalgic instrumentals build with the courses, and the room comes to rest with dessert.",
-  },
-  {
-    icon: Sparkles,
-    eyebrow: "Smell",
-    title: "Camphor and vetiver",
-    body:
-      "Two scents that hold monsoon memory in this part of the world. They lead you in before the first plate ever lands.",
-  },
+const DEFAULT_SENSES = [
+  { icon: "cloud", eyebrow: "Sight & space", title: "A room that sounds like rain",
+    body: "The room is dressed so the monsoon feels like it is right outside the window. Light, shadow and a few quiet objects do the rest." },
+  { icon: "music", eyebrow: "Sound", title: "A composed chronology",
+    body: "A bespoke soundscape by sound designer Rajneesh. Ambient cues open the evening, nostalgic instrumentals build with the courses, and the room comes to rest with dessert." },
+  { icon: "sparkles", eyebrow: "Smell", title: "Camphor and vetiver",
+    body: "Two scents that hold monsoon memory in this part of the world. They lead you in before the first plate ever lands." },
 ];
+const SENSE_ICONS = { cloud: CloudRain, music: Music2, sparkles: Sparkles };
 
-const RAJNEESH_NOTE =
-  "The soundscape is a collaboration. I came in with a stack of tracks and ambient cues — rain on a tin roof, distant thunder, the chatter of an old radio. Rajneesh wove them into a single chronology that travels with the food: ambient at the start, nostalgic instrumentals through the middle, a peak that lifts with the main courses, then a gentle drop into dessert. What he composed is impossible without him.";
-
-const SIGNATURE_QUOTE =
-  "Barsaat, to me, is an irreplaceable feeling — a yearning that returns the moment the clouds turn. This menu is that feeling, plated. A room that is entirely my own making.";
+const DEFAULT_RAJNEESH_NOTE = "The soundscape is a collaboration. I came in with a stack of tracks and ambient cues, like rain on a tin roof, distant thunder, the chatter of an old radio. Rajneesh wove them into a single chronology that travels with the food. Ambient at the start, nostalgic instrumentals through the middle, a peak that lifts with the main courses, and then a gentle drop into dessert. What he composed is impossible without him.";
+const DEFAULT_RAJNEESH_BULLETS = [
+  "Rain on a tin roof, distant thunder, the chatter of an old radio",
+  "Nostalgic music blended with live instrumentals",
+  "Intensity rises with the mains, then settles toward dessert",
+];
+const DEFAULT_QUOTE = "Barsaat, to me, is an irreplaceable feeling. A yearning that returns the moment the clouds turn. This menu is that feeling, plated. A room that is entirely my own making.";
 
 function formatDate(iso) {
   if (!iso) return "";
@@ -86,6 +74,43 @@ export default function Barsaat() {
 
   const priceVeg = Number(settings.price_veg || 2200);
   const priceNonVeg = Number(settings.price_nonveg || 2800);
+
+  // CMS reads with sensible fallbacks
+  const q = read(content, "barsaat.chef_note.quote", DEFAULT_QUOTE);
+  const qEyebrow = read(content, "barsaat.chef_note.eyebrow", "A note from the chef");
+  const qSig = read(content, "barsaat.chef_note.signature", "Vidip Shah");
+  const senses = (() => {
+    const cmsItems = read(content, "barsaat.sensory.items", []);
+    return Array.isArray(cmsItems) && cmsItems.length ? cmsItems : DEFAULT_SENSES;
+  })();
+  const sensEyebrow = read(content, "barsaat.sensory.eyebrow", "The experience");
+  const sensTitle = read(content, "barsaat.sensory.title", "Not just dinner.");
+  const sensTitleIt = read(content, "barsaat.sensory.title_italic", "A monsoon, indoors.");
+  const sensIntro = read(content, "barsaat.sensory.intro",
+    "Every element of Barsaat is composed to lift the food from the plate into the room. From the moment you step in, the senses are spoken to in sequence, sight, sound, smell, until the table feels less like a restaurant and more like a memory being shared.");
+  const rajEyebrow = read(content, "barsaat.rajneesh.eyebrow", "A collaboration");
+  const rajTitle = read(content, "barsaat.rajneesh.title", "The soundscape, by");
+  const rajTitleIt = read(content, "barsaat.rajneesh.title_italic", "Rajneesh.");
+  const rajCredit = read(content, "barsaat.rajneesh.credit_line", "Sound designer · Rajneesh");
+  const rajNote = read(content, "barsaat.rajneesh.note", DEFAULT_RAJNEESH_NOTE);
+  const rajBullets = (() => {
+    const b = read(content, "barsaat.rajneesh.bullets", []);
+    return Array.isArray(b) && b.length ? b : DEFAULT_RAJNEESH_BULLETS;
+  })();
+  const closerEyebrow = read(content, "barsaat.closer.eyebrow", "If the table is calling");
+  const closerTitle = read(content, "barsaat.closer.title", "Twelve seats.");
+  const closerTitleIt = read(content, "barsaat.closer.title_italic", "Three rainy evenings.");
+  const closerBody = read(content, "barsaat.closer.body",
+    "We hold a small house. We cook one menu. We light a single room. If any of that calls to you, the door is open.");
+  const closerCta = read(content, "barsaat.closer.cta_label", "Pick a date");
+  const datesEyebrow = read(content, "barsaat.dates_block.eyebrow", "Reserve your seat");
+  const datesTitle = read(content, "barsaat.dates_block.title", "Three tables.");
+  const datesTitleIt = read(content, "barsaat.dates_block.title_italic", "Twelve seats each.");
+  const scheduleNote = read(content, "barsaat.dates_block.schedule_note",
+    "Doors open at 7:00 PM. The first course lands at 7:15 PM sharp. The evening closes by 10:00 PM.");
+  const priceEyebrow = read(content, "barsaat.dates_block.price_eyebrow", "Early-bird · first 10 seats");
+  const priceFootnote = read(content, "barsaat.dates_block.price_footnote",
+    "Per seat, all-inclusive. Pricing revises after the first ten seats are confirmed across the three tables.");
 
   return (
     <div className="bg-[#0A0504] text-[#F3EFE7] min-h-screen film-grain" data-testid="page-barsaat">
@@ -139,16 +164,14 @@ export default function Barsaat() {
         <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-end mb-14">
             <div className="lg:col-span-7">
-              <p className="text-overline">Reserve your seat</p>
+              <p className="text-overline">{datesEyebrow}</p>
               <h2 className="font-display text-4xl sm:text-5xl mt-6 leading-[1.05] tracking-tight">
-                Three tables. <span className="italic text-[#D9772B]">Twelve seats each.</span>
+                {datesTitle} <span className="italic text-[#D9772B]">{datesTitleIt}</span>
               </h2>
-              <p className="text-[#B5A79E] mt-5 max-w-xl leading-relaxed">
-                Doors open at <span className="text-[#F3EFE7]">7:00 PM</span>. The first course lands at <span className="text-[#F3EFE7]">7:15 PM</span> sharp. The evening closes by <span className="text-[#F3EFE7]">10:00 PM</span>.
-              </p>
+              <p className="text-[#B5A79E] mt-5 max-w-xl leading-relaxed">{scheduleNote}</p>
             </div>
             <div className="lg:col-span-5 border border-[#2D1D1A] bg-[#0A0504] p-6" data-testid="barsaat-price-box">
-              <p className="text-overline text-[#D9772B]">Early-bird · first 10 seats</p>
+              <p className="text-overline text-[#D9772B]">{priceEyebrow}</p>
               <div className="mt-4 flex items-baseline gap-6 flex-wrap">
                 <div>
                   <p className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E]">Vegetarian</p>
@@ -159,9 +182,7 @@ export default function Barsaat() {
                   <p className="font-display text-3xl mt-1">₹{priceNonVeg.toLocaleString("en-IN")}</p>
                 </div>
               </div>
-              <p className="text-[12px] text-[#B5A79E] mt-4 leading-relaxed">
-                Per seat, all-inclusive. Pricing revises after the first ten seats are confirmed across the three tables.
-              </p>
+              <p className="text-[12px] text-[#B5A79E] mt-4 leading-relaxed">{priceFootnote}</p>
             </div>
           </div>
 
@@ -220,11 +241,11 @@ export default function Barsaat() {
       {/* ─────────────────────────────────────────── CHEF'S NOTE / SIGNATURE */}
       <section className="py-20 sm:py-28 border-t border-[#2D1D1A] bg-[#140A09]" data-testid="barsaat-chef-note">
         <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
-          <p className="text-overline">A note from the chef</p>
+          <p className="text-overline">{qEyebrow}</p>
           <p className="font-display italic text-2xl sm:text-3xl mt-7 leading-[1.35] text-[#F3EFE7]">
-            &ldquo;{SIGNATURE_QUOTE}&rdquo;
+            &ldquo;{q}&rdquo;
           </p>
-          <p className="text-overline mt-7 text-[#D9772B]">— Vidip Shah</p>
+          <p className="text-overline mt-7 text-[#D9772B]">— {qSig}</p>
         </div>
       </section>
 
@@ -233,25 +254,21 @@ export default function Barsaat() {
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 mb-14">
             <div className="lg:col-span-5">
-              <p className="text-overline">The experience</p>
+              <p className="text-overline">{sensEyebrow}</p>
               <h2 className="font-display text-4xl sm:text-5xl mt-6 leading-[1.05] tracking-tight">
-                Not just dinner.
+                {sensTitle}
                 <br />
-                <span className="italic text-[#D9772B]">A monsoon, indoors.</span>
+                <span className="italic text-[#D9772B]">{sensTitleIt}</span>
               </h2>
             </div>
             <div className="lg:col-span-7 lg:pt-3">
-              <p className="text-[#B5A79E] text-lg leading-relaxed">
-                Every element of Barsaat is composed to lift the food from the plate into the room. From the moment you step in,
-                the senses are spoken to in sequence — sight, sound, smell — until the table feels less like a restaurant and more
-                like a memory being shared.
-              </p>
+              <p className="text-[#B5A79E] text-lg leading-relaxed">{sensIntro}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#2D1D1A] border border-[#2D1D1A]">
-            {SENSES.map((s, i) => {
-              const Icon = s.icon;
+            {senses.map((s, i) => {
+              const Icon = SENSE_ICONS[s.icon] || CloudRain;
               return (
                 <motion.div
                   key={s.title}
@@ -278,23 +295,23 @@ export default function Barsaat() {
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
             <div className="lg:col-span-5">
-              <p className="text-overline">A collaboration</p>
+              <p className="text-overline">{rajEyebrow}</p>
               <h2 className="font-display text-4xl sm:text-5xl mt-6 leading-[1.05] tracking-tight">
-                The soundscape, by
+                {rajTitle}
                 <br />
-                <span className="italic text-[#D9772B]">Rajneesh.</span>
+                <span className="italic text-[#D9772B]">{rajTitleIt}</span>
               </h2>
               <div className="mt-8 inline-flex items-center gap-3 px-4 py-3 border border-[#2D1D1A]">
                 <Music2 className="text-[#D9772B]" size={16} />
-                <p className="text-[12px] tracking-[0.22em] uppercase text-[#B5A79E]">Sound designer · Rajneesh</p>
+                <p className="text-[12px] tracking-[0.22em] uppercase text-[#B5A79E]">{rajCredit}</p>
               </div>
             </div>
             <div className="lg:col-span-7 space-y-5 text-[#B5A79E] text-lg leading-relaxed">
-              <p>{RAJNEESH_NOTE}</p>
+              <p>{rajNote}</p>
               <ul className="space-y-2 text-[15px] pt-4 border-t border-[#2D1D1A]">
-                <li><span className="text-[#D9772B] mr-3">·</span> Rain on a tin roof, distant thunder, the chatter of an old radio</li>
-                <li><span className="text-[#D9772B] mr-3">·</span> Nostalgic music blended with live instrumentals</li>
-                <li><span className="text-[#D9772B] mr-3">·</span> Intensity rises with the mains, then settles toward dessert</li>
+                {rajBullets.map((b, i) => (
+                  <li key={i}><span className="text-[#D9772B] mr-3">·</span> {b}</li>
+                ))}
               </ul>
             </div>
           </div>
@@ -348,17 +365,15 @@ export default function Barsaat() {
       {/* ─────────────────────────────────────────── CLOSER */}
       <section className="py-24 sm:py-32 border-t border-[#2D1D1A]" data-testid="barsaat-closer">
         <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
-          <p className="text-overline mb-6">If the table is calling</p>
+          <p className="text-overline mb-6">{closerEyebrow}</p>
           <p className="font-display text-3xl sm:text-4xl leading-[1.15]">
-            Twelve seats. <span className="italic text-[#D9772B]">Three rainy evenings.</span>
+            {closerTitle} <span className="italic text-[#D9772B]">{closerTitleIt}</span>
           </p>
-          <p className="mt-6 text-[#B5A79E] leading-relaxed">
-            We hold a small house. We cook one menu. We light a single room. If any of that calls to you, the door is open.
-          </p>
+          <p className="mt-6 text-[#B5A79E] leading-relaxed">{closerBody}</p>
           <a href="#dates"
             data-testid="barsaat-closer-cta"
             className="mt-10 inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
-            Pick a date <ArrowRight size={14} className="ml-2" />
+            {closerCta} <ArrowRight size={14} className="ml-2" />
           </a>
         </div>
       </section>

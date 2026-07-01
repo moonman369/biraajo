@@ -227,24 +227,75 @@ const SCHEMA = {
           { key: "image", label: "Hero image URL", type: "url" },
         ],
       },
-      reel: {
-        label: "Reel",
+      dates_block: {
+        label: "Dates & reserve block",
         fields: [
           { key: "eyebrow", label: "Eyebrow", type: "text" },
-          { key: "title", label: "Title", type: "text" },
+          { key: "title", label: "Title (before italic)", type: "text" },
           { key: "title_italic", label: "Title (italic)", type: "text" },
-          { key: "video_url", label: "Video URL", type: "url" },
+          { key: "schedule_note", label: "Schedule note", type: "textarea" },
+          { key: "price_eyebrow", label: "Price eyebrow", type: "text" },
+          { key: "price_footnote", label: "Price footnote", type: "textarea" },
         ],
       },
-      notes: {
-        label: "Three notes",
+      chef_note: {
+        label: "Chef's signature quote",
+        fields: [
+          { key: "eyebrow", label: "Eyebrow", type: "text" },
+          { key: "quote", label: "The quote", type: "textarea" },
+          { key: "signature", label: "Signature (— name)", type: "text" },
+        ],
+      },
+      sensory: {
+        label: "Sensory journey",
+        fields: [
+          { key: "eyebrow", label: "Eyebrow", type: "text" },
+          { key: "title", label: "Title (before italic)", type: "text" },
+          { key: "title_italic", label: "Title (italic)", type: "text" },
+          { key: "intro", label: "Intro paragraph", type: "textarea" },
+        ],
         list: {
-          key: "_self",
-          label: "Notes",
-          itemLabel: (i) => `Note ${i + 1}`,
+          key: "items",
+          label: "Sensory pillars (cards)",
+          itemLabel: (i, it) => it?.title || `Card ${i + 1}`,
           fields: [
-            { key: "head", label: "Heading", type: "text" },
-            { key: "body", label: "Body", type: "textarea" },
+            { key: "eyebrow", label: "Eyebrow", type: "text" },
+            { key: "title", label: "Card title", type: "text" },
+            { key: "body", label: "Card body", type: "textarea" },
+          ],
+        },
+      },
+      rajneesh: {
+        label: "Rajneesh collaboration",
+        fields: [
+          { key: "eyebrow", label: "Eyebrow", type: "text" },
+          { key: "title", label: "Title (before italic)", type: "text" },
+          { key: "title_italic", label: "Title (italic name)", type: "text" },
+          { key: "credit_line", label: "Credit line", type: "text" },
+          { key: "note", label: "Long-form note", type: "textarea" },
+        ],
+        list: {
+          key: "bullets",
+          label: "Soundscape bullets",
+          itemLabel: (i, it) => (typeof it === "string" ? it : `Bullet ${i + 1}`),
+          fields: [{ key: "_self", label: "Bullet text", type: "text" }],
+        },
+      },
+      reels: {
+        label: "Reels grid",
+        fields: [
+          { key: "visible", label: "Show block?", type: "toggle" },
+          { key: "eyebrow", label: "Eyebrow", type: "text" },
+          { key: "title", label: "Title (before italic)", type: "text" },
+          { key: "title_italic", label: "Title (italic)", type: "text" },
+        ],
+        list: {
+          key: "items",
+          label: "Reels",
+          itemLabel: (i, it) => it?.label || `Reel ${i + 1}`,
+          fields: [
+            { key: "url", label: "Video URL (.mp4)", type: "url" },
+            { key: "label", label: "Label", type: "text" },
           ],
         },
       },
@@ -252,8 +303,10 @@ const SCHEMA = {
         label: "Closer",
         fields: [
           { key: "eyebrow", label: "Eyebrow", type: "text" },
-          { key: "title", label: "Title", type: "text" },
+          { key: "title", label: "Title (before italic)", type: "text" },
           { key: "title_italic", label: "Title (italic)", type: "text" },
+          { key: "body", label: "Body", type: "textarea" },
+          { key: "cta_label", label: "CTA label", type: "text" },
         ],
       },
     },
