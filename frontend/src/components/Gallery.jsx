@@ -63,7 +63,10 @@ export default function Gallery() {
                   muted
                   loop
                   playsInline
-                  preload="auto"
+                  preload="metadata"
+                  poster={img.poster || undefined}
+                  onCanPlay={(e) => { try { e.currentTarget.play(); } catch { /* ignore */ } }}
+                  onError={(e) => { /* keep dark placeholder if source fails */ }}
                 />
               ) : (
                 <img

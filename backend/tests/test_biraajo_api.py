@@ -16,7 +16,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 BASE_URL: str = os.environ.get(
     "REACT_APP_BACKEND_URL",
-    "https://biraajo-chef.preview.emergentagent.com",
+    "https://chef-luxury-preview.preview.emergentagent.com",
 ).rstrip("/")
 API: str = f"{BASE_URL}/api"
 ADMIN_EMAIL: str = os.environ["ADMIN_EMAIL"]

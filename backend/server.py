@@ -125,7 +125,7 @@ async def _send_email(to_email: str, subject: str, html: str) -> None:
         logging.getLogger("biraajo").warning(f"[EMAIL FAIL] to={to_email} subj={subject} err={e}")
 
 
-PUBLIC_SITE_URL = os.environ.get("PUBLIC_SITE_URL", "https://biraajo-chef.preview.emergentagent.com").rstrip("/")
+PUBLIC_SITE_URL = os.environ.get("PUBLIC_SITE_URL", "https://chef-luxury-preview.preview.emergentagent.com").rstrip("/")
 
 
 async def send_welcome_email(to_email: str, name: str, event_title: str, total_amount: int, reg_id: str = "") -> None:
