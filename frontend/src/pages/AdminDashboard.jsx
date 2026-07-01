@@ -168,7 +168,7 @@ function Overview() {
 function emptyEvent() {
   return {
     title: "", date: "", time: "19:30", venue: "", description: "",
-    price: 3500, seats_total: 12, image_url: "", tag: "Supper Club",
+    price: 3500, seats_total: 10, image_url: "", tag: "Supper Club",
   };
 }
 
@@ -261,7 +261,7 @@ function EventForm({ event, onCancel, onSave }) {
       <Inp label="Time" value={f.time} onChange={h("time")} placeholder="19:30" required />
       <Inp label="Venue" value={f.venue} onChange={h("venue")} required />
       <Inp label="Price (INR)" type="number" value={f.price} onChange={h("price")} />
-      <Inp label="Seats total" type="number" value={f.seats_total} onChange={h("seats_total")} />
+      <Inp label="Seats total (fixed at 10)" type="number" value={10} readOnly disabled data-testid="event-seats-total-input" />
       <Inp label="Image URL" value={f.image_url} onChange={h("image_url")} />
       <div className="sm:col-span-2">
         <span className="text-overline block mb-2">Description</span>

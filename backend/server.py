@@ -30,6 +30,10 @@ PRICE_VEG = 2200
 PRICE_NONVEG = 2800
 UPI_ID = os.environ.get("UPI_ID", "vidipshah14-1@oksbi")
 
+# ---------- Capacity ----------
+# Every event's total capacity is fixed at 10 seats under all circumstances.
+EVENT_CAPACITY = 10
+
 
 # ---------- Object Storage (payment screenshots) ----------
 STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
@@ -292,7 +296,7 @@ class EventIn(BaseModel):
     venue: str
     description: str
     price: float = 0.0
-    seats_total: int = 1
+    seats_total: int = 10
     image_url: str = ""
     tag: Optional[str] = "Supper Club"
 
@@ -507,14 +511,18 @@ async def get_event(event_id: str):
 
 @api.post("/events")
 async def create_event(body: EventIn, user=Depends(get_current_admin)):
-    ev = Event(**body.model_dump())
+    data = body.model_dump()
+    data["seats_total"] = EVENT_CAPACITY
+    ev = Event(**data)
     await db.events.insert_one(ev.model_dump())
     return ev.model_dump()
 
 
 @api.put("/events/{event_id}")
 async def update_event(event_id: str, body: EventIn, user=Depends(get_current_admin)):
-    res = await db.events.update_one({"id": event_id}, {"$set": body.model_dump()})
+    data = body.model_dump()
+    data["seats_total"] = EVENT_CAPACITY
+    res = await db.events.update_one({"id": event_id}, {"$set": data})
     if res.matched_count == 0:
         raise HTTPException(status_code=404, detail="Event not found")
     doc = await db.events.find_one({"id": event_id}, {"_id": 0})
@@ -540,7 +548,7 @@ async def _calc_total(menu_preference: str, guests: int) -> int:
 
 def _check_seats(event: dict, requested: int, baseline_guests: int = 0) -> int:
     """Return available seats after baseline; raise if requested exceeds available."""
-    available = event["seats_total"] - event.get("seats_booked", 0) + baseline_guests
+    available = EVENT_CAPACITY - event.get("seats_booked", 0) + baseline_guests
     if requested > available:
         raise HTTPException(status_code=400, detail=f"Only {available} seat(s) available")
     return available
@@ -566,9 +574,8 @@ async def _create_pending_registration(payload: dict, total: int, event: dict) -
     await db.events.update_one(
         {"id": event["id"]}, {"$inc": {"seats_booked": reg.guests}}
     )
-    asyncio.create_task(send_welcome_email(reg.email, reg.full_name, event["title"], total, reg_id=reg.id))
+    # Customer email system cancelled for now — only notify admin.
     asyncio.create_task(send_admin_notification(reg.model_dump(), event, kind="pending"))
-    await db.registrations.update_one({"id": reg.id}, {"$set": {"welcome_email_sent": True}})
     push_to_sheet("registration_pending", {
         "created_at": reg.created_at,
         "event": event["title"],
@@ -668,14 +675,7 @@ async def upload_payment_screenshot(reg_id: str, file: UploadFile = File(...)):
     )
 
     event = await db.events.find_one({"id": reg.get("event_id")}, {"_id": 0}) or {}
-    asyncio.create_task(send_confirmation_email(
-        to_email=reg.get("email", ""),
-        name=reg.get("full_name", ""),
-        event=event,
-        total_amount=int(reg.get("total_amount", 0)),
-        guests=int(reg.get("guests", 1)),
-        menu=reg.get("menu_preference", ""),
-    ))
+    # Customer confirmation email cancelled for now — only notify admin.
     asyncio.create_task(send_admin_notification({**reg, "payment_status": "confirmed"}, event, kind="confirmed"))
     push_to_sheet("registration_confirmed", {
         "created_at": reg.get("created_at"),
@@ -754,7 +754,7 @@ async def create_offsite_booking(payload: OffsiteBookingIn, user=Depends(get_cur
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     requested = max(1, int(payload.guests or 1))
-    available = event.get("seats_total", 0) - event.get("seats_booked", 0)
+    available = EVENT_CAPACITY - event.get("seats_booked", 0)
     if requested > available:
         raise HTTPException(status_code=400, detail=f"Only {available} seat(s) left for this date")
     booking = OffsiteBooking(**payload.model_dump())
