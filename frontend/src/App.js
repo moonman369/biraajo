@@ -21,28 +21,56 @@ function RequireAdmin({ children }) {
 }
 
 // Scroll to hash on route/hash change (fixes /#gallery, /#contact links from other pages)
+// Uses a ResizeObserver-driven re-scroll loop so mid-document targets stay aligned
+// even as lazy-loaded content above them grows the document.
 function ScrollToHash() {
   const { hash, pathname } = useLocation();
   useEffect(() => {
     if (hash) {
       let attempts = 0;
-      const tryScroll = () => {
+      let observer = null;
+      let stopTimer = null;
+      let started = false;
+
+      const align = () => {
         const el = document.querySelector(hash);
-        if (el) {
-          // Use instant scroll to bypass layout-growth during smooth animation
-          el.scrollIntoView({ behavior: "auto", block: "start" });
-          // Settling re-scroll after lazy content loads
-          setTimeout(() => {
-            const el2 = document.querySelector(hash);
-            if (el2) el2.scrollIntoView({ behavior: "auto", block: "start" });
-          }, 800);
+        if (el) el.scrollIntoView({ behavior: "auto", block: "start" });
+      };
+
+      const beginObserving = () => {
+        if (started) return;
+        started = true;
+        align();
+        // Re-align whenever the document height changes (lazy media loading, etc.)
+        observer = new ResizeObserver(() => align());
+        observer.observe(document.body);
+        // Stop the observer after 3s once layout has settled.
+        stopTimer = setTimeout(() => {
+          align();
+          if (observer) observer.disconnect();
+        }, 3000);
+      };
+
+      const tryStart = () => {
+        if (document.querySelector(hash)) {
+          beginObserving();
           return;
         }
-        if (++attempts < 30) setTimeout(tryScroll, 100);
+        if (++attempts < 30) setTimeout(tryStart, 100);
       };
-      setTimeout(tryScroll, 60);
+      setTimeout(tryStart, 60);
+
+      return () => {
+        if (observer) observer.disconnect();
+        if (stopTimer) clearTimeout(stopTimer);
+      };
     } else {
-      window.scrollTo({ top: 0, behavior: "instant" });
+      // Guard the pathname-before-hash race: only scroll to top if no hash
+      // appears shortly after (React Router may commit pathname before hash).
+      const t = setTimeout(() => {
+        if (!window.location.hash) window.scrollTo({ top: 0, behavior: "instant" });
+      }, 80);
+      return () => clearTimeout(t);
     }
   }, [hash, pathname]);
   return null;

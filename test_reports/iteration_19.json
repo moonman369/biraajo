@@ -1,0 +1,47 @@
+{
+  "summary": "Verified new ScrollToHash implementation (ResizeObserver-driven re-scroll loop over 3s + guarded scroll-to-top with 80ms delay) at /app/frontend/src/App.js lines 24-77. Ran the requested 4-attempt Desktop Gallery stability sweep at 1440x900 plus all follow-up scenarios. RESULT: Desktop Gallery cross-page 4/4 (100%) — up from 2/4 in iter-18. All previously-passing flows remain green.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "desktop_gallery_stability_sweep_1440x900": {
+      "attempts": [
+        {"attempt": 1, "top": -0.359, "scrollY": 5883, "docH": 10251, "inView": true},
+        {"attempt": 2, "top": -0.359, "scrollY": 5883, "docH": 10251, "inView": true},
+        {"attempt": 3, "top": -0.359, "scrollY": 5883, "docH": 10251, "inView": true},
+        {"attempt": 4, "top": -0.359, "scrollY": 5883, "docH": 10251, "inView": true}
+      ],
+      "pass_rate": "4/4 (100%)"
+    },
+    "desktop_contact_1440x900": {"top": 0.266, "scrollY": 8982, "inView": true, "result": "PASS"},
+    "mobile_gallery_390x844_sweep": {
+      "attempts": [
+        {"attempt": 1, "top": 0, "scrollY": 7164, "inView": true},
+        {"attempt": 2, "top": 0, "scrollY": 7164, "inView": true},
+        {"attempt": 3, "top": 0, "scrollY": 7164, "inView": true},
+        {"attempt": 4, "top": 0, "scrollY": 7164, "inView": true}
+      ],
+      "pass_rate": "4/4 (100%)"
+    },
+    "mobile_contact_390x844": {"top": 0.047, "scrollY": 10770, "inView": true, "result": "PASS"},
+    "same_page_gallery_on_root_1440x900": {"top": -0.359, "scrollY": 5883, "inView": true, "result": "PASS"},
+    "same_page_contact_on_root_1440x900": {"top": 0.266, "scrollY": 8982, "inView": true, "result": "PASS"}
+  },
+  "test_report_links": ["/app/test_reports/iteration_19.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "The ResizeObserver approach in App.js is correct and effective. Minor nit: the observer disconnect and stopTimer are scheduled via useEffect cleanup — good. Consider also disconnecting when the target's getBoundingClientRect().top has been within a small tolerance and stable for 2 consecutive rAFs to save cycles, but this is a minor optimization; current 3s cap works.",
+    "The guarded scroll-to-top (80ms delay + hash check) elegantly avoids the pathname-before-hash race that caused the scrollY=0 failure in iter-18."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only test)", "frontend": "6/6 scenarios pass (100%); 8/8 stability sweep attempts pass (4 desktop + 4 mobile)"},
+  "test_credentials": "N/A - public pages",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Cross-page hash navigation via Navbar Gallery/Reach out links is now 100% reliable at desktop 1440x900 and mobile 390x844. Fix in /app/frontend/src/App.js ScrollToHash (lines 24-77) uses ResizeObserver on document.body to re-scroll on every docH change within a 3s window, plus a guarded 80ms scrollTo(0) that skips if a hash is pending. No regressions detected. Mobile nav testid caveat: mobile menu drawer uses generic data-testid='mobile-nav-link' on all items; to click a specific link, scope by main-navbar and role='link' with exact name (e.g., page.locator('[data-testid=main-navbar]').get_by_role('link', name='Gallery', exact=True)). Also note both the navbar and footer expose 'Gallery' / 'Reach out' links, so tests must scope to main-navbar. Base URL: https://chef-luxury-preview.preview.emergentagent.com.",
+  "rca of the issue": "Iter-18 root cause: (1) mid-document lazy content grew docH after the single 800ms settle-scroll, pushing #gallery below the fold, and (2) React Router occasionally committed pathname before hash, triggering the else-branch unconditional window.scrollTo(0) which fought the subsequent hash effect (producing scrollY=0 landings). Fix in this iteration (App.js lines 24-77): (a) replaced fixed 800ms settle with a ResizeObserver on document.body that re-aligns the target on every document-height change for up to 3s — this keeps up with lazy media loads above the target; (b) guarded the top-scroll with an 80ms setTimeout that first checks window.location.hash before actually scrolling to top — this prevents the race. Verified: 4/4 desktop Gallery, 4/4 mobile Gallery, and all Contact + same-page flows pass."
+}
