@@ -14,6 +14,14 @@ Premium personal chef landing page for "Biraajo by Vidip Shah". Dark, luxury hos
 
 ## What's Been Implemented (latest first)
 
+### 2026-06-30 (later) — Black-image fix + new Barsaat reel
+- ROOT CAUSE of "2 black screens": the artifact URL `kpwk8ol3__DSC4913-2 (1).jpg` under `job_feast-studio-1` returns HTTP 403. It was used as `barsaat.hero.image`, `landing.experiences.cards[0].image`, `naani_ghar.photos_block.photos[0]` and hardcoded in `Suppers.jsx`.
+- FIX: replaced everywhere with the working alternate `ctn50bz1__DSC4913-2 (1) (1).jpg` (200 OK) via CMS publish + `site_defaults.py` + `Suppers.jsx` hardcoded path.
+- Also swapped the unreliable Unsplash placeholder in `InstagramFeed.jsx` with a verified Biraajo artifact.
+- NEW REEL added to Barsaat page: `barsaat.reels.items[]` now stores an array of `{url, label}`. The Barsaat page renders a 2-up reel grid: "Behind the menu" (new `pampvqbe_Barssat Reel 2.MP4`) + "On the line" (existing reel). Defaults updated so reset preserves both.
+- Verified by testing_agent iteration_13: 0 broken images, 0 4xx artifact responses, both reels load (readyState ≥ 2), regression OK.
+
+
 ### 2026-06-30 (later still) — Save-failure rescue: localStorage backup + auth-expiry modal + Save now
 - ROOT CAUSE: user's autosave in /admin/edit was silently 401-ing when the JWT session expired mid-edit. Frontend showed "changes not saved" but never actionable.
 - FIX shipped & verified by testing_agent iteration_12 (no issues):

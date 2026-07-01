@@ -134,6 +134,89 @@ export default function Barsaat() {
         </div>
       </section>
 
+      {/* ─────────────────────────────────────────── DATES + RESERVE (moved to top) */}
+      <section id="dates" className="py-20 sm:py-28 border-t border-[#2D1D1A] bg-[#140A09]" data-testid="barsaat-dates-section">
+        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-end mb-14">
+            <div className="lg:col-span-7">
+              <p className="text-overline">Reserve your seat</p>
+              <h2 className="font-display text-4xl sm:text-5xl mt-6 leading-[1.05] tracking-tight">
+                Three tables. <span className="italic text-[#D9772B]">Twelve seats each.</span>
+              </h2>
+              <p className="text-[#B5A79E] mt-5 max-w-xl leading-relaxed">
+                Doors open at <span className="text-[#F3EFE7]">7:00 PM</span>. The first course lands at <span className="text-[#F3EFE7]">7:15 PM</span> sharp. The evening closes by <span className="text-[#F3EFE7]">10:00 PM</span>.
+              </p>
+            </div>
+            <div className="lg:col-span-5 border border-[#2D1D1A] bg-[#0A0504] p-6" data-testid="barsaat-price-box">
+              <p className="text-overline text-[#D9772B]">Early-bird · first 10 seats</p>
+              <div className="mt-4 flex items-baseline gap-6 flex-wrap">
+                <div>
+                  <p className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E]">Vegetarian</p>
+                  <p className="font-display text-3xl mt-1">₹{priceVeg.toLocaleString("en-IN")}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E]">Non-vegetarian</p>
+                  <p className="font-display text-3xl mt-1">₹{priceNonVeg.toLocaleString("en-IN")}</p>
+                </div>
+              </div>
+              <p className="text-[12px] text-[#B5A79E] mt-4 leading-relaxed">
+                Per seat, all-inclusive. Pricing revises after the first ten seats are confirmed across the three tables.
+              </p>
+            </div>
+          </div>
+
+          {events.length === 0 ? (
+            <p className="text-[#B5A79E]">Dates will be published shortly.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#2D1D1A] border border-[#2D1D1A]" data-testid="barsaat-date-grid">
+              {events.map((e, i) => {
+                const left = Math.max(0, e.seats_total - (e.seats_booked || 0));
+                const soldOut = left === 0;
+                const isSelected = e.id === selectedId;
+                return (
+                  <button
+                    key={e.id}
+                    onClick={() => !soldOut && setSelectedId(e.id)}
+                    disabled={soldOut}
+                    data-testid={`barsaat-date-${i}`}
+                    className={`text-left bg-[#0A0504] p-8 sm:p-10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
+                      ${isSelected ? "ring-2 ring-[#D9772B] -ring-offset-1" : "hover:bg-[#140A09]"}`}
+                  >
+                    <p className="text-overline">Table {String.fromCharCode(73 + i)}</p>
+                    <p className="font-display text-3xl mt-4 leading-tight">{formatDate(e.date)}</p>
+                    <p className="text-[#B5A79E] mt-3 text-sm">{e.time}</p>
+                    <div className="mt-6 flex items-center justify-between pt-5 border-t border-[#2D1D1A]">
+                      <p className="text-[11px] tracking-[0.18em] uppercase text-[#B5A79E]">
+                        {soldOut ? "Sold out" : `${left} of ${e.seats_total} left`}
+                      </p>
+                      <span className={`text-[10px] tracking-[0.22em] uppercase px-2.5 py-1 border ${isSelected ? "border-[#D9772B] text-[#D9772B]" : "border-[#2D1D1A] text-[#B5A79E]"}`}>
+                        {isSelected ? "Selected" : "Choose"}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="mt-12 flex flex-wrap items-center gap-4 justify-between">
+            <p className="text-[#B5A79E] text-sm">
+              {selectedEvent
+                ? <>Selected: <span className="text-[#F3EFE7]">{formatDate(selectedEvent.date)}</span></>
+                : "Select a date above to reserve."}
+            </p>
+            <button
+              onClick={onReserve}
+              disabled={!selectedEvent || !settings.registrations_open}
+              data-testid="barsaat-reserve-main-cta"
+              className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {settings.registrations_open ? "Reserve this date" : "Reservations paused"} <ArrowRight size={14} className="ml-2" />
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* ─────────────────────────────────────────── CHEF'S NOTE / SIGNATURE */}
       <section className="py-20 sm:py-28 border-t border-[#2D1D1A] bg-[#140A09]" data-testid="barsaat-chef-note">
         <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
@@ -226,7 +309,7 @@ export default function Barsaat() {
             <h2 className="font-display text-3xl sm:text-4xl mt-4 mb-10">
               {reelsTitle} <span className="italic text-[#D9772B]">{reelsTitleItalic}</span>
             </h2>
-            <div className={`grid gap-6 sm:gap-8 ${reelsItems.length > 1 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
+            <div className={`grid gap-6 sm:gap-8 ${reelsItems.length >= 3 ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : reelsItems.length === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
               {reelsItems.filter((r) => r && r.url).map((r, i) => (
                 <div key={`${r.url}-${i}`} className="relative aspect-[9/16] sm:aspect-video w-full overflow-hidden bg-[#0A0504] border border-[#2D1D1A]" data-testid={`barsaat-reel-${i}`}>
                   <video
@@ -261,89 +344,6 @@ export default function Barsaat() {
           </div>
         </section>
       )}
-
-      {/* ─────────────────────────────────────────── DATES + RESERVE */}
-      <section id="dates" className="py-24 sm:py-32 border-t border-[#2D1D1A] bg-[#140A09]" data-testid="barsaat-dates-section">
-        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-end mb-14">
-            <div className="lg:col-span-7">
-              <p className="text-overline">Reserve your seat</p>
-              <h2 className="font-display text-4xl sm:text-5xl mt-6 leading-[1.05] tracking-tight">
-                Three tables. <span className="italic text-[#D9772B]">Twelve seats each.</span>
-              </h2>
-              <p className="text-[#B5A79E] mt-5 max-w-xl leading-relaxed">
-                Doors open at <span className="text-[#F3EFE7]">7:00 PM</span>. The first course lands at <span className="text-[#F3EFE7]">7:15 PM</span> sharp. The evening closes by <span className="text-[#F3EFE7]">10:00 PM</span>.
-              </p>
-            </div>
-            <div className="lg:col-span-5 border border-[#2D1D1A] bg-[#0A0504] p-6" data-testid="barsaat-price-box">
-              <p className="text-overline text-[#D9772B]">Early-bird · first 10 seats</p>
-              <div className="mt-4 flex items-baseline gap-6 flex-wrap">
-                <div>
-                  <p className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E]">Vegetarian</p>
-                  <p className="font-display text-3xl mt-1">₹{priceVeg.toLocaleString("en-IN")}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E]">Non-vegetarian</p>
-                  <p className="font-display text-3xl mt-1">₹{priceNonVeg.toLocaleString("en-IN")}</p>
-                </div>
-              </div>
-              <p className="text-[12px] text-[#B5A79E] mt-4 leading-relaxed">
-                Per seat, all-inclusive. Pricing revises after the first ten seats are confirmed across the three tables.
-              </p>
-            </div>
-          </div>
-
-          {events.length === 0 ? (
-            <p className="text-[#B5A79E]">Dates will be published shortly.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#2D1D1A] border border-[#2D1D1A]" data-testid="barsaat-date-grid">
-              {events.map((e, i) => {
-                const left = Math.max(0, e.seats_total - (e.seats_booked || 0));
-                const soldOut = left === 0;
-                const isSelected = e.id === selectedId;
-                return (
-                  <button
-                    key={e.id}
-                    onClick={() => !soldOut && setSelectedId(e.id)}
-                    disabled={soldOut}
-                    data-testid={`barsaat-date-${i}`}
-                    className={`text-left bg-[#0A0504] p-8 sm:p-10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
-                      ${isSelected ? "ring-2 ring-[#D9772B] -ring-offset-1" : "hover:bg-[#140A09]"}`}
-                  >
-                    <p className="text-overline">Table {String.fromCharCode(73 + i)}{/* I, J, K */}</p>
-                    <p className="font-display text-3xl mt-4 leading-tight">{formatDate(e.date)}</p>
-                    <p className="text-[#B5A79E] mt-3 text-sm">{e.time}</p>
-                    <div className="mt-6 flex items-center justify-between pt-5 border-t border-[#2D1D1A]">
-                      <p className="text-[11px] tracking-[0.18em] uppercase text-[#B5A79E]">
-                        {soldOut ? "Sold out" : `${left} of ${e.seats_total} left`}
-                      </p>
-                      <span className={`text-[10px] tracking-[0.22em] uppercase px-2.5 py-1 border ${isSelected ? "border-[#D9772B] text-[#D9772B]" : "border-[#2D1D1A] text-[#B5A79E]"}`}>
-                        {isSelected ? "Selected" : "Choose"}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          <div className="mt-12 flex flex-wrap items-center gap-4 justify-between">
-            <p className="text-[#B5A79E] text-sm">
-              {selectedEvent
-                ? <>Selected: <span className="text-[#F3EFE7]">{formatDate(selectedEvent.date)}</span></>
-                : "Select a date above to reserve."}
-            </p>
-            <button
-              onClick={onReserve}
-              disabled={!selectedEvent || !settings.registrations_open}
-              data-testid="barsaat-reserve-main-cta"
-              className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {settings.registrations_open ? "Reserve this date" : "Reservations paused"} <ArrowRight size={14} className="ml-2" />
-            </button>
-          </div>
-        </div>
-      </section>
 
       {/* ─────────────────────────────────────────── CLOSER */}
       <section className="py-24 sm:py-32 border-t border-[#2D1D1A]" data-testid="barsaat-closer">

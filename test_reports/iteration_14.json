@@ -1,0 +1,20 @@
+{
+  "summary": "Iter 14 — verified Barsaat page reorg (dates moved to top), 5 new test-run videos in reels + gallery, and hero image regression. All 10 pytest cases pass. Playwright confirms section order top-to-bottom: barsaat-dates-section(893) → barsaat-chef-note(1718) → barsaat-sensory(2140) → barsaat-rajneesh(2936) → barsaat-reels-section(3494) → barsaat-closer(4134). barsaat-reels-section renders exactly 7 tiles (barsaat-reel-0..6) whose <video src> attributes contain all 5 new keys (i2tx6jvh, a7qweymb, ana7ash1, xe0xmfhh, u3sgtdb0). Every reel URL HEAD-fetches 200/206 with content-type video/mp4. GET /api/site-content → barsaat.hero.image ends with 'ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg' (NOT kpwk8ol3). GET /api/gallery returns 12 items containing all 5 new video URLs; landing page renders those 5 videos + gallery items ≥ 12. Zero broken artifact images and zero HTTP 4xx artifact responses on /supper-club/barsaat, /, /supper-club/naani-ghar, /suppers. Regression: 3 Barsaat dates render with correct seat counts, price box shows ₹2,200/₹2,800, barsaat-reserve-main-cta present and enabled when a date is selected. /menus/barsaat data confirms 10 courses + 4 alt_dish veg variants. Admin login (reachbiraajo@gmail.com / Biraajo@2026) succeeds and /api/auth/me returns 200.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_barsaat_iter14.py", "/app/test_reports/pytest/pytest_iter14.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Barsaat.jsx reels grid class correctly uses lg:grid-cols-4 for ≥3 items so 7 tiles wrap into 2 rows of 4/3 on desktop — visually balanced.",
+    "The legacy single-reel fallback block (data-testid='barsaat-reel-section') is still guarded by !hasReels so it correctly stays hidden when reels.items has entries. Good defensive rendering.",
+    "Minor cleanup opportunity (not blocking): barsaat.reel.video_url still exists in site_content but is now dead data. Could be removed to avoid confusion for future editors."
+  ],
+  "updated_files": ["/app/backend/tests/test_barsaat_iter14.py"],
+  "success_rate": {"backend": "100% (10/10 pytest)", "frontend": "100% for in-scope checks"},
+  "test_credentials": "Admin: reachbiraajo@gmail.com / Biraajo@2026 (verified login + /api/auth/me).",
+  "seed_data_creation": "None.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Playwright/Chromium in this environment lacks H.264/AAC codecs so <video> readyState stays 0 for .mp4 sources. Verify videos by (a) reading <video src> attribute, (b) HEAD-fetching URL and confirming 200 + content-type: video/mp4, (c) confirming URL substring matches expected artifact key. Do NOT rely on video playback state in-browser. Also note: querying [data-testid^='barsaat-date-'] matches barsaat-date-grid too — use [data-testid^='barsaat-date-'][data-testid$=/[0-9]+/] or count via regex if strict count needed.",
+  "rca of the issue": "N/A — no bugs found this iteration; task was verification-only after main agent shipped the reorg, 5 new videos and hero re-patch."
+}

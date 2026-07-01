@@ -7,7 +7,7 @@ const tiles = [
   "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/knt2zl0v__DSC4971-2%20%281%29.jpg",
   "https://customer-assets.emergentagent.com/job_adaec391-d42f-41ce-b775-ff2b784b7b8b/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg",
   "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg",
-  "https://images.unsplash.com/photo-1585937421612-70a008356fbe",
+  "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/kmlg9mxe__DSC3343%20%281%29.jpg",
 ];
 
 export default function InstagramFeed() {
