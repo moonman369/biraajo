@@ -1,0 +1,38 @@
+{
+  "summary": "Iter 16 retest of two iter-15 fixes. FOOTER FIX ✅ VERIFIED — footer no longer contains any '#experiences' link or 'Experiences' label; footer links are now exactly ['The Story','Events','Menu','Gallery','@biraajo_','WhatsApp','reachbiraajo@gmail.com','Admin']. SCROLL-TO-HASH FIX ❌ STILL BROKEN (partially improved). Retry loop in App.js ScrollToHash now correctly finds the target element after mount (verified via diagnostic — retry logic executes and scrollIntoView IS called), but because it uses behavior:'smooth' and lazy-loaded images/videos ABOVE the target keep expanding docHeight during the animation, the smooth-scroll animation completes at its ORIGINAL target Y (locked when scrollIntoView was called) — landing the target still 2344px below viewport. Reproduced from /supper-club/barsaat → nav-gallery: URL becomes /#gallery, scrollY animates to 3718 by t+1500ms and STAYS there, #gallery.top stuck at 2344px (spec requires between -50 and 500). Same failure from /menus → nav-gallery (top=2344). Nav-contact partially works: scrollY=5055 but #contact.top=4107 (still off-screen). Manual instant scrollIntoView after 10s lands perfectly (top=-0.35), confirming the target's final position is 6063px and the smooth animation is stopping short. Regression sanity: barsaat page renders (page-barsaat present), EventRegistrationModal opens on clicking barsaat-reserve-main-cta after date selection (verified — Step-1 Details modal visible with all fields). Backend APIs healthy (/api/settings, /api/site-content, /api/events all 200). Did NOT create bookings or delete events per instruction.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Nav → Gallery from any non-landing page",
+        "issue": "ScrollToHash retry loop finds element and calls scrollIntoView({behavior:'smooth'}) too early — while Landing's lazy images/videos above Gallery are still loading. The smooth-scroll animation locks its target Y at call-time (~scrollY 3718). By the time layout stabilizes, docHeight has grown, Gallery is now at scrollY ~6063, but animation already ended. Result: URL=/#gallery ✅ but element ends at viewport top=2344px (spec requires -50..500). Diagnostic: at t+1500ms scrollY=3718 top=2344; stays at that through t+10000ms. Manual instant scrollIntoView after animation ends lands at top=-0.35 (correct).",
+        "affected_selectors": ["[data-testid='nav-gallery']", "[data-testid='nav-contact']", "#gallery", "#contact"]
+      },
+      {
+        "flow": "Nav → Contact from /supper-club/barsaat",
+        "issue": "Same root cause. scrollY=5055 but #contact.top=4107 (target sits 4107px below viewport). Partially closer to top than gallery but still fails -50..500 requirement.",
+        "affected_selectors": ["[data-testid='nav-contact']", "#contact"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_16.json"],
+  "action_items": [
+    "Fix ScrollToHash smooth-scroll layout-shift issue in /app/frontend/src/App.js. Recommended fixes (any one): (a) Change behavior from 'smooth' to 'auto' (instant) — no animation, no layout-shift interruption. Diagnostic proves instant scrollIntoView lands perfectly at top=-0.35. (b) After first scrollIntoView, keep re-calling scrollIntoView every 200ms for another 1-1.5s to re-correct once lazy content settles (compensates for docHeight growth). (c) Wait for Landing's below-fold images/videos to load before calling scrollIntoView — e.g., use IntersectionObserver on the target or listen to 'load' events on nearby imgs. Option (a) is simplest and provably works.",
+    "Suggested code: replace 'el.scrollIntoView({ behavior: \"smooth\", block: \"start\" });' with either behavior:'auto' OR add a follow-up: setTimeout(() => el.scrollIntoView({behavior:'auto', block:'start'}), 800) after the first call."
+  ],
+  "critical_code_review_comments": [
+    "App.js ScrollToHash retry loop is correct in principle, but 'behavior: smooth' interacts badly with lazy-loading landing page — animation target is captured at call-time and cannot follow docHeight growth. Either use instant scroll or add a settling re-scroll.",
+    "Landing page renders 6000+ px of content below the fold with lazy images/videos — any hash-anchor navigation needs to account for layout shift AFTER initial mount. Consider adding loading='eager' to critical hero/section images or reserving explicit heights so docHeight stabilizes earlier.",
+    "Footer.jsx (verified) — Experiences link now correctly removed; no dead links remain in footer nav."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (health endpoints 200)", "frontend": "50% — Footer fix confirmed; ScrollToHash fix still fails viewport-top requirement on 3/3 cross-route hash navigations tested"},
+  "test_credentials": "Admin: reachbiraajo@gmail.com / Biraajo@2026 (unused this iteration — no admin flows exercised).",
+  "seed_data_creation": "None. Per instruction, did NOT create bookings or modify events.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "The retry loop in ScrollToHash IS executing and scrollIntoView IS being called (confirmed via diagnostic: at t+1000ms scrollY jumps from 0 to 153, reaches 3718 at t+1500ms, then flatlines). The problem is behavior:'smooth' snapshotting the animation target early. To retest after fix: on /supper-club/barsaat click [data-testid='nav-gallery'], wait 4s, assert document.getElementById('gallery').getBoundingClientRect().top BETWEEN -50 and 500. Same for #contact from /supper-club/barsaat, and #gallery from /menus. If main agent switches to behavior:'auto' or adds a settling re-scroll, this should pass. The manual instant scrollIntoView at t=10s lands at top=-0.35, proving that as long as the scroll fires AFTER layout settles (or is repeated), the target is reachable.",
+  "rca of the issue": "Root cause: In /app/frontend/src/App.js ScrollToHash effect, once retry loop finds the element it calls el.scrollIntoView({behavior:'smooth', block:'start'}). Chrome captures the target scroll position (element.top + current scrollY) at that moment and animates towards that Y over ~500-700ms. During those 700ms, Landing's lazy-loaded images/videos ABOVE Gallery finish loading, growing document height from ~9888 to ~10431 px and pushing Gallery down by ~570px. The animation, already locked on the OLD Y, ends short of the new position — leaving the element 2344px below viewport. Reproduction: /supper-club/barsaat → click nav-gallery → wait 4s → getBoundingClientRect().top = 2344 (fail). Mitigation options: (1) use behavior:'auto' (instant) so no animation is interrupted by layout shift — diagnostic manual call confirms this lands at top=-0.35; (2) schedule a second scrollIntoView 800ms after the first to correct residual drift; (3) delay the initial scrollIntoView until all above-target lazy media has loaded (IntersectionObserver / img.complete polling)."
+}

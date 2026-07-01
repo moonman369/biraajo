@@ -25,12 +25,17 @@ function ScrollToHash() {
   const { hash, pathname } = useLocation();
   useEffect(() => {
     if (hash) {
-      // Wait a tick for the target element to be rendered
-      const t = setTimeout(() => {
+      // Retry a few times because target may not be mounted yet after route change
+      let attempts = 0;
+      const tryScroll = () => {
         const el = document.querySelector(hash);
-        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100);
-      return () => clearTimeout(t);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+        if (++attempts < 30) setTimeout(tryScroll, 100);
+      };
+      setTimeout(tryScroll, 60);
     } else {
       window.scrollTo({ top: 0, behavior: "instant" });
     }

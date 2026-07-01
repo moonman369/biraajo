@@ -1,4 +1,5 @@
 import { Instagram, MessageCircle, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useSiteContent, read } from "@/lib/siteContent";
 
 export default function Footer() {
@@ -28,9 +29,8 @@ export default function Footer() {
             <p className="text-overline mb-4">Wander</p>
             <ul className="space-y-3 text-[#B5A79E] text-sm">
               <li><a href="#about" className="hover:text-[#F3EFE7]">The Story</a></li>
-              <li><a href="#experiences" className="hover:text-[#F3EFE7]">Experiences</a></li>
               <li><a href="#events" className="hover:text-[#F3EFE7]">Events</a></li>
-              <li><a href="#menu" className="hover:text-[#F3EFE7]">Menu</a></li>
+              <li><Link to="/menus" className="hover:text-[#F3EFE7]">Menu</Link></li>
               <li><a href="#gallery" className="hover:text-[#F3EFE7]">Gallery</a></li>
             </ul>
           </div>
