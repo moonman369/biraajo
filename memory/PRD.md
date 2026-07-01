@@ -13,6 +13,8 @@ Premium personal chef landing page for "Biraajo by Vidip Shah". Dark, luxury hos
 - **Google Sheets**: webhook configured but failing 405 (user fixing on their side; bookings safe in DB regardless)
 
 ## What's Been Implemented (latest first)
+- **[2026-06] ScrollToHash cross-page nav FIXED & VERIFIED (iteration_19, 100% pass)**: Navbar "Gallery"/"Reach out" links now reliably route from sub-pages (e.g. /supper-club/barsaat) to '/' and scroll to #gallery/#contact. Replaced fixed 800ms settle with a ResizeObserver-driven re-scroll loop (3s window) in App.js + guarded 80ms scroll-to-top to avoid the pathname-before-hash race. 4/4 desktop + 4/4 mobile stability sweeps pass.
+
 
 ### 2026-07-01 — Barsaat page reorg + 5 new reels in gallery & page
 - **Layout reorg**: Dates + Reserve block moved to the TOP of `/supper-club/barsaat` (was at bottom). New order: Hero → Dates → Chef's note → Sensory → Rajneesh → Reels → Closer.
