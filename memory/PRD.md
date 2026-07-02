@@ -13,6 +13,9 @@ Premium personal chef landing page for "Biraajo by Vidip Shah". Dark, luxury hos
 - **Google Sheets**: webhook configured but failing 405 (user fixing on their side; bookings safe in DB regardless)
 
 ## What's Been Implemented (latest first)
+- **[2026-07] iOS media fix — VERIFIED (iterations 20-22, 100%)**: iOS devices showed all images/videos as broken (black + question mark) because media was hosted on the external customer-assets CDN and iOS Safari requires HTTP Range (206) responses for <video>. Fix: (1) re-hosted ALL media (images+videos) to the app's own object storage; (2) added `GET /api/media/{path}` backend endpoint that caches assets locally and serves proper 206 Range / 200 Accept-Ranges responses; (3) rewrote every stored reference (gallery, site_content draft+published, events.image_url, code, site_defaults.py, 25 history snapshots) to same-origin /api/media/... . Zero customer-assets refs remain anywhere. NOTE: requires redeploy for production to get the /api/media endpoint + rebuilt frontend.
+- **[2026-06] Capacity fixed at 10 & customer emails cancelled**: EVENT_CAPACITY=10 enforced server-side on create/update and in all seat checks (guest + off-site); admin seats field locked to 10. Customer welcome/confirmation emails disabled (admin notifications retained).
+
 - **[2026-06] ScrollToHash cross-page nav FIXED & VERIFIED (iteration_19, 100% pass)**: Navbar "Gallery"/"Reach out" links now reliably route from sub-pages (e.g. /supper-club/barsaat) to '/' and scroll to #gallery/#contact. Replaced fixed 800ms settle with a ResizeObserver-driven re-scroll loop (3s window) in App.js + guarded 80ms scroll-to-top to avoid the pathname-before-hash race. 4/4 desktop + 4/4 mobile stability sweeps pass.
 
 
