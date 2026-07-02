@@ -1,0 +1,33 @@
+{
+  "summary": "Frontend retest of landing page for customer-assets leak. Barsaat page is 100% clean. Landing page STILL LEAKS — root cause was NOT stale babel-loader cache; it's the /api/events endpoint returning event.image_url values pointing to customer-assets.emergentagent.com. Main agent's cache-clear fix did not address the underlying data issue.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "/api/events", "issue": "4 events (Supper Club + Barsaat tags) return image_url pointing to customer-assets.emergentagent.com instead of /api/media/... — causes iOS-broken-image regression on landing page Events section. Offending URLs: 'https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/xw1h2s8n_IMG_0183%20%283%29%20%281%29.jpg' and 'https://customer-assets.emergentagent.com/job_adaec391-d42f-41ce-b775-ff2b784b7b8b/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg'", "priority": "HIGH"}
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Landing page → Events section", "issue": "Renders <img> tags with src=customer-assets.emergentagent.com because /api/events returns those URLs. 1 network request to customer-assets and 3 DOM occurrences observed on '/'.", "affected_selectors": ["Events section image cards on landing page"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "MAIN AGENT MUST FIX: Migrate event image URLs in the events data source (MongoDB `events` collection or seed) from customer-assets.emergentagent.com to /api/media/... equivalents. Specifically: (a) rehost 'xw1h2s8n_IMG_0183 (3) (1).jpg' and update all Supper Club event rows; (b) update all Barsaat event rows (3 rows) to point to the already-hosted Barsaat hero /api/media/biraajo/media/... equivalent that /api/site-content already uses. After update, /api/events must return ZERO customer-assets URLs.",
+    "After fix, re-run the same landing-page check: expect 0 customer-assets network requests and 0 DOM matches."
+  ],
+  "critical_code_review_comments": [
+    "The migration to /api/media/... was applied to Hero.jsx and /api/site-content and /api/gallery, but /api/events was missed — indicates the migration script/logic did not iterate over all content collections.",
+    "Consider a backend guardrail: on serialization of any endpoint returning image_url/video_url, assert/log-warn if value contains 'customer-assets.emergentagent.com' to catch future regressions.",
+    "iteration_20's conclusion ('stale babel-loader cache') was incorrect diagnosis — the URL was never in the JS bundle; it comes from the runtime API response. Recommend verifying via API grep (curl /api/... | grep customer-assets) before attributing to build cache."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped per request)", "frontend": "50% (barsaat clean, landing still leaking)"},
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "The residual customer-assets leak on '/' does NOT come from Hero.jsx or babel cache — it comes from /api/events response. Verify with: `curl -s $BASE/api/events | grep customer-assets`. Once main agent fixes events data, re-check landing page for 0 customer-assets refs. Barsaat page (/supper-club/barsaat) is already 100% clean (0 leaks, 3 /api/media/ requests). Backend Range 206 already 8/8 in iter_20 — no need to re-test.",
+  "rca of the issue": "ROOT CAUSE: /api/events endpoint returns 4 event documents where image_url still points to https://customer-assets.emergentagent.com/... . Landing page's Events section renders these <img> tags → 1 unique network request to customer-assets domain (browser dedupes multi-refs) and 3 DOM occurrences of the same URL. REPRODUCTION: (1) `curl -s https://chef-luxury-preview.preview.emergentagent.com/api/events | grep customer-assets` → returns 4 hits. (2) Load '/' in browser → devtools Network shows request to customer-assets.emergentagent.com/job_adaec391-.../kpwk8ol3__DSC4913-2%20%281%29.jpg. MITIGATION: Update events collection in MongoDB so every image_url uses /api/media/... paths (rehost images if not already stored) — mirror the migration already done for site-content and gallery."
+}
