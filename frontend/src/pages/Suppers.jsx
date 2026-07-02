@@ -66,7 +66,7 @@ export default function Suppers() {
             data-testid="supper-card-naani-ghar"
           >
             <div className="md:col-span-5 relative aspect-[4/3] md:aspect-auto img-zoom">
-              <img src="https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ozdq9xth__DSC4892-2%20%281%29.jpg" alt="Naani Ghar" className="w-full h-full object-cover" />
+              <img src="/api/media/biraajo/media/6a6d9d936ab71fa4.jpg" alt="Naani Ghar" className="w-full h-full object-cover" />
               <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#9FD79F] border border-[#3A7D44]/60">Series concluded</span>
             </div>
             <div className="md:col-span-7 p-8 sm:p-12 flex flex-col justify-between gap-8">
@@ -96,7 +96,7 @@ export default function Suppers() {
             data-testid="supper-card-barsaat"
           >
             <div className="md:col-span-5 relative aspect-[4/3] md:aspect-auto img-zoom">
-              <img src="https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg" alt="Barsaat" className="w-full h-full object-cover" />
+              <img src="/api/media/biraajo/media/31cf3839eeb74061.jpg" alt="Barsaat" className="w-full h-full object-cover" />
               <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">Reservations open</span>
             </div>
             <div className="md:col-span-7 p-8 sm:p-12 flex flex-col justify-between gap-8">

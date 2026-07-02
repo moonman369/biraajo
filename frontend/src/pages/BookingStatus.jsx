@@ -8,7 +8,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const UPI_ID = "vidipshah14-1@oksbi";
-const UPI_QR_URL = "https://customer-assets.emergentagent.com/job_8232982a-2ce1-4d83-a683-c7727cd57ba6/artifacts/g9bzx5zc_image.png";
+const UPI_QR_URL = "/api/media/biraajo/media/a6dfec35dcbb1331.png";
 const PAYEE_NAME = "Vidip Shah";
 
 export default function BookingStatus() {

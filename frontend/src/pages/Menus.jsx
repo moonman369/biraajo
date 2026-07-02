@@ -39,7 +39,7 @@ export default function Menus() {
             <Link to="/menus/naani-ghar" className="block group">
               <div className="relative aspect-[4/5] overflow-hidden img-zoom">
                 <img
-                  src="https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ozdq9xth__DSC4892-2%20%281%29.jpg"
+                  src="/api/media/biraajo/media/6a6d9d936ab71fa4.jpg"
                   alt="Naani Ghar menu"
                   className="w-full h-full object-cover"
                 />
@@ -71,7 +71,7 @@ export default function Menus() {
             <Link to="/menus/barsaat" className="block group">
               <div className="relative aspect-[4/5] overflow-hidden img-zoom">
                 <img
-                  src="https://customer-assets.emergentagent.com/job_adaec391-d42f-41ce-b775-ff2b784b7b8b/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg"
+                  src="/api/media/biraajo/media/4d82c167b3dc090f.jpg"
                   alt="Barsaat menu"
                   className="w-full h-full object-cover"
                 />

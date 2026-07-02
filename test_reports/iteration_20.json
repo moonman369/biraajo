@@ -1,0 +1,37 @@
+{
+  "summary": "Verified the iOS media fix (GET /api/media/{path} Range/206 + same-origin migration). Backend: 8/8 pytest passes — 206 with correct Content-Range for Range requests, 200 with Accept-Ranges without Range, image/jpeg for .jpg, 404 for missing. Frontend: /supper-club/barsaat page is 100% clean (7/7 videos via /api/media, 0 customer-assets refs). Landing (/) has a residual leak: 1 real network GET to customer-assets.emergentagent.com/.../kpwk8ol3__DSC4913-2.jpg (3 identical <img> nodes in DOM with class 'w-full h-full object-cover'). Origin NOT in bundle.js, source (Hero.jsx now uses /api/media/…/4d82c167b3dc090f.jpg), live /api/site-content (returns /api/media/…/6a6d9d936ab71fa4.jpg), /api/gallery (all 12 items via /api/media). All active DB collections are clean. Only site_content_history has legacy refs (different DSC filenames — not the one being loaded). Root cause still needs investigation by main agent (see rca).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Landing page (unknown injector)", "issue": "3 <img class='w-full h-full object-cover'> nodes reference https://customer-assets.emergentagent.com/job_adaec391-.../kpwk8ol3__DSC4913-2%20%281%29.jpg — 1 real network request fires. Not present in bundle.js, source files, /api/site-content, /api/gallery, or active DB. Only /supper-club/barsaat is fully clean.", "selector": "img.w-full.h-full.object-cover[src*='customer-assets']", "priority": "HIGH"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend_pytest": "8/8 PASS — test_video_range_returns_206_with_content_range, test_video_no_range_returns_200_with_accept_ranges, test_video_mid_range_returns_206, test_video_open_ended_range, test_image_returns_200_jpeg, test_image_head_or_range, test_media_not_found_returns_404, test_gallery_urls_are_relative_api_media",
+    "landing_1440x900": {"images_total": 17, "images_broken": 1, "note_broken": "biraajo/media/7b3c136adf5f5431.jpg reports naturalWidth=0 in DOM but curl returns 200 image/jpeg 1.69MB — lazy-load timing false positive", "videos": 9, "videos_all_have_api_media_src": true, "customer_assets_network_requests": 1, "customer_assets_dom_occurrences": 3, "api_media_network_requests": 19},
+    "gallery_section_landing": {"images": 4, "videos": 8, "customer_assets_refs": 0, "api_media_refs": 12, "total_items": 12},
+    "gallery_api": "12 items, all urls start with /api/media/, 0 customer-assets",
+    "supper_club_barsaat": {"videos": 7, "videos_all_via_api_media": true, "customer_assets_network_requests": 0, "customer_assets_dom_occurrences": 0, "api_media_dom_occurrences": 8},
+    "playwright_video_playback_note": "All 9 landing videos reported readyState=0, error=4 (MEDIA_ERR_SRC_NOT_SUPPORTED), networkState=3 in headless Chromium. mp4 files ARE h264/avc1 (verified via ftyp/avc1 atom probe). This is the well-known headless-Chromium-lacks-H.264 limitation — NOT a real bug. Real browsers (iOS Safari, Chrome, Firefox, Edge, Android) will play these fine. Backend Range/206 behavior (the actual iOS fix) is proven correct via pytest."
+  },
+  "test_report_links": ["/app/backend/tests/test_media_range.py", "/app/test_reports/pytest/iter20_media.xml"],
+  "action_items": [
+    "Investigate origin of customer-assets kpwk8ol3__DSC4913-2 URL still rendered on landing page. Not in bundle.js, not in Hero.jsx source, not in /api/site-content, not in /api/gallery, not in active DB. Suspects: (a) webpack-dev-server / babel-loader cache (frontend/node_modules/.cache/babel-loader/*.json still contains the OLD Hero.jsx with this URL as fallback — try `rm -rf frontend/node_modules/.cache && sudo supervisorctl restart frontend`), (b) an Emergent overlay script (visual-edit-overlay.js / emergent-main.js) reading a stale content snapshot, (c) another component (About.jsx / Story.jsx / etc.) still holding the URL that our grep missed. Re-run the DOM scan after clearing the cache."
+  ],
+  "critical_code_review_comments": [
+    "server.py serve_media: correctly implements 206 with Content-Range, Accept-Ranges, immutable long-cache, and 416 on invalid range. In-memory _media_locks dict grows unbounded per unique path — minor; consider bounded LRU if traffic scales.",
+    "MEDIA_CACHE_DIR uses tempfile.gettempdir() which is per-container and per-restart — first hit after every pod restart re-downloads from object storage (acceptable trade-off since caching is a performance concern, not correctness).",
+    "Hero.jsx HERO_VIDEO is a hardcoded string constant not driven by site-content — inconsistent with HERO_IMG which uses read(content, 'landing.hero.image', <fallback>). Consider making video CMS-editable too for consistency.",
+    "No HEAD support on /api/media — HEAD returns 405. Some CDNs / preloaders send HEAD before GET; consider adding @api.head or a FastAPI 'methods=[GET, HEAD]' registration for robustness."
+  ],
+  "updated_files": ["/app/backend/tests/test_media_range.py"],
+  "success_rate": {"backend": "8/8 (100%)", "frontend": "barsaat 100% clean; landing has 1 residual customer-assets image leak (3 DOM refs, 1 network request)"},
+  "test_credentials": "N/A - public endpoints",
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend /api/media Range support is fully verified (pytest at /app/backend/tests/test_media_range.py — 8/8 pass). Barsaat page is clean. Landing page still emits ONE customer-assets network request for kpwk8ol3__DSC4913-2%20%281%29.jpg despite bundle.js, source, /api/site-content, /api/gallery all being clean. Prime suspect: stale frontend/node_modules/.cache/babel-loader entry for Hero.jsx (I confirmed that cached babel output contains the OLD customer-assets fallback URL). Recommend: `rm -rf /app/frontend/node_modules/.cache && sudo supervisorctl restart frontend`, then re-scan the landing DOM for customer-assets. Do NOT be alarmed by video error=4/readyState=0 in Playwright — headless Chromium OSS lacks H.264 codec; the mp4s are avc1 and will play in real browsers. Base URL: https://chef-luxury-preview.preview.emergentagent.com",
+  "rca of the issue": "The customer-assets kpwk8ol3 image URL renders on / but not on /supper-club/barsaat. Current Hero.jsx source has been rewritten to '/api/media/biraajo/media/4d82c167b3dc090f.jpg' as the fallback, and /api/site-content returns '/api/media/biraajo/media/6a6d9d936ab71fa4.jpg' for landing.hero.image. However, the shipped bundle.js at /static/js/bundle.js also does NOT contain the string — so the runtime source of the URL is elsewhere. The most likely explanation: the babel-loader cache (frontend/node_modules/.cache/babel-loader/*.json) still holds the OLD compiled Hero.jsx with the customer-assets fallback as HERO_IMG default. If webpack-dev-server is serving a chunk from that cache (or an HMR delta), the browser would evaluate the old fallback whenever content.landing.hero.image is transiently undefined during initial mount (before /api/site-content resolves). The 3 DOM occurrences match Hero's pattern exactly: <video poster={HERO_IMG}> + <img src={HERO_IMG}> in the hero, plus one more render (possibly a StrictMode double-mount or a second Hero instance). Fix: clear /app/frontend/node_modules/.cache and restart frontend."
+}

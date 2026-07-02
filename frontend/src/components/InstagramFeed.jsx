@@ -2,12 +2,12 @@ import { motion } from "framer-motion";
 import { Instagram } from "lucide-react";
 
 const tiles = [
-  "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/xw1h2s8n_IMG_0183%20%283%29%20%281%29.jpg",
-  "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ozdq9xth__DSC4892-2%20%281%29.jpg",
-  "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/knt2zl0v__DSC4971-2%20%281%29.jpg",
-  "https://customer-assets.emergentagent.com/job_adaec391-d42f-41ce-b775-ff2b784b7b8b/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg",
-  "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg",
-  "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/kmlg9mxe__DSC3343%20%281%29.jpg",
+  "/api/media/biraajo/media/7b3c136adf5f5431.jpg",
+  "/api/media/biraajo/media/6a6d9d936ab71fa4.jpg",
+  "/api/media/biraajo/media/99efd8f5a8c343ea.jpg",
+  "/api/media/biraajo/media/4d82c167b3dc090f.jpg",
+  "/api/media/biraajo/media/31cf3839eeb74061.jpg",
+  "/api/media/biraajo/media/7852840d19d12949.jpg",
 ];
 
 export default function InstagramFeed() {

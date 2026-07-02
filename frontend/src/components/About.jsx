@@ -12,7 +12,7 @@ const DEFAULT_CHAPTERS = [
     eyebrow: "Before there was a name",
     title: "Before there was Biraajo, there was a dining table.",
     body: "In 2024, while working in a Bengali restaurant in New Delhi, I started inviting friends over for dinner. There was no concept behind it and certainly no business plan. I just wanted a place to cook.",
-    image: "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ozdq9xth__DSC4892-2%20%281%29.jpg",
+    image: "/api/media/biraajo/media/6a6d9d936ab71fa4.jpg",
     align: "left",
   },
 ];

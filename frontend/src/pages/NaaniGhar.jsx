@@ -9,7 +9,7 @@ export default function NaaniGhar() {
   const { content } = useSiteContent();
   if (content?.naani_ghar?.visible === false) return null;
 
-  const heroImg = read(content, "naani_ghar.hero.image", "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ozdq9xth__DSC4892-2%20%281%29.jpg");
+  const heroImg = read(content, "naani_ghar.hero.image", "/api/media/biraajo/media/6a6d9d936ab71fa4.jpg");
   const items = read(content, "naani_ghar.menu.items", []);
   const photos = read(content, "naani_ghar.photos_block.photos", []);
   const heroVisible = read(content, "naani_ghar.hero.visible", true) !== false;

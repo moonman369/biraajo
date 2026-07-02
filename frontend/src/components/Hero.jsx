@@ -35,8 +35,8 @@ export default function Hero() {
   const h = content?.landing?.hero;
   if (h && h.visible === false) return null;
 
-  const HERO_IMG = read(content, "landing.hero.image", "https://customer-assets.emergentagent.com/job_adaec391-d42f-41ce-b775-ff2b784b7b8b/artifacts/kpwk8ol3__DSC4913-2%20%281%29.jpg");
-  const HERO_VIDEO = "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/6469flkz_biraajo%206th%20june%2000101268_prob4.mp4";
+  const HERO_IMG = read(content, "landing.hero.image", "/api/media/biraajo/media/4d82c167b3dc090f.jpg");
+  const HERO_VIDEO = "/api/media/biraajo/media/3057f27be4caad94.mp4";
 
   let primaryLabel = read(content, "landing.hero.primary_cta_label", "Reserve a seat");
   if (!registrationsOpen) primaryLabel = "Reservations closed · Join list";

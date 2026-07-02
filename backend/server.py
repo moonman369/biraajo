@@ -6,10 +6,14 @@ load_dotenv(ROOT_DIR / ".env")
 
 import os
 import io
+import re
 import csv
 import uuid
 import asyncio
 import logging
+import tempfile
+import threading
+import hashlib
 import httpx
 import bcrypt
 import jwt
@@ -701,6 +705,81 @@ async def get_payment_screenshot(reg_id: str, user=Depends(get_current_admin)):
         raise HTTPException(status_code=404, detail="Screenshot not found")
     data, ct = get_object(reg["payment_screenshot_path"])
     return Response(content=data, media_type=ct)
+
+
+MEDIA_CACHE_DIR = os.path.join(tempfile.gettempdir(), "biraajo_media_cache")
+os.makedirs(MEDIA_CACHE_DIR, exist_ok=True)
+_media_locks: dict = {}
+
+
+def _ensure_media_cached(path: str) -> tuple[str, str]:
+    """Download the object from storage once into a local cache and return
+    (local_file_path, content_type). Subsequent requests read from disk so
+    we can serve proper HTTP Range (206) responses required by iOS Safari."""
+    safe = hashlib.sha1(path.encode()).hexdigest()
+    fpath = os.path.join(MEDIA_CACHE_DIR, safe)
+    cpath = fpath + ".ct"
+    if os.path.exists(fpath) and os.path.exists(cpath) and os.path.getsize(fpath) > 0:
+        with open(cpath) as f:
+            return fpath, f.read().strip() or "application/octet-stream"
+    lock = _media_locks.setdefault(path, threading.Lock())
+    with lock:
+        if os.path.exists(fpath) and os.path.exists(cpath) and os.path.getsize(fpath) > 0:
+            with open(cpath) as f:
+                return fpath, f.read().strip() or "application/octet-stream"
+        key = init_storage()
+        if not key:
+            raise HTTPException(status_code=500, detail="Storage not configured")
+        r = requests.get(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key}, timeout=300)
+        if r.status_code >= 400:
+            raise HTTPException(status_code=404, detail="Media not found")
+        ct = r.headers.get("Content-Type", "application/octet-stream")
+        tmp = fpath + ".tmp"
+        with open(tmp, "wb") as f:
+            f.write(r.content)
+        os.replace(tmp, fpath)
+        with open(cpath, "w") as f:
+            f.write(ct)
+        return fpath, ct
+
+
+@api.get("/media/{path:path}")
+async def serve_media(path: str, request: Request):
+    """Public, same-origin media served from a local cache with full HTTP
+    Range (206) support. iOS Safari requires 206 responses to play <video>;
+    object storage returns only 200, so we cache locally and slice here."""
+    fpath, ct = _ensure_media_cached(path)
+    total = os.path.getsize(fpath)
+    base_headers = {
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "public, max-age=31536000, immutable",
+    }
+    range_header = request.headers.get("range")
+    if range_header:
+        m = re.match(r"bytes=(\d*)-(\d*)", range_header.strip())
+        if m:
+            g1, g2 = m.group(1), m.group(2)
+            start = int(g1) if g1 else 0
+            end = int(g2) if g2 else total - 1
+            start = max(0, start)
+            end = min(end, total - 1)
+            if start > end:
+                return Response(status_code=416, headers={"Content-Range": f"bytes */{total}"})
+            length = end - start + 1
+            with open(fpath, "rb") as f:
+                f.seek(start)
+                chunk = f.read(length)
+            headers = {
+                **base_headers,
+                "Content-Range": f"bytes {start}-{end}/{total}",
+                "Content-Length": str(length),
+            }
+            return Response(content=chunk, status_code=206, media_type=ct, headers=headers)
+    with open(fpath, "rb") as f:
+        data = f.read()
+    return Response(content=data, media_type=ct, headers={**base_headers, "Content-Length": str(total)})
+
+
 
 
 @api.get("/registrations")

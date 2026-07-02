@@ -2,8 +2,8 @@ import { motion } from "framer-motion";
 import { useSiteContent, read } from "@/lib/siteContent";
 
 const FALLBACK_CARDS = [
-  { tag: "Supper Club", title: "Supper Clubs", body: "Eight-seat candle-lit dinners with a rotating, story-led menu.", image: "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/xw1h2s8n_IMG_0183%20%283%29%20%281%29.jpg" },
-  { tag: "Private", title: "Private Dining", body: "A bespoke evening for your home, terrace or trip.", image: "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ozdq9xth__DSC4892-2%20%281%29.jpg" },
+  { tag: "Supper Club", title: "Supper Clubs", body: "Eight-seat candle-lit dinners with a rotating, story-led menu.", image: "/api/media/biraajo/media/7b3c136adf5f5431.jpg" },
+  { tag: "Private", title: "Private Dining", body: "A bespoke evening for your home, terrace or trip.", image: "/api/media/biraajo/media/6a6d9d936ab71fa4.jpg" },
 ];
 
 export default function Experiences() {

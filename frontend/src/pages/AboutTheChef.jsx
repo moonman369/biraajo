@@ -9,7 +9,7 @@ export default function AboutTheChef() {
   const { content } = useSiteContent();
   if (content?.about_the_chef?.visible === false) return null;
 
-  const portrait = read(content, "about_the_chef.hero.portrait", "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/kmlg9mxe__DSC3343%20%281%29.jpg");
+  const portrait = read(content, "about_the_chef.hero.portrait", "/api/media/biraajo/media/7852840d19d12949.jpg");
   const ch1Visible = read(content, "about_the_chef.chapter_1.visible", true) !== false;
   const ch2Visible = read(content, "about_the_chef.chapter_2.visible", true) !== false;
   const philVisible = read(content, "about_the_chef.philosophy.visible", true) !== false;

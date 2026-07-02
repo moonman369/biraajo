@@ -14,7 +14,7 @@ DEFAULT_CONTENT = {
             "primary_cta_href": "#events",
             "secondary_cta_label": "See the menu",
             "secondary_cta_href": "#menu",
-            "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ozdq9xth__DSC4892-2%20%281%29.jpg",
+            "image": "/api/media/biraajo/media/6a6d9d936ab71fa4.jpg",
         },
         "about": {
             "visible": True,
@@ -28,7 +28,7 @@ DEFAULT_CONTENT = {
                     "eyebrow": "The chef",
                     "title": "Vidip Shah",
                     "body": "Twenty-two years old. Trained in Switzerland, raised on a Bengali grandmother's kitchen, sharpened by Delhi restaurants. Biraajo is where those threads come undone and are tied back together — every supper a slightly different knot.",
-                    "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/kmlg9mxe__DSC3343%20%281%29.jpg",
+                    "image": "/api/media/biraajo/media/7852840d19d12949.jpg",
                     "align": "left",
                 },
                 {
@@ -37,7 +37,7 @@ DEFAULT_CONTENT = {
                     "eyebrow": "The room",
                     "title": "An old apartment, made new again",
                     "body": "Biraajo lives inside a restored family apartment in South Calcutta. The furniture is old, the walls are old, the stories are older still. Onto this stage, every few weeks, Vidip plates whatever interests him at the moment.",
-                    "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg",
+                    "image": "/api/media/biraajo/media/31cf3839eeb74061.jpg",
                     "align": "right",
                 },
                 {
@@ -46,7 +46,7 @@ DEFAULT_CONTENT = {
                     "eyebrow": "The cooking",
                     "title": "No fixed cuisine",
                     "body": "Konkan bombil. Dak bungalow lamb. Saoji mushroom. A phirri that may or may not be entirely traditional. The point is the process — ingredient-first, story-first, ego-last.",
-                    "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/knt2zl0v__DSC4971-2%20%281%29.jpg",
+                    "image": "/api/media/biraajo/media/99efd8f5a8c343ea.jpg",
                     "align": "left",
                 },
             ],
@@ -77,14 +77,14 @@ DEFAULT_CONTENT = {
                     "tag": "Supper Club",
                     "title": "Monthly suppers for twelve",
                     "body": "A six-course evening built around what the season is doing. Strangers become diners. Diners become friends.",
-                    "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg",
+                    "image": "/api/media/biraajo/media/31cf3839eeb74061.jpg",
                 },
                 {
                     "visible": True,
                     "tag": "Private",
                     "title": "Private dinners",
                     "body": "A custom evening for your table. Tell us the date, the guest list, the season. We'll plate the rest.",
-                    "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/xw1h2s8n_IMG_0183%20%283%29%20%281%29.jpg",
+                    "image": "/api/media/biraajo/media/7b3c136adf5f5431.jpg",
                 },
             ],
         },
@@ -120,7 +120,7 @@ DEFAULT_CONTENT = {
             "title": "Vidip Shah is twenty-two,",
             "title_italic": "still becoming.",
             "body": "He cooks the way he travels — without a fixed itinerary. Trained in Switzerland, raised on his grandmother's Bengali kitchen, sharpened by stints in Delhi's restaurants. Biraajo is where those threads come undone and are tied back together, every supper a slightly different knot.",
-            "portrait": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/kmlg9mxe__DSC3343%20%281%29.jpg",
+            "portrait": "/api/media/biraajo/media/7852840d19d12949.jpg",
         },
         "chapter_1": {
             "visible": True,
@@ -128,7 +128,7 @@ DEFAULT_CONTENT = {
             "title_html": "A kitchen at home, long before <em>a kitchen at work.</em>",
             "body_1": "Vidip grew up in Calcutta, where afternoons spent at his grandmother's elbow were a kind of education no school could compete with. She didn't write things down. Her recipes lived in her hands — the precise pinch, the patient stir, the smell that told her when something was ready.",
             "body_2": "By the time he was twelve, he was making the household breakfasts on weekends. By sixteen, he was the one his cousins called when they wanted something more interesting than what was on the table.",
-            "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg",
+            "image": "/api/media/biraajo/media/31cf3839eeb74061.jpg",
         },
         "chapter_2": {
             "visible": True,
@@ -136,7 +136,7 @@ DEFAULT_CONTENT = {
             "title_html": "Culinary school was not about <em>technique.</em>",
             "body_1": "It was about people. Classmates from Mexico, Russia, Turkey, Thailand — each carrying memories of home in their cooking. Vidip's worldview widened over those years not in the kitchen itself but in the dorm rooms, the late-night conversations over student-budget meals where someone was always teaching someone else a dish from home.",
             "body_2": "He returned with no allegiance to a single cuisine. What he brought back instead was a way of working: ingredient-first, story-first, ego-last.",
-            "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/knt2zl0v__DSC4971-2%20%281%29.jpg",
+            "image": "/api/media/biraajo/media/99efd8f5a8c343ea.jpg",
         },
         "philosophy": {
             "visible": True,
@@ -166,7 +166,7 @@ DEFAULT_CONTENT = {
             "title_italic": "Grandmother's house.",
             "body": "Our first supper series, plated inside a restored family apartment in Calcutta. This chapter has now officially ended — but the dishes, the friends, and the memory of those evenings stay on the table.",
             "meta": "Series concluded · South Calcutta · 12 guests per evening",
-            "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ozdq9xth__DSC4892-2%20%281%29.jpg",
+            "image": "/api/media/biraajo/media/6a6d9d936ab71fa4.jpg",
         },
         "menu": {
             "visible": True,
@@ -192,10 +192,10 @@ DEFAULT_CONTENT = {
             "title": "How the room",
             "title_italic": "remembered itself.",
             "photos": [
-                "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg",
-                "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg",
-                "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/knt2zl0v__DSC4971-2%20%281%29.jpg",
-                "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/xw1h2s8n_IMG_0183%20%283%29%20%281%29.jpg",
+                "/api/media/biraajo/media/31cf3839eeb74061.jpg",
+                "/api/media/biraajo/media/31cf3839eeb74061.jpg",
+                "/api/media/biraajo/media/99efd8f5a8c343ea.jpg",
+                "/api/media/biraajo/media/7b3c136adf5f5431.jpg",
             ],
         },
         "closer": {
@@ -213,14 +213,14 @@ DEFAULT_CONTENT = {
             "title": "Barsaat.",
             "title_italic": "A supper with the rain.",
             "body": "Biraajo's monsoon edition. A long, slow evening for twelve, plated entirely from what the season gives — hilsa, jaggery, smoke, foraged green. The kind of meal that asks you to slow down.",
-            "image": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/ctn50bz1__DSC4913-2%20%281%29%20%281%29.jpg",
+            "image": "/api/media/biraajo/media/31cf3839eeb74061.jpg",
         },
         "reel": {
             "visible": False,
             "eyebrow": "A glimpse",
             "title": "From the kitchen,",
             "title_italic": "last week.",
-            "video_url": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/l41d744x_biraajo%206th%20june%2000097020_prob4.mp4",
+            "video_url": "/api/media/biraajo/media/e8efd1e61c8755b5.mp4",
         },
         "reels": {
             "visible": True,
@@ -228,8 +228,8 @@ DEFAULT_CONTENT = {
             "title": "From the kitchen,",
             "title_italic": "two evenings ago.",
             "items": [
-                {"url": "https://customer-assets.emergentagent.com/job_8232982a-2ce1-4d83-a683-c7727cd57ba6/artifacts/pampvqbe_Barssat%20Reel%202.MP4", "label": "Behind the menu"},
-                {"url": "https://customer-assets.emergentagent.com/job_feast-studio-1/artifacts/l41d744x_biraajo%206th%20june%2000097020_prob4.mp4", "label": "On the line"},
+                {"url": "/api/media/biraajo/media/9505d9947a95820b.mp4", "label": "Behind the menu"},
+                {"url": "/api/media/biraajo/media/e8efd1e61c8755b5.mp4", "label": "On the line"},
             ],
         },
         "menu": {
