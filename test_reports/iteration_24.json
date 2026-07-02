@@ -17,6 +17,6 @@
   "seed_data_creation": "none",
   "retest_needed": false,
   "should_main_agent_self_test": false,
-  "context_for_next_testing_agent": "Hero video path /api/media/biraajo/media/3057f27be4caad94.mp4 = 850,621 bytes; image /api/media/biraajo/media/4d82c167b3dc090f.jpg = 410,614 bytes. Both serve 206 on Range and 200 otherwise. Video moov box in first 16KB (faststart). Headless Chromium reports video.error=4 (H.264 unsupported) — this is EXPECTED and the hero <img> base layer handles fallback correctly (no poster attribute on <video>). Base URL: https://chef-luxury-preview.preview.emergentagent.com.",
+  "context_for_next_testing_agent": "Hero video path /api/media/biraajo/media/3057f27be4caad94.mp4 = 850,621 bytes; image /api/media/biraajo/media/4d82c167b3dc090f.jpg = 410,614 bytes. Both serve 206 on Range and 200 otherwise. Video moov box in first 16KB (faststart). Headless Chromium reports video.error=4 (H.264 unsupported) — this is EXPECTED and the hero <img> base layer handles fallback correctly (no poster attribute on <video>). Base URL: https://event-booking-test-1.preview.emergentagent.com.",
   "rca of the issue": "N/A — regression check only; nothing broken."
 }
