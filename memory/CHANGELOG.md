@@ -30,3 +30,8 @@
 ### Added 3 Barsaat videos
 - Uploaded 3 user videos to persistent object storage (biraajo/media/f20a..., da03..., 5fc8...), served via /api/media with 206 Range.
 - Added to Barsaat reels (barsaat.reels.items, published+draft) and to the gallery collection. Verified rendering + 206 serving.
+
+## 2026-07-16 (later)
+### Veg price 2200->2500 on production (startup enforcement)
+- Root cause: price is a DB-stored setting; production DB still held 2200 (code redeploy doesn't migrate DB data, and there is no admin price editor).
+- Fix: startup now enforces settings.price_veg=PRICE_VEG(2500) & price_nonveg=PRICE_NONVEG(2800) on the existing settings doc (same pattern as seats_total=8). Verified: a simulated stale 2200 auto-corrects to 2500 on restart. Production fixes itself on next redeploy.

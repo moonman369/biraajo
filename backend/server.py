@@ -427,6 +427,8 @@ async def _setup_indexes() -> None:
     await db.pageviews.create_index("ts")
     # Enforce the global capacity on every existing event.
     await db.events.update_many({}, {"$set": {"seats_total": EVENT_CAPACITY}})
+    # Enforce the finalized per-seat pricing on the settings document.
+    await db.settings.update_one({"id": "global"}, {"$set": {"data.price_veg": PRICE_VEG, "data.price_nonveg": PRICE_NONVEG}})
 
 
 async def _seed_admin() -> None:
