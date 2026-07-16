@@ -107,7 +107,7 @@ export default function Suppers() {
                 </h2>
                 <p className="mt-4 text-[#B5A79E] leading-relaxed">
                   Our monsoon edition — ten courses written for the rain. Both vegetarian and non-vegetarian
-                  variants are served. Twelve seats only, first come, first served.
+                  variants are served. Eight seats only, first come, first served.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">

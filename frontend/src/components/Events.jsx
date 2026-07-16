@@ -123,10 +123,10 @@ export default function Events() {
                     <div>
                       <p className="text-overline">Per seat</p>
                       <p className="font-display text-2xl text-[#F3EFE7] mt-1 leading-tight">
-                        ₹2,200 <span className="text-sm text-[#B5A79E]">veg</span>
+                        ₹2,500 <span className="text-sm text-[#B5A79E]">veg</span>
                       </p>
                       <p className="font-display text-2xl text-[#F3EFE7] leading-tight">
-                        ₹2,500 <span className="text-sm text-[#B5A79E]">non-veg</span>
+                        ₹2,800 <span className="text-sm text-[#B5A79E]">non-veg</span>
                       </p>
                     </div>
                     <div className="text-right">

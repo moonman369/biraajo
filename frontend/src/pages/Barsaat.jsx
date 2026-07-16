@@ -98,14 +98,14 @@ export default function Barsaat() {
     return Array.isArray(b) && b.length ? b : DEFAULT_RAJNEESH_BULLETS;
   })();
   const closerEyebrow = read(content, "barsaat.closer.eyebrow", "If the table is calling");
-  const closerTitle = read(content, "barsaat.closer.title", "Twelve seats.");
+  const closerTitle = read(content, "barsaat.closer.title", "Eight seats.");
   const closerTitleIt = read(content, "barsaat.closer.title_italic", "Three rainy evenings.");
   const closerBody = read(content, "barsaat.closer.body",
     "We hold a small house. We cook one menu. We light a single room. If any of that calls to you, the door is open.");
   const closerCta = read(content, "barsaat.closer.cta_label", "Pick a date");
   const datesEyebrow = read(content, "barsaat.dates_block.eyebrow", "Reserve your seat");
   const datesTitle = read(content, "barsaat.dates_block.title", "Three tables.");
-  const datesTitleIt = read(content, "barsaat.dates_block.title_italic", "Twelve seats each.");
+  const datesTitleIt = read(content, "barsaat.dates_block.title_italic", "Eight seats each.");
   const scheduleNote = read(content, "barsaat.dates_block.schedule_note",
     "Doors open at 7:00 PM. The first course lands at 7:15 PM sharp. The evening closes by 10:00 PM.");
   const priceEyebrow = read(content, "barsaat.dates_block.price_eyebrow", "Early-bird · first 10 seats");
@@ -132,7 +132,7 @@ export default function Barsaat() {
               </h1>
               <p className="mt-8 text-[#B5A79E] text-lg leading-relaxed max-w-xl">
                 Ten courses written from monsoon memory — Gujarati at its core, modern and European at its edges.
-                A composed soundscape, a perfumed room, a long table set for twelve.
+                A composed soundscape, a perfumed room, a long table set for eight.
               </p>
 
               <div className="mt-10 flex flex-wrap gap-4">

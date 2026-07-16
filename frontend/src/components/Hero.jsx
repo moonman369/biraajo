@@ -87,7 +87,7 @@ export default function Hero() {
               <p className="font-display text-2xl sm:text-3xl lg:text-4xl text-[#F3EFE7] leading-snug italic font-light">
                 {read(content, "landing.hero.title", "A table is being set")}{" "}
                 <span className="not-italic text-[#B5A79E]">
-                  {read(content, "landing.hero.body", "Twelve seats. Once a month. Cooked by hand, plated with care.")}
+                  {read(content, "landing.hero.body", "Eight seats. A couple of times a month. Cooked by hand, plated with care.")}
                 </span>
               </p>
             </div>

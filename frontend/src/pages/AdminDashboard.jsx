@@ -339,7 +339,7 @@ function Traffic() {
 function emptyEvent() {
   return {
     title: "", date: "", time: "19:30", venue: "", description: "",
-    price: 3500, seats_total: 10, image_url: "", tag: "Supper Club",
+    price: 3500, seats_total: 8, image_url: "", tag: "Supper Club",
   };
 }
 
@@ -485,8 +485,30 @@ function Registrations() {
   const load = () => {
     const params = {};
     if (eventId) params.event_id = eventId;
-    if (statusFilter) params.payment_status = statusFilter;
-    api.get("/registrations", { params }).then((r) => setRows(r.data));
+    const regParams = { ...params };
+    if (statusFilter) regParams.payment_status = statusFilter;
+    Promise.all([
+      api.get("/registrations", { params: regParams }),
+      statusFilter === "pending"
+        ? Promise.resolve({ data: [] })
+        : api.get("/admin/offsite-bookings", { params }),
+    ]).then(([regRes, offRes]) => {
+      const direct = (regRes.data || []).map((r) => ({ ...r, is_offsite: false }));
+      const offsite = (offRes.data || []).map((b) => ({
+        ...b,
+        is_offsite: true,
+        payment_status: "offsite",
+        email: b.contact || "",
+        phone: "",
+        instagram_handle: "",
+        dietary_preferences: "",
+        total_amount: 0,
+      }));
+      const merged = [...direct, ...offsite].sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+      setRows(merged);
+    });
   };
   const loadArchived = () => api.get("/registrations/archived").then((r) => setArchived(r.data)).catch(() => {});
   useEffect(load, [eventId, statusFilter]);
@@ -533,8 +555,9 @@ function Registrations() {
   };
 
   const del = async (r) => {
-    if (!window.confirm(`Delete registration for ${r.full_name}? This releases the seats.`)) return;
-    await api.delete(`/registrations/${r.id}`);
+    const isOff = r.is_offsite;
+    if (!window.confirm(`Delete ${isOff ? "off-site booking" : "registration"} for ${r.full_name}? This releases the seats.`)) return;
+    await api.delete(isOff ? `/admin/offsite-bookings/${r.id}` : `/registrations/${r.id}`);
     toast.success("Deleted");
     load();
   };
@@ -618,15 +641,20 @@ function Registrations() {
             )}
             {rows.map((r) => (
               <tr key={r.id} className="border-t border-[#2D1D1A]" data-testid={`reg-row-${r.id}`}>
-                <Td><PaymentBadge status={r.payment_status} /></Td>
+                <Td>{r.is_offsite ? <OffsiteBadge /> : <PaymentBadge status={r.payment_status} />}</Td>
                 <Td>{titleOf(r.event_id)}</Td>
-                <Td>{r.full_name}</Td>
+                <Td>
+                  {r.full_name}
+                  {r.is_offsite && r.source ? (
+                    <span className="block text-[10px] text-[#B5A79E] tracking-wide">via {r.source}</span>
+                  ) : null}
+                </Td>
                 <Td>{r.email}</Td>
                 <Td>{r.phone}</Td>
                 <Td>{r.instagram_handle}</Td>
                 <Td>{r.menu_preference}</Td>
                 <Td>{r.guests}</Td>
-                <Td>₹{Number(r.total_amount || 0).toLocaleString("en-IN")}</Td>
+                <Td>{r.is_offsite ? "—" : `₹${Number(r.total_amount || 0).toLocaleString("en-IN")}`}</Td>
                 <Td>{r.dietary_preferences}</Td>
                 <Td>{new Date(r.created_at).toLocaleDateString()}</Td>
                 <Td>
@@ -721,6 +749,14 @@ function PaymentBadge({ status }) {
         : "border-[#D9772B] text-[#D9772B] bg-[#D9772B]/10"
     }`}>
       {isConfirmed ? "Confirmed" : "Pending"}
+    </span>
+  );
+}
+
+function OffsiteBadge() {
+  return (
+    <span className="px-2 py-1 text-[10px] tracking-[0.18em] uppercase border inline-block border-[#5B7B9A] text-[#A9C6DE] bg-[#5B7B9A]/10">
+      Off-site
     </span>
   );
 }

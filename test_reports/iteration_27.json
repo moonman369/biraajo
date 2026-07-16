@@ -1,0 +1,40 @@
+{
+  "summary": "Iteration 27 testing for Biraajo capacity=8 / off-site cap / ₹2500-₹2800 pricing / grammar copy. Backend: 9/9 pytest pass. Frontend: pricing (₹2,500 veg / ₹2,800 non-veg) renders correctly on landing Events cards; admin merged Registrations view shows both direct (PENDING badge) + off-site (OFF-SITE badge with 'via Zomato') rows correctly; off-site rows show '—' for total; Pending payment filter hides off-site rows; Traffic analytics still works; About-the-Chef page has the required corrected copy and none of the forbidden strings. HOWEVER a critical grammar/copy issue remains: all 4 events in the DB still have 'Twelve seats' in their description, which renders on the landing page Events section — this contradicts the copy-cleanup requirement.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Events (landing)", "issue": "All 4 event cards still show 'Twelve seats' (stale event.description in DB). /api/site-content was cleaned but /api/events documents were not. Landing cards render 'Twelve seats only.' / 'Twelve seats. One long table.' verbatim.", "selector": "section p.mt-5.text-\\[\\#B5A79E\\]", "priority": "HIGH"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "About-the-Chef", "issues": ["Sentence 'making those same dishes .Just with a different perspective' has a stray space before period and missing space after (visible in Culinary school paragraph)."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter27_capacity_pricing_copy.py",
+    "/app/test_reports/pytest/iter27_results.xml"
+  ],
+  "action_items": [
+    "Update the 4 seeded events' description fields in the DB (or seed function) to replace 'Twelve seats only.' / 'Twelve seats. One long table.' with 'Eight seats only.' / 'Eight seats. One long table.' so landing Events cards reflect the 8-seat capacity.",
+    "(Cosmetic) Fix 'same dishes .Just' spacing on About-the-Chef Culinary-school paragraph.",
+    "(Data note) 4 existing seeded PENDING registrations still carry pre-change totals (₹2,200 veg / ₹5,600 non-veg based on old 2200/2800 pricing) — new registrations correctly compute at ₹2,500/₹2,800 (verified via backend test). If desired, backfill totals on existing pending rows."
+  ],
+  "critical_code_review_comments": [
+    "server.py _calc_total has an unreachable second `return per_seat * max(1, int(guests))` line (line 573) after an earlier return — dead code, safe to delete.",
+    "Grammar/copy cleanup was applied to /api/site-content but not to the seed data used by _seed_events() in server.py — same category of text should be cleaned everywhere.",
+    "AdminDashboard.jsx remains >700 lines mixing Overview/Registrations/OffsiteSales/Messages/Traffic — carried over from iter25, still worth splitting."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter27_capacity_pricing_copy.py (new)"
+  ],
+  "success_rate": {"backend": "100% (9/9)", "frontend": "~90% — critical stale 'Twelve seats' copy on landing event cards"},
+  "test_credentials": "reachbiraajo@gmail.com / Biraajo@2026 (verified)",
+  "seed_data_creation": "All TEST_ITER27 temp events, registrations, and off-site bookings were deleted at end of each test. No lingering test data. The 4 pre-existing demo PENDING registrations were left untouched.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend endpoints exercised: /api/auth/login, GET /api/events, GET /api/settings, POST/DELETE /api/events (admin), POST /api/events/{id}/register, POST/GET/DELETE /api/admin/offsite-bookings, GET /api/site-content, GET /api/registrations, GET /api/registrations/archived, DELETE /api/registrations/{id} (archives), POST /api/registrations/{id}/restore, GET /api/analytics/summary. Note: event admin routes are /api/events (NOT /api/admin/events); off-site payload field is `full_name` (not guest_name); registration menu uses `menu_preference` = 'Vegetarian'/'Non-Vegetarian'; analytics endpoint is /api/analytics/summary (not /api/admin/analytics/traffic). Landing page displays event descriptions from /api/events not /api/site-content — that is why 'Twelve seats' persists even though site-content is clean.",
+  "rca of the issue": "Stale 'Twelve seats' copy on landing = event.description in db.events collection was not updated when the site-content cleanup was applied. Reproduce: `curl /api/events | jq '.[].description'` — all 4 rows contain 'Twelve seats'. Fix: update _seed_events() strings in server.py AND run db.events.update_many to replace substrings 'Twelve seats' -> 'Eight seats' on existing docs (or reset the demo events)."
+}

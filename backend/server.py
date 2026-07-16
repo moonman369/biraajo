@@ -36,7 +36,7 @@ UPI_ID = os.environ.get("UPI_ID", "vidipshah14-1@oksbi")
 
 # ---------- Capacity ----------
 # Every event's total capacity is fixed at 10 seats under all circumstances.
-EVENT_CAPACITY = 10
+EVENT_CAPACITY = 8
 
 
 # ---------- Object Storage (payment screenshots) ----------
@@ -300,7 +300,7 @@ class EventIn(BaseModel):
     venue: str
     description: str
     price: float = 0.0
-    seats_total: int = 10
+    seats_total: int = 8
     image_url: str = ""
     tag: Optional[str] = "Supper Club"
 
@@ -425,6 +425,8 @@ async def _setup_indexes() -> None:
     await db.subscribers.create_index("email", unique=True)
     await db.pageviews.create_index("day")
     await db.pageviews.create_index("ts")
+    # Enforce the global capacity on every existing event.
+    await db.events.update_many({}, {"$set": {"seats_total": EVENT_CAPACITY}})
 
 
 async def _seed_admin() -> None:
