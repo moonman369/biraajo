@@ -25,3 +25,8 @@
 ### Grammar & spacing cleanup
 - 17 copy corrections applied to live DB site_content (published + draft): double spaces, "a a", "Going to back", its/it's, capitalization, "newfound", em-dashes, and stale "Twelve seats"/"ten people" -> "eight" to match 8-seat capacity.
 - Updated 4 event description fields ("Twelve seats" -> "Eight seats"). Fixed frontend fallback copy (Hero/Barsaat/Suppers). Removed dead code line in _calc_total.
+
+## 2026-07-16 (later)
+### Added 3 Barsaat videos
+- Uploaded 3 user videos to persistent object storage (biraajo/media/f20a..., da03..., 5fc8...), served via /api/media with 206 Range.
+- Added to Barsaat reels (barsaat.reels.items, published+draft) and to the gallery collection. Verified rendering + 206 serving.
