@@ -7,6 +7,7 @@ load_dotenv(ROOT_DIR / ".env")
 import os
 import io
 import re
+import json
 import csv
 import uuid
 import asyncio
@@ -467,6 +468,91 @@ async def _seed_menu() -> None:
         await db.menus.insert_one(MenuSection(**s).model_dump())
 
 
+# ---------- One-time content migrations ----------
+# Content edits (grammar, added media) live in the DB, which differs per
+# environment. These idempotent, once-only migrations let a redeploy carry the
+# same content to the production database. Object storage is shared across envs.
+_BARSAAT_VIDEOS = [
+    ("/api/media/biraajo/media/f20a0e5c5aff9f6b.mp4", "A Barsaat evening"),
+    ("/api/media/biraajo/media/da038aea53452293.mp4", "In the room"),
+    ("/api/media/biraajo/media/5fc827dcae0e2464.mp4", "On the plate"),
+]
+
+_CONTENT_FIXES = [
+    ("curiosity of ingredients.  Biraajo", "curiosity about ingredients. Biraajo"),
+    ("sense, Brought together", "sense, brought together"),
+    ("fermentation & pickling . The food", "fermentation & pickling. The food"),
+    ("speciality cuisine, its his journey", "speciality cuisine, it's his journey"),
+    ("The name <em>Biraajo</em>  comes", "The name <em>Biraajo</em> comes"),
+    ("and the ten people in it.", "and the eight people in it."),
+    ("I cook the way I travel - There is no itinerary.", "I cook the way I travel — there is no itinerary."),
+    ("It's a language, mothers don't", "It's a language — mothers don't"),
+    ("their support through  actions.", "their support through actions."),
+    ("Sometimes it's  your favourite dish", "Sometimes it's your favourite dish"),
+    ("a new found curiosity of my own cuisine", "a newfound curiosity about my own cuisine"),
+    ("Going to back to those same memories", "Going back to those same memories"),
+    ("Just with different perspective.", "Just with a different perspective."),
+    ("No European Menus.", "No European menus."),
+    ("the trickier one  a place with its own memory.", "the trickier one — a place with its own memory."),
+    ("a a not so traditional Srikhand", "a not-so-traditional Srikhand"),
+    ("Twelve seats, one long table.", "Eight seats, one long table."),
+]
+
+_EVENT_DESC_FIXES = [
+    ("Twelve seats. One long table.", "Eight seats. One long table."),
+    ("Twelve seats only.", "Eight seats only."),
+    ("Twelve seats", "Eight seats"),
+]
+
+
+async def _run_migrations() -> None:
+    # Grammar/copy corrections + stale "Twelve seats" in event descriptions.
+    if not await db.migrations.find_one({"id": "content_grammar_v1"}):
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc:
+                continue
+            blob = json.dumps(doc["data"], ensure_ascii=False)
+            for old, new in _CONTENT_FIXES:
+                blob = blob.replace(old, new)
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": json.loads(blob)}})
+        async for ev in db.events.find({}):
+            desc = ev.get("description", "")
+            new = desc
+            for old, rep in _EVENT_DESC_FIXES:
+                new = new.replace(old, rep)
+            if new != desc:
+                await db.events.update_one({"id": ev["id"]}, {"$set": {"description": new}})
+        await db.migrations.update_one({"id": "content_grammar_v1"}, {"$set": {"id": "content_grammar_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: content_grammar_v1")
+
+    # Add the 3 Barsaat videos to reels + gallery (files already in shared storage).
+    if not await db.migrations.find_one({"id": "barsaat_videos_v1"}):
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc:
+                continue
+            data = doc["data"]
+            reels = data.setdefault("barsaat", {}).setdefault("reels", {})
+            reels.setdefault("visible", True)
+            items = reels.setdefault("items", [])
+            existing = {it.get("url") for it in items}
+            for url, label in _BARSAAT_VIDEOS:
+                if url not in existing:
+                    items.append({"url": url, "label": label})
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        gdocs = await db.gallery.find({}).to_list(500)
+        gurls = {g.get("url") for g in gdocs}
+        base = max([g.get("order", 0) for g in gdocs] or [0]) + 1
+        i = 0
+        for url, label in _BARSAAT_VIDEOS:
+            if url not in gurls:
+                await db.gallery.insert_one({"id": str(uuid.uuid4()), "url": url, "caption": "", "order": base + i, "created_at": _now_iso()})
+                i += 1
+        await db.migrations.update_one({"id": "barsaat_videos_v1"}, {"$set": {"id": "barsaat_videos_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: barsaat_videos_v1")
+
+
 # ---------- Startup ----------
 @app.on_event("startup")
 async def on_startup() -> None:
@@ -478,6 +564,7 @@ async def on_startup() -> None:
     await _seed_admin()
     await _seed_gallery()
     await _seed_menu()
+    await _run_migrations()
 
 
 # ---------- Auth Routes ----------

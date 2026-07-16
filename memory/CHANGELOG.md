@@ -35,3 +35,10 @@
 ### Veg price 2200->2500 on production (startup enforcement)
 - Root cause: price is a DB-stored setting; production DB still held 2200 (code redeploy doesn't migrate DB data, and there is no admin price editor).
 - Fix: startup now enforces settings.price_veg=PRICE_VEG(2500) & price_nonveg=PRICE_NONVEG(2800) on the existing settings doc (same pattern as seats_total=8). Verified: a simulated stale 2200 auto-corrects to 2500 on restart. Production fixes itself on next redeploy.
+
+## 2026-07-16 (later) — Content now propagates to production via startup migrations
+### Root cause of "changes not reflecting on production"
+- Preview and production use SEPARATE databases. Earlier content edits (price, 3 Barsaat videos, grammar/copy, event descriptions) were written directly to the PREVIEW db, so a code-only redeploy never carried them to production. Object storage IS shared (video files were already reachable from prod).
+### Fix
+- Added idempotent, once-only startup migrations (tracked in `migrations` collection): `content_grammar_v1` (17 copy fixes + "Twelve seats"->"Eight seats" event descriptions) and `barsaat_videos_v1` (adds 3 videos to reels + gallery). Price/capacity remain enforced every startup.
+- Verified by simulating a production-like DB (removed videos+markers, reverted a grammar string) then restarting: migration restored 11 gallery videos, 10 reels, corrected copy, and 2500/2800 pricing. Requires ONE redeploy to apply on production.
