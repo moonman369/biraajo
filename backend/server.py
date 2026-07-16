@@ -570,7 +570,6 @@ async def _calc_total(menu_preference: str, guests: int) -> int:
     nonveg = int(s.get("price_nonveg", PRICE_NONVEG))
     per_seat = veg if menu_preference == "Vegetarian" else nonveg
     return int(per_seat) * max(1, int(guests or 1))
-    return per_seat * max(1, int(guests))
 
 
 def _check_seats(event: dict, requested: int, baseline_guests: int = 0) -> int:

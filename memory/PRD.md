@@ -13,6 +13,7 @@ Premium personal chef landing page for "Biraajo by Vidip Shah". Dark, luxury hos
 - **Google Sheets**: webhook configured but failing 405 (user fixing on their side; bookings safe in DB regardless)
 
 ## What's Been Implemented (latest first)
+- **2026-07-16** Capacity set to 8 (direct + off-site sales both count toward it); admin Registrations tab now merges direct + off-site bookings. Pricing finalised Veg ₹2,500 / Non-Veg ₹2,800. Site-wide grammar/spacing cleanup + stale "twelve seats" copy fixed. See CHANGELOG.md.
 - **2026-07-16** Website Traffic analytics (first-party, no cookies): `POST /api/analytics/track`, `GET /api/analytics/summary`, "Traffic" tab in dashboard. See CHANGELOG.md.
 - **2026-07-16** Registration data-loss safety net: archive-on-delete + Restore. Deleting events/bookings no longer erases guest data (`registrations_archive`, `GET /api/registrations/archived`, `POST /api/registrations/{id}/restore`). See CHANGELOG.md.
 - **[2026-07] Media compression — VERIFIED (iteration 24)**: Compressed all 16 media assets in place (same /api/media paths, no DB/code changes). Videos re-encoded to iOS-friendly H.264 yuv420p with +faststart (moov at front), max 1280px; images resized to max 1920px JPEG q80. Total media 186.7MB → ~13.7MB (~88% smaller); hero video 22MB → 0.85MB, largest 42.9MB → 1.44MB. Faststart also improves iOS/mobile playback. Local media cache cleared. Requires redeploy for production.
