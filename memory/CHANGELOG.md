@@ -42,3 +42,6 @@
 ### Fix
 - Added idempotent, once-only startup migrations (tracked in `migrations` collection): `content_grammar_v1` (17 copy fixes + "Twelve seats"->"Eight seats" event descriptions) and `barsaat_videos_v1` (adds 3 videos to reels + gallery). Price/capacity remain enforced every startup.
 - Verified by simulating a production-like DB (removed videos+markers, reverted a grammar string) then restarting: migration restored 11 gallery videos, 10 reels, corrected copy, and 2500/2800 pricing. Requires ONE redeploy to apply on production.
+
+## 2026-07-16 (later) — Removed early-bird pricing
+- Barsaat "Reserve your seat" price box: removed "Early-bird · first 10 seats" eyebrow and the "Pricing revises after the first ten seats..." footnote clause. Now shows flat Veg ₹2,500 / Non-Veg ₹2,800 + "Per seat, all-inclusive." Frontend-only (no DB dependency); applies on redeploy.

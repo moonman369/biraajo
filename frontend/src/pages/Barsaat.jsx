@@ -108,9 +108,8 @@ export default function Barsaat() {
   const datesTitleIt = read(content, "barsaat.dates_block.title_italic", "Eight seats each.");
   const scheduleNote = read(content, "barsaat.dates_block.schedule_note",
     "Doors open at 7:00 PM. The first course lands at 7:15 PM sharp. The evening closes by 10:00 PM.");
-  const priceEyebrow = read(content, "barsaat.dates_block.price_eyebrow", "Early-bird · first 10 seats");
   const priceFootnote = read(content, "barsaat.dates_block.price_footnote",
-    "Per seat, all-inclusive. Pricing revises after the first ten seats are confirmed across the three tables.");
+    "Per seat, all-inclusive.");
 
   return (
     <div className="bg-[#0A0504] text-[#F3EFE7] min-h-screen film-grain" data-testid="page-barsaat">
@@ -171,8 +170,7 @@ export default function Barsaat() {
               <p className="text-[#B5A79E] mt-5 max-w-xl leading-relaxed">{scheduleNote}</p>
             </div>
             <div className="lg:col-span-5 border border-[#2D1D1A] bg-[#0A0504] p-6" data-testid="barsaat-price-box">
-              <p className="text-overline text-[#D9772B]">{priceEyebrow}</p>
-              <div className="mt-4 flex items-baseline gap-6 flex-wrap">
+              <div className="flex items-baseline gap-6 flex-wrap">
                 <div>
                   <p className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E]">Vegetarian</p>
                   <p className="font-display text-3xl mt-1">₹{priceVeg.toLocaleString("en-IN")}</p>
