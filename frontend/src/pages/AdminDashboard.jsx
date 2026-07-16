@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Calendar, Users, Mail, MessageSquare, LogOut, Plus, Trash2, Download, Edit2, Edit3 } from "lucide-react";
+import { Calendar, Users, Mail, MessageSquare, LogOut, Plus, Trash2, Download, Edit2, Edit3, BarChart3, Eye, Smartphone, Monitor, Tablet, Archive } from "lucide-react";
 import { api, clearToken, formatApiError } from "@/lib/api";
 
 const TABS = [
   { id: "overview", label: "Overview" },
+  { id: "traffic", label: "Traffic" },
   { id: "events", label: "Events" },
   { id: "registrations", label: "Registrations" },
   { id: "offsite", label: "Off-site sales" },
@@ -70,6 +71,7 @@ export default function AdminDashboard() {
 
       <main className="max-w-7xl mx-auto px-6 lg:px-10 py-10">
         {tab === "overview" && <Overview />}
+        {tab === "traffic" && <Traffic />}
         {tab === "events" && <Events />}
         {tab === "registrations" && <Registrations />}
         {tab === "offsite" && <OffsiteSales />}
@@ -160,6 +162,175 @@ function Overview() {
       <p className="mt-10 text-[#B5A79E] max-w-2xl">
         Manage events, view registrations, export your guest list, curate the
         gallery and read every message — all from here.
+      </p>
+    </div>
+  );
+}
+
+const PAGE_NAMES = {
+  "/": "Home",
+  "/about-the-chef": "About the Chef",
+  "/suppers": "Suppers",
+  "/menus": "Menus",
+  "/menus/naani-ghar": "Menu · Naani Ghar",
+  "/menus/barsaat": "Menu · Barsaat",
+  "/supper-club/naani-ghar": "Naani Ghar",
+  "/supper-club/barsaat": "Barsaat",
+};
+const prettyPage = (p) => PAGE_NAMES[p] || (p.startsWith("/booking/") ? "Booking status" : p);
+
+const DEVICE_META = {
+  mobile: { label: "Mobile", icon: Smartphone },
+  desktop: { label: "Desktop", icon: Monitor },
+  tablet: { label: "Tablet", icon: Tablet },
+};
+
+function BarList({ rows, total, testid, labelFn }) {
+  const max = Math.max(1, ...rows.map((r) => r.count));
+  if (!rows.length) return <p className="text-[#6E625B] text-sm">No data yet.</p>;
+  return (
+    <div className="space-y-3" data-testid={testid}>
+      {rows.map((r) => (
+        <div key={r.label}>
+          <div className="flex items-center justify-between text-sm mb-1">
+            <span className="text-[#F3EFE7] truncate pr-3">{labelFn ? labelFn(r.label) : r.label}</span>
+            <span className="text-[#B5A79E] tabular-nums">
+              {r.count}
+              {total ? <span className="text-[#6E625B]"> · {Math.round((r.count / total) * 100)}%</span> : null}
+            </span>
+          </div>
+          <div className="h-1.5 bg-[#2D1D1A]">
+            <div className="h-full bg-[#D9772B]" style={{ width: `${(r.count / max) * 100}%` }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Traffic() {
+  const [range, setRange] = useState(7);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    api
+      .get(`/analytics/summary?days=${range}`)
+      .then((r) => setData(r.data))
+      .catch(() => toast.error("Could not load traffic data"))
+      .finally(() => setLoading(false));
+  }, [range]);
+
+  if (loading && !data) return <p className="text-[#B5A79E]">Loading traffic…</p>;
+  if (!data) return null;
+
+  const maxDaily = Math.max(1, ...data.daily.map((d) => d.views));
+  const cards = [
+    { label: "Visitors today", value: data.visitors_today, icon: Users },
+    { label: "Views today", value: data.views_today, icon: Eye },
+    { label: `Unique visitors · ${range}d`, value: data.unique_visitors, icon: Users },
+    { label: `Page views · ${range}d`, value: data.total_views, icon: BarChart3 },
+  ];
+  const deviceRows = Object.entries(data.devices || {}).map(([k, v]) => ({ label: k, count: v }));
+  const deviceTotal = deviceRows.reduce((a, b) => a + b.count, 0);
+
+  return (
+    <div data-testid="traffic-panel">
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+        <h2 className="font-display text-4xl">Website traffic</h2>
+        <div className="flex gap-1" data-testid="traffic-range">
+          {[7, 30, 90].map((d) => (
+            <button
+              key={d}
+              onClick={() => setRange(d)}
+              data-testid={`traffic-range-${d}`}
+              className={`px-4 py-2 text-[11px] tracking-[0.22em] uppercase border transition-all ${
+                range === d
+                  ? "bg-[#5A1A1F] border-[#5A1A1F] text-[#F3EFE7]"
+                  : "bg-transparent border-[#2D1D1A] text-[#B5A79E] hover:border-[#5A1A1F]"
+              }`}
+            >
+              {d}d
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#2D1D1A]">
+        {cards.map((c) => (
+          <div key={c.label} className="bg-[#140A09] p-7" data-testid={`traffic-stat-${c.label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "")}`}>
+            <c.icon size={20} className="text-[#D9772B]" />
+            <p className="font-display text-4xl mt-4">{c.value}</p>
+            <p className="text-overline mt-3 text-[#B5A79E]">{c.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Daily trend */}
+      <div className="mt-px bg-[#140A09] p-7">
+        <p className="text-overline text-[#B5A79E] mb-6">Daily page views</p>
+        {data.total_views === 0 ? (
+          <p className="text-[#6E625B] text-sm">No visits recorded yet in this range. Data appears as people visit your site.</p>
+        ) : (
+          <div className="flex items-end gap-1 h-40" data-testid="traffic-daily-chart">
+            {data.daily.map((d) => (
+              <div key={d.date} className="flex-1 flex flex-col items-center justify-end group" title={`${d.date}: ${d.views} views, ${d.visitors} visitors`}>
+                <div
+                  className="w-full bg-[#D9772B] group-hover:bg-[#e8873a] transition-colors min-h-[2px]"
+                  style={{ height: `${(d.views / maxDaily) * 100}%` }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+        {data.total_views > 0 && (
+          <div className="flex justify-between mt-3 text-[10px] text-[#6E625B]">
+            <span>{data.daily[0]?.date}</span>
+            <span>{data.daily[data.daily.length - 1]?.date}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-px bg-[#2D1D1A] mt-px">
+        <div className="bg-[#140A09] p-7">
+          <p className="text-overline text-[#B5A79E] mb-6">Top pages</p>
+          <BarList rows={data.top_pages} total={data.total_views} testid="traffic-top-pages" labelFn={prettyPage} />
+        </div>
+        <div className="bg-[#140A09] p-7">
+          <p className="text-overline text-[#B5A79E] mb-6">Where visitors come from</p>
+          <BarList rows={data.referrers} total={data.total_views} testid="traffic-referrers" />
+        </div>
+        <div className="bg-[#140A09] p-7">
+          <p className="text-overline text-[#B5A79E] mb-6">Devices</p>
+          {deviceRows.length === 0 ? (
+            <p className="text-[#6E625B] text-sm">No data yet.</p>
+          ) : (
+            <div className="space-y-4" data-testid="traffic-devices">
+              {deviceRows.map((r) => {
+                const meta = DEVICE_META[r.label] || { label: r.label, icon: Monitor };
+                return (
+                  <div key={r.label} className="flex items-center gap-4">
+                    <meta.icon size={22} className="text-[#D9772B] shrink-0" />
+                    <div className="flex-1">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>{meta.label}</span>
+                        <span className="text-[#B5A79E] tabular-nums">{deviceTotal ? Math.round((r.count / deviceTotal) * 100) : 0}%</span>
+                      </div>
+                      <div className="h-1.5 bg-[#2D1D1A]">
+                        <div className="h-full bg-[#D9772B]" style={{ width: `${deviceTotal ? (r.count / deviceTotal) * 100 : 0}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <p className="mt-10 text-[#6E625B] text-sm max-w-2xl">
+        Privacy-friendly analytics — no cookies, no personal data. Counts began when this feature was installed, so historical traffic from before then isn't shown.
       </p>
     </div>
   );
@@ -306,6 +477,8 @@ function Registrations() {
   const [eventId, setEventId] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [viewing, setViewing] = useState(null); // {id, blobUrl}
+  const [archived, setArchived] = useState([]);
+  const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => { api.get("/events").then((r) => setEvents(r.data)); }, []);
 
@@ -315,7 +488,19 @@ function Registrations() {
     if (statusFilter) params.payment_status = statusFilter;
     api.get("/registrations", { params }).then((r) => setRows(r.data));
   };
+  const loadArchived = () => api.get("/registrations/archived").then((r) => setArchived(r.data)).catch(() => {});
   useEffect(load, [eventId, statusFilter]);
+  useEffect(() => { loadArchived(); }, []);
+
+  const restore = async (r) => {
+    try {
+      await api.post(`/registrations/${r.id}/restore`);
+      toast.success(`Restored ${r.full_name}'s registration`);
+      load(); loadArchived();
+    } catch {
+      toast.error("Could not restore this registration");
+    }
+  };
 
   const titleOf = (id) => events.find((e) => e.id === id)?.title || id;
 
@@ -408,6 +593,13 @@ function Registrations() {
           >
             <Download size={14} /> Export CSV
           </button>
+          <button
+            onClick={() => setShowArchived((s) => !s)}
+            data-testid="toggle-archived"
+            className={`px-4 py-3 text-[11px] tracking-[0.22em] uppercase border inline-flex items-center gap-2 transition-all ${showArchived ? "bg-[#5A1A1F] border-[#5A1A1F] text-[#F3EFE7]" : "border-[#2D1D1A] text-[#B5A79E] hover:border-[#D9772B]"}`}
+          >
+            <Archive size={14} /> Archived {archived.length ? `(${archived.length})` : ""}
+          </button>
         </div>
       </div>
 
@@ -462,6 +654,47 @@ function Registrations() {
           </tbody>
         </table>
       </div>
+
+      {showArchived && (
+        <div className="mt-8" data-testid="archived-panel">
+          <div className="flex items-center gap-3 mb-3 flex-wrap">
+            <h3 className="font-display text-2xl">Archived registrations</h3>
+            <span className="text-[11px] text-[#B5A79E]">Recoverable — deleting an event or a booking now moves guests here instead of erasing them.</span>
+          </div>
+          <div className="overflow-x-auto bg-[#140A09] border border-[#2D1D1A]">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0A0504] text-overline">
+                <tr>
+                  <Th>Name</Th><Th>Email</Th><Th>Phone</Th><Th>Guests</Th><Th>Total</Th>
+                  <Th>Reason</Th><Th>Archived on</Th><Th>Actions</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {archived.length === 0 && (
+                  <tr><td colSpan={8} className="p-8 text-center text-[#B5A79E]">No archived registrations — nothing has been lost.</td></tr>
+                )}
+                {archived.map((r) => (
+                  <tr key={r.id} className="border-t border-[#2D1D1A]" data-testid={`archived-row-${r.id}`}>
+                    <Td>{r.full_name}</Td>
+                    <Td>{r.email}</Td>
+                    <Td>{r.phone}</Td>
+                    <Td>{r.guests}</Td>
+                    <Td>₹{Number(r.total_amount || 0).toLocaleString("en-IN")}</Td>
+                    <Td>{r.archive_reason}</Td>
+                    <Td>{r.archived_at ? new Date(r.archived_at).toLocaleDateString() : "—"}</Td>
+                    <Td>
+                      <button onClick={() => restore(r)} data-testid={`restore-reg-${r.id}`}
+                        className="px-3 py-1 border border-[#3A7D44] text-[10px] tracking-[0.18em] uppercase text-[#9FD79F] hover:bg-[#3A7D44] hover:text-[#0A0504]">
+                        Restore
+                      </button>
+                    </Td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {viewing && (
         <div className="fixed inset-0 z-[100] bg-[#0A0504]/95 backdrop-blur-md flex items-center justify-center p-6"

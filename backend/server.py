@@ -423,6 +423,8 @@ async def _setup_indexes() -> None:
         pass
     await db.admins.create_index("email", unique=True)
     await db.subscribers.create_index("email", unique=True)
+    await db.pageviews.create_index("day")
+    await db.pageviews.create_index("ts")
 
 
 async def _seed_admin() -> None:
@@ -533,11 +535,30 @@ async def update_event(event_id: str, body: EventIn, user=Depends(get_current_ad
     return doc
 
 
+async def _archive_registrations(query: dict, reason: str) -> int:
+    """Copy matching registrations into a recoverable archive before deletion.
+    Guest data must never be permanently lost by a delete action."""
+    docs = await db.registrations.find(query, {"_id": 0}).to_list(5000)
+    if not docs:
+        return 0
+    now = _now_iso()
+    for d in docs:
+        d["archived_at"] = now
+        d["archive_reason"] = reason
+        await db.registrations_archive.replace_one({"id": d["id"]}, d, upsert=True)
+    return len(docs)
+
+
 @api.delete("/events/{event_id}")
 async def delete_event(event_id: str, user=Depends(get_current_admin)):
+    ev = await db.events.find_one({"id": event_id}, {"_id": 0})
     await db.events.delete_one({"id": event_id})
+    archived = await _archive_registrations(
+        {"event_id": event_id},
+        f"event_deleted:{(ev or {}).get('title', event_id)}",
+    )
     await db.registrations.delete_many({"event_id": event_id})
-    return {"ok": True}
+    return {"ok": True, "archived_registrations": archived}
 
 
 # ---------- Registrations ----------
@@ -797,11 +818,18 @@ async def list_registrations(
     return docs
 
 
+@api.get("/registrations/archived")
+async def list_archived_registrations(user=Depends(get_current_admin)):
+    docs = await db.registrations_archive.find({}, {"_id": 0}).sort("archived_at", -1).to_list(2000)
+    return docs
+
+
 @api.delete("/registrations/{reg_id}")
 async def delete_registration(reg_id: str, user=Depends(get_current_admin)):
     reg = await db.registrations.find_one({"id": reg_id}, {"_id": 0})
     if not reg:
         raise HTTPException(status_code=404, detail="Registration not found")
+    await _archive_registrations({"id": reg_id}, "manual_delete")
     await db.registrations.delete_one({"id": reg_id})
     # Release seats
     await db.events.update_one(
@@ -809,6 +837,26 @@ async def delete_registration(reg_id: str, user=Depends(get_current_admin)):
         {"$inc": {"seats_booked": -int(reg.get("guests", 1))}},
     )
     return {"ok": True}
+
+
+@api.post("/registrations/{reg_id}/restore")
+async def restore_registration(reg_id: str, user=Depends(get_current_admin)):
+    doc = await db.registrations_archive.find_one({"id": reg_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Archived registration not found")
+    doc.pop("archived_at", None)
+    doc.pop("archive_reason", None)
+    already = await db.registrations.find_one({"id": reg_id})
+    event_exists = bool(await db.events.find_one({"id": doc.get("event_id")}))
+    if not already:
+        await db.registrations.insert_one(doc)
+        if event_exists:
+            await db.events.update_one(
+                {"id": doc.get("event_id")},
+                {"$inc": {"seats_booked": int(doc.get("guests", 1))}},
+            )
+    await db.registrations_archive.delete_one({"id": reg_id})
+    return {"ok": True, "restored": True, "event_exists": event_exists}
 
 
 # ---------- Off-site bookings (aggregators, partners, manual seats) ----------
@@ -1214,6 +1262,115 @@ async def update_settings(body: dict, user=Depends(get_current_admin)):
         upsert=True,
     )
     return merged
+
+
+# ---------- Analytics ----------
+class TrackIn(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    path: str
+    referrer: Optional[str] = ""
+    visitor_id: str
+
+
+def _detect_device(ua: str) -> str:
+    ua = (ua or "").lower()
+    if "ipad" in ua or ("tablet" in ua and "mobile" not in ua):
+        return "tablet"
+    if "mobi" in ua or "android" in ua or "iphone" in ua or "ipod" in ua:
+        return "mobile"
+    return "desktop"
+
+
+def _referrer_source(referrer: str, host: str) -> str:
+    if not referrer:
+        return "Direct"
+    try:
+        from urllib.parse import urlparse
+        h = urlparse(referrer).netloc.lower().replace("www.", "")
+    except Exception:
+        return "Direct"
+    if not h or (host and h in host):
+        return "Direct"
+    mapping = {
+        "instagram.com": "Instagram", "l.instagram.com": "Instagram",
+        "facebook.com": "Facebook", "m.facebook.com": "Facebook", "l.facebook.com": "Facebook",
+        "google.com": "Google", "google.co.in": "Google", "com.google.android.gm": "Gmail",
+        "t.co": "Twitter/X", "twitter.com": "Twitter/X", "x.com": "Twitter/X",
+        "youtube.com": "YouTube", "linkedin.com": "LinkedIn",
+        "wa.me": "WhatsApp", "api.whatsapp.com": "WhatsApp", "l.wa.me": "WhatsApp",
+    }
+    return mapping.get(h, h)
+
+
+@api.post("/analytics/track")
+async def analytics_track(body: TrackIn, request: Request):
+    path = body.path[:200] or "/"
+    if path.startswith("/admin"):
+        return {"ok": True}
+    ua = request.headers.get("user-agent", "")
+    host = request.headers.get("host", "")
+    now = datetime.now(timezone.utc)
+    await db.pageviews.insert_one({
+        "path": path,
+        "referrer_source": _referrer_source(body.referrer or "", host),
+        "visitor_id": body.visitor_id[:64],
+        "device": _detect_device(ua),
+        "ts": now.isoformat(),
+        "day": now.date().isoformat(),
+    })
+    return {"ok": True}
+
+
+@api.get("/analytics/summary")
+async def analytics_summary(days: int = 7, user=Depends(get_current_admin)):
+    days = max(1, min(days, 90))
+    today = datetime.now(timezone.utc).date()
+    start = (today - timedelta(days=days - 1)).isoformat()
+    today_iso = today.isoformat()
+    match = {"day": {"$gte": start}}
+
+    total_views = await db.pageviews.count_documents(match)
+    unique_visitors = len(await db.pageviews.distinct("visitor_id", match))
+    views_today = await db.pageviews.count_documents({"day": today_iso})
+    visitors_today = len(await db.pageviews.distinct("visitor_id", {"day": today_iso}))
+
+    # Daily trend (views + unique visitors per day)
+    daily_agg = await db.pageviews.aggregate([
+        {"$match": match},
+        {"$group": {"_id": "$day", "views": {"$sum": 1}, "visitors": {"$addToSet": "$visitor_id"}}},
+    ]).to_list(200)
+    daily_map = {d["_id"]: {"views": d["views"], "visitors": len(d["visitors"])} for d in daily_agg}
+    daily = []
+    for i in range(days):
+        d = (today - timedelta(days=days - 1 - i)).isoformat()
+        entry = daily_map.get(d, {"views": 0, "visitors": 0})
+        daily.append({"date": d, "views": entry["views"], "visitors": entry["visitors"]})
+
+    async def _group(field, limit=8):
+        rows = await db.pageviews.aggregate([
+            {"$match": match},
+            {"$group": {"_id": f"${field}", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": limit},
+        ]).to_list(limit)
+        return [{"label": r["_id"] or "Unknown", "count": r["count"]} for r in rows]
+
+    top_pages = await _group("path", 8)
+    referrers = await _group("referrer_source", 8)
+    device_rows = await _group("device", 5)
+    devices = {r["label"]: r["count"] for r in device_rows}
+
+    return {
+        "days": days,
+        "total_views": total_views,
+        "unique_visitors": unique_visitors,
+        "views_today": views_today,
+        "visitors_today": visitors_today,
+        "daily": daily,
+        "top_pages": top_pages,
+        "referrers": referrers,
+        "devices": devices,
+    }
 
 
 # ---------- Stats ----------

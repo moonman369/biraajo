@@ -14,7 +14,16 @@ import Menus from "@/pages/Menus";
 import NaaniGharMenu from "@/pages/NaaniGharMenu";
 import BarsaatMenu from "@/pages/BarsaatMenu";
 import { getToken } from "@/lib/api";
+import { trackPageView } from "@/lib/analytics";
 import "@/App.css";
+
+function AnalyticsTracker() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    trackPageView(pathname);
+  }, [pathname]);
+  return null;
+}
 
 function RequireAdmin({ children }) {
   return getToken() ? children : <Navigate to="/admin/login" replace />;
@@ -81,6 +90,7 @@ export default function App() {
     <div className="App film-grain">
       <BrowserRouter>
         <ScrollToHash />
+        <AnalyticsTracker />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/about-the-chef" element={<AboutTheChef />} />
