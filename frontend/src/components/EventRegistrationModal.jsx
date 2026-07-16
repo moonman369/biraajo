@@ -27,13 +27,13 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
   const [registration, setRegistration] = useState(null);
   const [copied, setCopied] = useState(false);
   const [screenshotName, setScreenshotName] = useState("");
-  const [prices, setPrices] = useState({ veg: 2200, nonveg: 2800 });
+  const [prices, setPrices] = useState({ veg: 2500, nonveg: 2800 });
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     api.get("/settings").then((r) => {
       setPrices({
-        veg: Number(r.data?.price_veg ?? 2200),
+        veg: Number(r.data?.price_veg ?? 2500),
         nonveg: Number(r.data?.price_nonveg ?? 2800),
       });
     }).catch(() => {});

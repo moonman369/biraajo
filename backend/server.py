@@ -30,7 +30,7 @@ from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
 
 # ---------- Pricing ----------
-PRICE_VEG = 2200
+PRICE_VEG = 2500
 PRICE_NONVEG = 2800
 UPI_ID = os.environ.get("UPI_ID", "vidipshah14-1@oksbi")
 

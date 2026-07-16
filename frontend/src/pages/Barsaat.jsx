@@ -36,7 +36,7 @@ function formatDate(iso) {
 export default function Barsaat() {
   const { content } = useSiteContent();
   const [events, setEvents] = useState([]);
-  const [settings, setSettings] = useState({ price_veg: 2200, price_nonveg: 2800, registrations_open: true });
+  const [settings, setSettings] = useState({ price_veg: 2500, price_nonveg: 2800, registrations_open: true });
   const [selectedId, setSelectedId] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -72,7 +72,7 @@ export default function Barsaat() {
     setOpen(true);
   };
 
-  const priceVeg = Number(settings.price_veg || 2200);
+  const priceVeg = Number(settings.price_veg || 2500);
   const priceNonVeg = Number(settings.price_nonveg || 2800);
 
   // CMS reads with sensible fallbacks
