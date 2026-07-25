@@ -428,8 +428,6 @@ async def _setup_indexes() -> None:
     await db.pageviews.create_index("ts")
     # Enforce the global capacity on every existing event.
     await db.events.update_many({}, {"$set": {"seats_total": EVENT_CAPACITY}})
-    # Enforce the finalized per-seat pricing on the settings document.
-    await db.settings.update_one({"id": "global"}, {"$set": {"data.price_veg": PRICE_VEG, "data.price_nonveg": PRICE_NONVEG}})
 
 
 async def _seed_admin() -> None:
@@ -1131,6 +1129,23 @@ async def delete_menu_section(section_id: str, user=Depends(get_current_admin)):
 
 
 # ---------- Gallery ----------
+@api.post("/admin/media")
+async def upload_media(file: UploadFile = File(...), user=Depends(get_current_admin)):
+    """Upload an image or video to persistent object storage; returns a same-origin /api/media URL."""
+    ct = (file.content_type or "").lower()
+    if not (ct.startswith("image/") or ct.startswith("video/")):
+        raise HTTPException(status_code=400, detail="Only image or video files are allowed")
+    data = await file.read()
+    max_mb = 50
+    if len(data) > max_mb * 1024 * 1024:
+        raise HTTPException(status_code=400, detail=f"File too large (max {max_mb}MB)")
+    default_ext = "mp4" if ct.startswith("video/") else "jpg"
+    ext = (file.filename.rsplit(".", 1)[-1] if "." in (file.filename or "") else default_ext).lower()
+    path = f"{APP_NAME}/gallery/{uuid.uuid4().hex}.{ext}"
+    put_object(path, data, ct)
+    return {"url": f"/api/media/{path}", "content_type": ct, "kind": "video" if ct.startswith("video/") else "image"}
+
+
 @api.get("/gallery")
 async def list_gallery():
     docs = await db.gallery.find({}, {"_id": 0}).sort("order", 1).to_list(500)

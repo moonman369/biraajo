@@ -17,6 +17,7 @@ export default function Events() {
   const [events, setEvents] = useState([]);
   const [active, setActive] = useState(null);
   const [reload, setReload] = useState(0);
+  const [prices, setPrices] = useState({ veg: 2500, nonveg: 2800 });
 
   useEffect(() => {
     api
@@ -24,6 +25,13 @@ export default function Events() {
       .then((r) => setEvents(r.data || []))
       .catch(() => setEvents([]));
   }, [reload]);
+
+  useEffect(() => {
+    api
+      .get("/settings")
+      .then((r) => setPrices({ veg: r.data?.price_veg ?? 2500, nonveg: r.data?.price_nonveg ?? 2800 }))
+      .catch(() => {});
+  }, []);
 
   return (
     <section
@@ -123,10 +131,10 @@ export default function Events() {
                     <div>
                       <p className="text-overline">Per seat</p>
                       <p className="font-display text-2xl text-[#F3EFE7] mt-1 leading-tight">
-                        ₹2,500 <span className="text-sm text-[#B5A79E]">veg</span>
+                        ₹{Number(prices.veg).toLocaleString("en-IN")} <span className="text-sm text-[#B5A79E]">veg</span>
                       </p>
                       <p className="font-display text-2xl text-[#F3EFE7] leading-tight">
-                        ₹2,800 <span className="text-sm text-[#B5A79E]">non-veg</span>
+                        ₹{Number(prices.nonveg).toLocaleString("en-IN")} <span className="text-sm text-[#B5A79E]">non-veg</span>
                       </p>
                     </div>
                     <div className="text-right">

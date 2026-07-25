@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -88,11 +88,32 @@ function Overview() {
   const [stats, setStats] = useState(null);
   const [regsOpen, setRegsOpen] = useState(null);
   const [savingToggle, setSavingToggle] = useState(false);
+  const [prices, setPrices] = useState(null);
+  const [savingPrice, setSavingPrice] = useState(false);
 
   useEffect(() => {
     api.get("/stats").then((r) => setStats(r.data)).catch(() => {});
-    api.get("/settings").then((r) => setRegsOpen(r.data?.registrations_open !== false)).catch(() => {});
+    api.get("/settings").then((r) => {
+      setRegsOpen(r.data?.registrations_open !== false);
+      setPrices({ price_veg: r.data?.price_veg ?? 2500, price_nonveg: r.data?.price_nonveg ?? 2800 });
+    }).catch(() => {});
   }, []);
+
+  const savePrices = async () => {
+    setSavingPrice(true);
+    try {
+      const res = await api.put("/admin/settings", {
+        price_veg: Number(prices.price_veg),
+        price_nonveg: Number(prices.price_nonveg),
+      });
+      setPrices({ price_veg: res.data.price_veg, price_nonveg: res.data.price_nonveg });
+      toast.success("Menu prices updated — live on the site now.");
+    } catch {
+      toast.error("Could not save prices");
+    } finally {
+      setSavingPrice(false);
+    }
+  };
 
   const toggleRegs = async () => {
     setSavingToggle(true);
@@ -159,6 +180,39 @@ function Overview() {
           </motion.div>
         ))}
       </div>
+      {prices && (
+        <div className="mt-8 bg-[#140A09] border border-[#2D1D1A] p-7" data-testid="pricing-editor">
+          <p className="text-overline text-[#D9772B] mb-1">Menu pricing — per seat</p>
+          <p className="text-[12px] text-[#B5A79E] mb-6">Set the price for each menu. Changes go live on the site immediately.</p>
+          <div className="flex items-end gap-6 flex-wrap">
+            <label className="block">
+              <span className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E]">Vegetarian ₹</span>
+              <input
+                type="number" min="0" value={prices.price_veg}
+                onChange={(e) => setPrices((p) => ({ ...p, price_veg: e.target.value }))}
+                data-testid="price-veg-input"
+                className="mt-2 w-44 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] font-display text-2xl focus:border-[#5A1A1F] outline-none"
+              />
+            </label>
+            <label className="block">
+              <span className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E]">Non-vegetarian ₹</span>
+              <input
+                type="number" min="0" value={prices.price_nonveg}
+                onChange={(e) => setPrices((p) => ({ ...p, price_nonveg: e.target.value }))}
+                data-testid="price-nonveg-input"
+                className="mt-2 w-44 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] font-display text-2xl focus:border-[#5A1A1F] outline-none"
+              />
+            </label>
+            <button
+              onClick={savePrices} disabled={savingPrice}
+              data-testid="price-save-button"
+              className="px-6 py-3 bg-[#5A1A1F] hover:bg-[#D9772B] hover:text-[#0A0504] text-[11px] tracking-[0.22em] uppercase transition-colors disabled:opacity-50"
+            >
+              {savingPrice ? "Saving…" : "Save prices"}
+            </button>
+          </div>
+        </div>
+      )}
       <p className="mt-10 text-[#B5A79E] max-w-2xl">
         Manage events, view registrations, export your guest list, curate the
         gallery and read every message — all from here.
@@ -996,32 +1050,78 @@ function ContactMessages() {
   );
 }
 
+function isVideoUrl(u) {
+  return /\.(mp4|webm|mov|m4v|ogg)(\?|$)/i.test(u || "");
+}
+
 function GalleryAdmin() {
   const [items, setItems] = useState([]);
   const [url, setUrl] = useState("");
   const [caption, setCaption] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
 
   const load = () => api.get("/gallery").then((r) => setItems(r.data));
   useEffect(() => { load(); }, []);
 
-  const add = async (e) => {
+  const addToGallery = async (finalUrl, cap) => {
+    await api.post("/gallery", { url: finalUrl, caption: cap || "", order: items.length });
+    await load();
+  };
+
+  const addByUrl = async (e) => {
     e.preventDefault();
     try {
-      await api.post("/gallery", { url, caption, order: items.length });
-      setUrl(""); setCaption(""); load();
-      toast.success("Image added");
+      await addToGallery(url, caption);
+      setUrl(""); setCaption("");
+      toast.success("Added to the gallery — live on the site.");
     } catch (err) {
       toast.error(formatApiError(err.response?.data?.detail) || "Failed");
     }
   };
+
+  const onFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await api.post("/admin/media", fd);
+      await addToGallery(res.data.url, caption);
+      setCaption("");
+      toast.success(`${res.data.kind === "video" ? "Video" : "Image"} uploaded — live on the site.`);
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
   const del = async (id) => { await api.delete(`/gallery/${id}`); load(); };
 
   return (
     <div>
-      <h2 className="font-display text-4xl mb-6">Gallery</h2>
-      <form onSubmit={add} className="bg-[#140A09] border border-[#2D1D1A] p-6 grid grid-cols-1 sm:grid-cols-12 gap-3 mb-8">
+      <h2 className="font-display text-4xl mb-2">Gallery</h2>
+      <p className="text-[12px] text-[#B5A79E] mb-6">Upload images or videos from your device — they appear on the live site instantly.</p>
+
+      <div className="bg-[#140A09] border border-[#2D1D1A] p-6 mb-4" data-testid="gallery-upload-box">
+        <p className="text-overline text-[#D9772B] mb-3">Upload from your device</p>
+        <div className="flex items-center gap-4 flex-wrap">
+          <input
+            ref={fileRef} type="file" accept="image/*,video/*" onChange={onFile} disabled={uploading}
+            data-testid="gallery-file-input"
+            className="text-sm text-[#B5A79E] file:mr-4 file:py-2 file:px-4 file:border-0 file:cursor-pointer file:bg-[#5A1A1F] file:text-[#F3EFE7] file:uppercase file:text-[11px] file:tracking-[0.18em] hover:file:bg-[#D9772B] hover:file:text-[#0A0504] disabled:opacity-50"
+          />
+          {uploading && <span className="text-[#D9772B] text-sm animate-pulse" data-testid="gallery-uploading">Uploading…</span>}
+        </div>
+        <p className="text-[11px] text-[#6E625B] mt-2">Images &amp; videos up to 50MB · JPG, PNG, WebP, MP4, WebM</p>
+      </div>
+
+      <form onSubmit={addByUrl} className="bg-[#140A09] border border-[#2D1D1A] p-6 grid grid-cols-1 sm:grid-cols-12 gap-3 mb-8">
         <input
-          required value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Image or video URL (.jpg / .png / .mp4 / .webm)"
+          required value={url} onChange={(e) => setUrl(e.target.value)} placeholder="…or paste an image / video URL"
           data-testid="gallery-url-input"
           className="sm:col-span-6 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
         />
@@ -1031,12 +1131,20 @@ function GalleryAdmin() {
         />
         <button type="submit" data-testid="gallery-add-button" className="sm:col-span-2 px-4 py-3 bg-[#5A1A1F] hover:bg-[#D9772B] hover:text-[#0A0504] text-[11px] tracking-[0.22em] uppercase">Add</button>
       </form>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3" data-testid="gallery-grid">
         {items.map((i) => (
-          <div key={i.id} className="relative group bg-[#140A09] border border-[#2D1D1A]">
-            <img src={i.url} alt="" className="w-full aspect-square object-cover" />
+          <div key={i.id} className="relative group bg-[#140A09] border border-[#2D1D1A]" data-testid={`gallery-item-${i.id}`}>
+            {isVideoUrl(i.url) ? (
+              <video src={i.url} className="w-full aspect-square object-cover" muted playsInline preload="metadata" />
+            ) : (
+              <img src={i.url} alt="" className="w-full aspect-square object-cover" />
+            )}
+            {isVideoUrl(i.url) && (
+              <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-[#0A0504]/80 text-[9px] tracking-[0.18em] uppercase text-[#D9772B]">Video</span>
+            )}
             <button
-              onClick={() => del(i.id)} aria-label="Delete"
+              onClick={() => del(i.id)} aria-label="Delete" data-testid={`gallery-delete-${i.id}`}
               className="absolute top-2 right-2 p-2 bg-[#0A0504]/80 text-[#F3EFE7] opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <Trash2 size={14} />
