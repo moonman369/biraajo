@@ -45,3 +45,9 @@
 
 ## 2026-07-16 (later) — Removed early-bird pricing
 - Barsaat "Reserve your seat" price box: removed "Early-bird · first 10 seats" eyebrow and the "Pricing revises after the first ten seats..." footnote clause. Now shows flat Veg ₹2,500 / Non-Veg ₹2,800 + "Per seat, all-inclusive." Frontend-only (no DB dependency); applies on redeploy.
+
+## 2026-07-25 — Menu pricing editor + live gallery uploads (verified iter28, backend 13/13)
+- Admin Overview now has a "Menu pricing — per seat" editor (Veg / Non-Veg inputs + Save) via PUT /api/admin/settings. Prices persist across restarts (removed every-startup enforcement; replaced with one-time `pricing_final_v1` migration so admin edits stick). Added non-negative int validation.
+- Public site reads prices live from /api/settings: Barsaat price box, Events landing cards (made dynamic), and booking modal.
+- Gallery: new POST /api/admin/media upload endpoint (image/video -> object storage -> /api/media URL, 50MB cap). GalleryAdmin now uploads from device (images + videos), renders video tiles with a "Video" badge, and keeps the paste-URL option. Uploaded media appears live on the landing gallery.
+- Known cosmetic: gallery video tiles show no poster/thumbnail until buffered.

@@ -1361,6 +1361,11 @@ async def update_settings(body: dict, user=Depends(get_current_admin)):
         raise HTTPException(status_code=400, detail="Body must be a JSON object")
     current = await _get_settings()
     merged = {**current, **{k: v for k, v in body.items() if k in DEFAULT_SETTINGS}}
+    for pk in ("price_veg", "price_nonveg"):
+        try:
+            merged[pk] = max(0, int(merged[pk]))
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=400, detail=f"{pk} must be a non-negative number")
     await db.settings.update_one(
         {"id": "global"},
         {"$set": {"data": merged, "updated_at": _now_iso()}},
