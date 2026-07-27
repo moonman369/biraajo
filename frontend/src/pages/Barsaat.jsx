@@ -201,7 +201,7 @@ export default function Barsaat() {
                     className={`text-left bg-[#0A0504] p-8 sm:p-10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
                       ${isSelected ? "ring-2 ring-[#D9772B] -ring-offset-1" : "hover:bg-[#140A09]"}`}
                   >
-                    <p className="text-overline">Table {String.fromCharCode(73 + i)}</p>
+                    <p className="text-overline">Table {i + 4}</p>
                     <p className="font-display text-3xl mt-4 leading-tight">{formatDate(e.date)}</p>
                     <p className="text-[#B5A79E] mt-3 text-sm">{e.time}</p>
                     <div className="mt-6 flex items-center justify-between pt-5 border-t border-[#2D1D1A]">
