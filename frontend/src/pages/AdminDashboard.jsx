@@ -448,29 +448,67 @@ function Events() {
         />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#2D1D1A] mt-6">
-        {events.length === 0 && (
-          <p className="bg-[#140A09] p-8 text-[#B5A79E] md:col-span-3">No events yet. Create your first supper.</p>
-        )}
-        {events.map((ev) => (
-          <div key={ev.id} className="bg-[#140A09] p-6" data-testid={`admin-event-row-${ev.id}`}>
-            <p className="text-overline text-[#D9772B]">{ev.tag}</p>
-            <h3 className="font-display text-2xl mt-2">{ev.title}</h3>
-            <p className="text-sm text-[#B5A79E] mt-2">{ev.date} · {ev.time} · {ev.venue}</p>
-            <p className="text-sm text-[#B5A79E] mt-3">
-              {ev.seats_booked || 0} / {ev.seats_total} booked · ₹{ev.price}
-            </p>
-            <div className="mt-4 flex gap-2">
-              <button onClick={() => setEditing(ev)} className="px-3 py-2 border border-[#2D1D1A] text-xs inline-flex items-center gap-2 hover:border-[#D9772B]">
-                <Edit2 size={12} /> Edit
-              </button>
-              <button onClick={() => del(ev.id)} data-testid={`delete-event-${ev.id}`} className="px-3 py-2 border border-[#2D1D1A] text-xs inline-flex items-center gap-2 hover:border-[#D94A3D] hover:text-[#D94A3D]">
-                <Trash2 size={12} /> Delete
-              </button>
+      {(() => {
+        const yaadein = events.filter((e) => e.coming_soon);
+        const regular = events.filter((e) => !e.coming_soon);
+        return (
+          <>
+            {yaadein.length > 0 && (
+              <div className="bg-[#140A09] border border-[#2D1D1A] p-6 mt-6" data-testid="admin-yaadein-group">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <p className="text-overline text-[#D9772B]">Yaadein</p>
+                    <h3 className="font-display text-2xl mt-1">Next series · {yaadein.length} dates</h3>
+                  </div>
+                  <span className="text-[11px] tracking-[0.22em] uppercase text-[#6E625B]">Coming soon</span>
+                </div>
+                <div className="mt-5 divide-y divide-[#2D1D1A] border-t border-[#2D1D1A]">
+                  {yaadein.map((ev) => (
+                    <div key={ev.id} className="flex items-center justify-between gap-4 py-3 flex-wrap" data-testid={`admin-event-row-${ev.id}`}>
+                      <div className="min-w-0">
+                        <p className="text-sm text-[#F3EFE7] truncate">{ev.title}</p>
+                        <p className="text-xs text-[#B5A79E] mt-1">{ev.date} · {ev.time} · {ev.venue}</p>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <button onClick={() => setEditing(ev)} className="px-3 py-2 border border-[#2D1D1A] text-xs inline-flex items-center gap-2 hover:border-[#D9772B]">
+                          <Edit2 size={12} /> Edit
+                        </button>
+                        <button onClick={() => del(ev.id)} data-testid={`delete-event-${ev.id}`} className="px-3 py-2 border border-[#2D1D1A] text-xs inline-flex items-center gap-2 hover:border-[#D94A3D] hover:text-[#D94A3D]">
+                          <Trash2 size={12} /> Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#2D1D1A] mt-6">
+              {events.length === 0 && (
+                <p className="bg-[#140A09] p-8 text-[#B5A79E] md:col-span-3">No events yet. Create your first supper.</p>
+              )}
+              {regular.map((ev) => (
+                <div key={ev.id} className="bg-[#140A09] p-6" data-testid={`admin-event-row-${ev.id}`}>
+                  <p className="text-overline text-[#D9772B]">{ev.tag}</p>
+                  <h3 className="font-display text-2xl mt-2">{ev.title}</h3>
+                  <p className="text-sm text-[#B5A79E] mt-2">{ev.date} · {ev.time} · {ev.venue}</p>
+                  <p className="text-sm text-[#B5A79E] mt-3">
+                    {ev.seats_booked || 0} / {ev.seats_total} booked · ₹{ev.price}
+                  </p>
+                  <div className="mt-4 flex gap-2">
+                    <button onClick={() => setEditing(ev)} className="px-3 py-2 border border-[#2D1D1A] text-xs inline-flex items-center gap-2 hover:border-[#D9772B]">
+                      <Edit2 size={12} /> Edit
+                    </button>
+                    <button onClick={() => del(ev.id)} data-testid={`delete-event-${ev.id}`} className="px-3 py-2 border border-[#2D1D1A] text-xs inline-flex items-center gap-2 hover:border-[#D94A3D] hover:text-[#D94A3D]">
+                      <Trash2 size={12} /> Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        ))}
-      </div>
+          </>
+        );
+      })()}
     </div>
   );
 }
