@@ -474,7 +474,31 @@ function Events() {
 
 function EventForm({ event, onCancel, onSave }) {
   const [f, setF] = useState(event);
+  const [uploading, setUploading] = useState(false);
   const h = (k) => (e) => setF((v) => ({ ...v, [k]: e.target.value }));
+
+  const onPickImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose an image file.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await api.post("/admin/media", fd);
+      setF((v) => ({ ...v, image_url: res.data.url }));
+      toast.success("Thumbnail uploaded — remember to save the event.");
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Upload failed");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
   return (
     <form
       onSubmit={(e) => { e.preventDefault(); onSave({ ...f, price: Number(f.price) || 0, seats_total: Number(f.seats_total) || 1 }); }}
@@ -488,6 +512,25 @@ function EventForm({ event, onCancel, onSave }) {
       <Inp label="Price (INR)" type="number" value={f.price} onChange={h("price")} />
       <Inp label="Seats total (fixed at 10)" type="number" value={10} readOnly disabled data-testid="event-seats-total-input" />
       <Inp label="Image URL" value={f.image_url} onChange={h("image_url")} />
+
+      <div className="sm:col-span-2">
+        <span className="text-overline block mb-2">Thumbnail image</span>
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="w-28 h-20 bg-[#0A0504] border border-[#2D1D1A] overflow-hidden shrink-0">
+            {f.image_url ? (
+              <img src={f.image_url} alt="thumbnail preview" className="w-full h-full object-cover" data-testid="event-image-preview" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-[10px] text-[#6E625B] uppercase tracking-widest">No image</div>
+            )}
+          </div>
+          <label className={`px-5 py-3 border border-[#D9772B] text-[#D9772B] text-[11px] tracking-[0.22em] uppercase cursor-pointer hover:bg-[#D9772B] hover:text-[#0A0504] transition-all ${uploading ? "opacity-60 pointer-events-none" : ""}`}>
+            {uploading ? "Uploading…" : "Upload from device"}
+            <input type="file" accept="image/*" onChange={onPickImage} className="hidden" data-testid="event-image-upload-input" />
+          </label>
+        </div>
+        <p className="text-[11px] text-[#6E625B] mt-2">Upload a new thumbnail from your device, or paste a URL above. Changes go live once you save the event.</p>
+      </div>
+
       <div className="sm:col-span-2">
         <span className="text-overline block mb-2">Description</span>
         <textarea
