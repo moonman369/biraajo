@@ -137,7 +137,7 @@ async def _send_email(to_email: str, subject: str, html: str) -> Optional[str]:
         return str(e)
 
 
-PUBLIC_SITE_URL = os.environ.get("PUBLIC_SITE_URL", "https://event-booking-test-1.preview.emergentagent.com").rstrip("/")
+PUBLIC_SITE_URL = os.environ.get("PUBLIC_SITE_URL", "https://chef-luxury-preview.emergent.host").rstrip("/")
 
 
 async def send_welcome_email(to_email: str, name: str, event_title: str, total_amount: int, reg_id: str = "") -> None:
