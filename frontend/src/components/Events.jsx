@@ -16,6 +16,7 @@ function formatDate(iso) {
 export default function Events() {
   const [events, setEvents] = useState([]);
   const [active, setActive] = useState(null);
+  const [wip, setWip] = useState(null);
   const [reload, setReload] = useState(0);
   const [prices, setPrices] = useState({ veg: 2500, nonveg: 2800 });
 
@@ -117,46 +118,65 @@ export default function Events() {
                       <Clock size={14} className="text-[#D9772B]" />
                       <span>{ev.time}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin size={14} className="text-[#D9772B]" />
-                      <span>{ev.venue}</span>
-                    </div>
+                    {!ev.coming_soon && (
+                      <div className="flex items-center gap-2">
+                        <MapPin size={14} className="text-[#D9772B]" />
+                        <span>{ev.venue}</span>
+                      </div>
+                    )}
                   </div>
 
                   <p className="mt-5 text-[#B5A79E] text-sm leading-relaxed line-clamp-3">
                     {ev.description}
                   </p>
 
-                  <div className="mt-7 flex items-end justify-between pt-5 border-t border-[#2D1D1A]">
-                    <div>
-                      <p className="text-overline">Per seat</p>
-                      <p className="font-display text-2xl text-[#F3EFE7] mt-1 leading-tight">
-                        ₹{Number(prices.veg).toLocaleString("en-IN")} <span className="text-sm text-[#B5A79E]">veg</span>
-                      </p>
-                      <p className="font-display text-2xl text-[#F3EFE7] leading-tight">
-                        ₹{Number(prices.nonveg).toLocaleString("en-IN")} <span className="text-sm text-[#B5A79E]">non-veg</span>
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-overline">{soldOut ? "Sold out" : "Seats left"}</p>
-                      <p className="font-display text-2xl text-[#D9772B] mt-1">
-                        {soldOut ? "—" : seatsLeft}
-                      </p>
-                    </div>
-                  </div>
+                  {ev.coming_soon ? (
+                    <>
+                      <div className="mt-7 pt-5 border-t border-[#2D1D1A]">
+                        <p className="text-overline text-[#D9772B]">Next series · Coming soon</p>
+                      </div>
+                      <button
+                        onClick={() => setWip(ev)}
+                        data-testid="event-wip-button"
+                        className="mt-6 w-full px-6 py-4 tracking-[0.18em] uppercase text-[11px] transition-all duration-500 border border-[#D9772B] text-[#D9772B] hover:bg-[#D9772B] hover:text-[#0A0504]"
+                      >
+                        Work in progress
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="mt-7 flex items-end justify-between pt-5 border-t border-[#2D1D1A]">
+                        <div>
+                          <p className="text-overline">Per seat</p>
+                          <p className="font-display text-2xl text-[#F3EFE7] mt-1 leading-tight">
+                            ₹{Number(prices.veg).toLocaleString("en-IN")} <span className="text-sm text-[#B5A79E]">veg</span>
+                          </p>
+                          <p className="font-display text-2xl text-[#F3EFE7] leading-tight">
+                            ₹{Number(prices.nonveg).toLocaleString("en-IN")} <span className="text-sm text-[#B5A79E]">non-veg</span>
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-overline">{soldOut ? "Sold out" : "Seats left"}</p>
+                          <p className="font-display text-2xl text-[#D9772B] mt-1">
+                            {soldOut ? "—" : seatsLeft}
+                          </p>
+                        </div>
+                      </div>
 
-                  <button
-                    onClick={() => !soldOut && setActive(ev)}
-                    disabled={soldOut}
-                    data-testid="event-register-button"
-                    className={`mt-6 w-full px-6 py-4 tracking-[0.18em] uppercase text-[11px] transition-all duration-500 ${
-                      soldOut
-                        ? "border border-[#2D1D1A] text-[#B5A79E] cursor-not-allowed"
-                        : "bg-[#5A1A1F] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504]"
-                    }`}
-                  >
-                    {soldOut ? "Sold out" : "Reserve my seat"}
-                  </button>
+                      <button
+                        onClick={() => !soldOut && setActive(ev)}
+                        disabled={soldOut}
+                        data-testid="event-register-button"
+                        className={`mt-6 w-full px-6 py-4 tracking-[0.18em] uppercase text-[11px] transition-all duration-500 ${
+                          soldOut
+                            ? "border border-[#2D1D1A] text-[#B5A79E] cursor-not-allowed"
+                            : "bg-[#5A1A1F] text-[#F3EFE7] hover:bg-[#D9772B] hover:text-[#0A0504]"
+                        }`}
+                      >
+                        {soldOut ? "Sold out" : "Reserve my seat"}
+                      </button>
+                    </>
+                  )}
                 </motion.article>
               );
             })}
@@ -174,6 +194,32 @@ export default function Events() {
           }}
         />
       )}
+
+      {wip && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0504]/90 backdrop-blur-sm p-6"
+          data-testid="wip-modal"
+          onClick={() => setWip(null)}
+        >
+          <div
+            className="relative max-w-lg w-full bg-[#140A09] border border-[#2D1D1A] p-10 sm:p-12 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setWip(null)}
+              data-testid="wip-close"
+              className="absolute top-4 right-5 text-[#B5A79E] hover:text-[#F3EFE7] text-2xl leading-none"
+            >
+              ×
+            </button>
+            <p className="text-overline text-[#D9772B]">{wip.tag || "Yaadein"}</p>
+            <h3 className="font-display text-4xl sm:text-5xl text-[#F3EFE7] mt-4">Work in progress</h3>
+            <p className="mt-6 text-[#B5A79E] leading-relaxed">{wip.description}</p>
+            <p className="mt-8 text-[11px] tracking-[0.22em] uppercase text-[#6E625B]">Bookings open soon</p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
+

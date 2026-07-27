@@ -313,6 +313,7 @@ class EventIn(BaseModel):
     seats_total: int = 8
     image_url: str = ""
     tag: Optional[str] = "Supper Club"
+    coming_soon: bool = False
 
 
 class Event(EventIn):
@@ -533,6 +534,27 @@ _BARSAAT_AUG_EVENTS = [
      "seats_booked": 0, "is_published": True},
 ]
 
+_YAADEIN_DESC = ("Explores the relationship between food and politics and how their interactions "
+                 "have impacted culture.")
+_YAADEIN_EVENTS = [
+    {"id": "yaadein-2026-08-15-dinner", "title": "Yaadein — Dinner (Aug 15)", "date": "2026-08-15",
+     "time": "19:00 — 22:00", "venue": "Kolkata", "description": _YAADEIN_DESC, "price": 2500.0,
+     "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Yaadein", "coming_soon": True,
+     "seats_booked": 0, "is_published": True},
+    {"id": "yaadein-2026-08-21-dinner", "title": "Yaadein — Dinner (Aug 21)", "date": "2026-08-21",
+     "time": "19:00 — 22:00", "venue": "Kolkata", "description": _YAADEIN_DESC, "price": 2500.0,
+     "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Yaadein", "coming_soon": True,
+     "seats_booked": 0, "is_published": True},
+    {"id": "yaadein-2026-08-23-lunch", "title": "Yaadein — Lunch (Aug 23)", "date": "2026-08-23",
+     "time": "13:00 — 15:30", "venue": "Kolkata", "description": _YAADEIN_DESC, "price": 2500.0,
+     "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Yaadein", "coming_soon": True,
+     "seats_booked": 0, "is_published": True},
+    {"id": "yaadein-2026-08-29-dinner", "title": "Yaadein — Dinner (Aug 29)", "date": "2026-08-29",
+     "time": "19:00 — 22:00", "venue": "Kolkata", "description": _YAADEIN_DESC, "price": 2500.0,
+     "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Yaadein", "coming_soon": True,
+     "seats_booked": 0, "is_published": True},
+]
+
 
 async def _run_migrations() -> None:
     # Grammar/copy corrections + stale "Twelve seats" in event descriptions.
@@ -595,6 +617,15 @@ async def _run_migrations() -> None:
                 await db.events.insert_one({**ev, "created_at": now})
         await db.migrations.update_one({"id": "barsaat_aug_events_v1"}, {"$set": {"id": "barsaat_aug_events_v1", "applied_at": now}}, upsert=True)
         logger.info("Migration applied: barsaat_aug_events_v1")
+
+    # One-time: publish the Yaadein series dates (coming soon, no bookings yet).
+    if not await db.migrations.find_one({"id": "yaadein_events_v1"}):
+        now = _now_iso()
+        for ev in _YAADEIN_EVENTS:
+            if not await db.events.find_one({"id": ev["id"]}):
+                await db.events.insert_one({**ev, "created_at": now})
+        await db.migrations.update_one({"id": "yaadein_events_v1"}, {"$set": {"id": "yaadein_events_v1", "applied_at": now}}, upsert=True)
+        logger.info("Migration applied: yaadein_events_v1")
 
 
 # ---------- Startup ----------
@@ -760,6 +791,8 @@ async def register_event(event_id: str, body: RegistrationIn):
     event = await db.events.find_one({"id": event_id}, {"_id": 0})
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
+    if event.get("coming_soon"):
+        raise HTTPException(status_code=403, detail="Bookings for this series aren't open yet.")
 
     payload = body.model_dump()
     payload["event_id"] = event_id
@@ -1214,7 +1247,7 @@ async def upload_media(file: UploadFile = File(...), user=Depends(get_current_ad
 
 @api.get("/gallery")
 async def list_gallery():
-    docs = await db.gallery.find({}, {"_id": 0}).sort("order", 1).to_list(500)
+    docs = await db.gallery.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
     return docs
 
 
