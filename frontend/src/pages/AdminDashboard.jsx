@@ -401,7 +401,10 @@ function Events() {
   const [events, setEvents] = useState([]);
   const [editing, setEditing] = useState(null);
 
-  const load = () => api.get("/events").then((r) => setEvents(r.data));
+  const load = () => api.get("/events").then((r) => {
+    const sorted = [...(r.data || [])].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    setEvents(sorted);
+  });
   useEffect(() => { load(); }, []);
 
   const save = async (ev) => {
