@@ -996,6 +996,8 @@ async def send_registration_confirmation(reg_id: str, user=Depends(get_current_a
     reg = await db.registrations.find_one({"id": reg_id}, {"_id": 0})
     if not reg:
         raise HTTPException(status_code=404, detail="Registration not found")
+    if reg.get("payment_status") != "confirmed":
+        raise HTTPException(status_code=400, detail="Confirm the payment first, then send the confirmation email.")
     event = await db.events.find_one({"id": reg.get("event_id")}, {"_id": 0}) or {}
     err = await send_confirmation_email(
         reg.get("email", ""), reg.get("full_name", ""), event,
