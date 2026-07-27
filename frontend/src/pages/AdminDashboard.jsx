@@ -531,6 +531,7 @@ function Registrations() {
   const [eventId, setEventId] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [viewing, setViewing] = useState(null); // {id, blobUrl}
+  const [sendingId, setSendingId] = useState(null);
   const [archived, setArchived] = useState([]);
   const [showArchived, setShowArchived] = useState(false);
 
@@ -606,6 +607,20 @@ function Registrations() {
       `Hi ${r.full_name.split(" ")[0]}, just a gentle nudge — your Biraajo seat for "${titleOf(r.event_id)}" is held but payment is pending. Pay ₹${Number(r.total_amount || 0).toLocaleString("en-IN")} to UPI: vidipshah14-1@oksbi and reply with the screenshot to lock it. — Biraajo`
     );
     window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+  };
+
+  const sendConfirmation = async (r) => {
+    if (!window.confirm(`Send the booking confirmation email (with date, time & address) to ${r.full_name} at ${r.email}?`)) return;
+    setSendingId(r.id);
+    try {
+      const res = await api.post(`/registrations/${r.id}/send-confirmation`);
+      toast.success(`Confirmation email sent to ${res.data.sent_to}`);
+      load();
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Could not send email");
+    } finally {
+      setSendingId(null);
+    }
   };
 
   const del = async (r) => {
@@ -713,6 +728,16 @@ function Registrations() {
                 <Td>{new Date(r.created_at).toLocaleDateString()}</Td>
                 <Td>
                   <div className="flex gap-2 flex-wrap">
+                    {!r.is_offsite && (
+                      <button
+                        onClick={() => sendConfirmation(r)}
+                        disabled={sendingId === r.id}
+                        data-testid={`send-confirmation-${r.id}`}
+                        className={`px-2 py-1 border text-[10px] tracking-[0.18em] uppercase transition-all disabled:opacity-50 ${r.confirmation_email_sent ? "border-[#3A7D44] text-[#9FD79F]" : "border-[#5B7B9A] text-[#A9C6DE] hover:bg-[#5B7B9A] hover:text-[#0A0504]"}`}
+                      >
+                        {sendingId === r.id ? "Sending…" : r.confirmation_email_sent ? "✓ Resend confirmation" : "Send confirmation"}
+                      </button>
+                    )}
                     {r.payment_status === "confirmed" && r.payment_screenshot_path && (
                       <button onClick={() => viewScreenshot(r)} data-testid={`view-screenshot-${r.id}`}
                         className="px-2 py-1 border border-[#2D1D1A] text-[10px] tracking-[0.18em] uppercase hover:border-[#D9772B]">

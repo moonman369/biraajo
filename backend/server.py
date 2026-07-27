@@ -119,19 +119,22 @@ def _email_shell(title: str, body_html: str) -> str:
 </body></html>"""
 
 
-async def _send_email(to_email: str, subject: str, html: str) -> None:
+async def _send_email(to_email: str, subject: str, html: str) -> Optional[str]:
+    """Returns None on success, or an error string on failure."""
     if not RESEND_API_KEY:
         logging.getLogger("biraajo").warning(f"[EMAIL SKIPPED — no RESEND_API_KEY] to={to_email} subj={subject}")
-        return
+        return "Email service is not configured (missing RESEND_API_KEY)."
     params = {"from": RESEND_FROM, "to": [to_email], "subject": subject, "html": html}
     if RESEND_REPLY_TO:
         params["reply_to"] = [RESEND_REPLY_TO]
     try:
         result = await asyncio.to_thread(resend.Emails.send, params)
         logging.getLogger("biraajo").info(f"[EMAIL SENT] id={result.get('id')} to={to_email} subj={subject}")
+        return None
     except Exception as e:
-        # Resend dev-mode rejects non-verified recipients with 4xx — non-blocking, warn only
+        # Resend dev-mode rejects non-verified recipients with 4xx — surface the reason
         logging.getLogger("biraajo").warning(f"[EMAIL FAIL] to={to_email} subj={subject} err={e}")
+        return str(e)
 
 
 PUBLIC_SITE_URL = os.environ.get("PUBLIC_SITE_URL", "https://event-booking-test-1.preview.emergentagent.com").rstrip("/")
@@ -178,7 +181,12 @@ async def send_admin_notification(reg: dict, event: dict, kind: str = "pending")
     await _send_email(admin_email, subject, _email_shell(f"New booking · {status_word.lower()}", body))
 
 
-async def send_confirmation_email(to_email: str, name: str, event: dict, total_amount: int, guests: int, menu: str) -> None:
+VENUE_ADDRESS = "1st Floor, 122B Southern Avenue, above 99 Meals, adjacent to Chai Break, Kolkata 700029"
+VENUE_PRIVACY_NOTE = ("Please note: this is a private residential address. For everyone's privacy and "
+                      "safety, kindly do not share it with anyone.")
+
+
+async def send_confirmation_email(to_email: str, name: str, event: dict, total_amount: int, guests: int, menu: str) -> Optional[str]:
     first = name.split(" ")[0] if name else "there"
     body = f"""
 <p>Dear {first},</p>
@@ -186,15 +194,16 @@ async def send_confirmation_email(to_email: str, name: str, event: dict, total_a
 <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:20px 0;border:1px solid #2D1D1A;">
 <tr><td style="padding:14px 18px;border-bottom:1px solid #2D1D1A;"><span style="color:#B5A79E;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">Event</span><br/><span style="color:#F3EFE7;font-size:16px;">{event.get('title','')}</span></td></tr>
 <tr><td style="padding:14px 18px;border-bottom:1px solid #2D1D1A;"><span style="color:#B5A79E;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">When</span><br/><span style="color:#F3EFE7;font-size:16px;">{event.get('date','')} · {event.get('time','')}</span></td></tr>
-<tr><td style="padding:14px 18px;border-bottom:1px solid #2D1D1A;"><span style="color:#B5A79E;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">Where</span><br/><span style="color:#F3EFE7;font-size:16px;">{event.get('venue','')}</span></td></tr>
+<tr><td style="padding:14px 18px;border-bottom:1px solid #2D1D1A;"><span style="color:#B5A79E;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">Where</span><br/><span style="color:#F3EFE7;font-size:16px;">{VENUE_ADDRESS}</span></td></tr>
 <tr><td style="padding:14px 18px;border-bottom:1px solid #2D1D1A;"><span style="color:#B5A79E;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">Guests · Menu</span><br/><span style="color:#F3EFE7;font-size:16px;">{guests} · {menu}</span></td></tr>
 <tr><td style="padding:14px 18px;"><span style="color:#B5A79E;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">Amount paid</span><br/><span style="color:#F3EFE7;font-size:16px;">₹{total_amount:,}</span></td></tr>
 </table>
+<p style="background:#1E1512;border-left:3px solid #D9772B;padding:14px 18px;margin:20px 0;font-size:14px;color:#F3EFE7;line-height:1.6;">{VENUE_PRIVACY_NOTE}</p>
 <p>If anything changes between now and the evening, we'll reach you on WhatsApp.</p>
 <p>Until then — pull up a chair.</p>
 <p>Warmly,<br/>Vidip · Biraajo</p>
 """
-    await _send_email(to_email, f"Confirmed · {event.get('title','')}", _email_shell("See you soon.", body))
+    return await _send_email(to_email, f"Confirmed · {event.get('title','')}", _email_shell("See you soon.", body))
 
 
 # ---------- DB ----------
@@ -947,6 +956,26 @@ async def list_registrations(
 async def list_archived_registrations(user=Depends(get_current_admin)):
     docs = await db.registrations_archive.find({}, {"_id": 0}).sort("archived_at", -1).to_list(2000)
     return docs
+
+
+@api.post("/registrations/{reg_id}/send-confirmation")
+async def send_registration_confirmation(reg_id: str, user=Depends(get_current_admin)):
+    reg = await db.registrations.find_one({"id": reg_id}, {"_id": 0})
+    if not reg:
+        raise HTTPException(status_code=404, detail="Registration not found")
+    event = await db.events.find_one({"id": reg.get("event_id")}, {"_id": 0}) or {}
+    err = await send_confirmation_email(
+        reg.get("email", ""), reg.get("full_name", ""), event,
+        int(reg.get("total_amount", 0) or 0), int(reg.get("guests", 1) or 1),
+        reg.get("menu_preference", ""),
+    )
+    if err:
+        raise HTTPException(status_code=502, detail=f"Email could not be sent: {err}")
+    await db.registrations.update_one(
+        {"id": reg_id},
+        {"$set": {"confirmation_email_sent": True, "confirmation_email_sent_at": _now_iso()}},
+    )
+    return {"ok": True, "sent_to": reg.get("email", "")}
 
 
 @api.delete("/registrations/{reg_id}")
