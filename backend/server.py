@@ -502,6 +502,28 @@ _EVENT_DESC_FIXES = [
     ("Twelve seats", "Eight seats"),
 ]
 
+_BARSAAT_DESC_DINNER = ("A ten-course immersive Barsaat supper inspired by Gujarati cuisine with modern "
+    "and European influences. Camphor and vetiver in the air, rain dressing the room. Eight seats only. "
+    "Group discount available for parties of 4 or more.")
+_BARSAAT_DESC_LUNCH = ("A ten-course immersive Barsaat lunch inspired by Gujarati cuisine with modern "
+    "and European influences. Camphor and vetiver in the air, rain dressing the room. Eight seats only. "
+    "Group discount available for parties of 4 or more.")
+_BARSAAT_IMG = "/api/media/biraajo/media/4d82c167b3dc090f.jpg"
+_BARSAAT_AUG_EVENTS = [
+    {"id": "barsaat-2026-08-02-lunch", "title": "Barsaat — Lunch Table (Aug 2)", "date": "2026-08-02",
+     "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _BARSAAT_DESC_LUNCH,
+     "price": 2500.0, "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Barsaat",
+     "seats_booked": 0, "is_published": True},
+    {"id": "barsaat-2026-08-07-dinner", "title": "Barsaat — Dinner (Aug 7)", "date": "2026-08-07",
+     "time": "19:00 — 22:00", "venue": "Biraajo House, South Calcutta", "description": _BARSAAT_DESC_DINNER,
+     "price": 2500.0, "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Barsaat",
+     "seats_booked": 0, "is_published": True},
+    {"id": "barsaat-2026-08-09-dinner", "title": "Barsaat — Dinner (Aug 9)", "date": "2026-08-09",
+     "time": "19:00 — 22:00", "venue": "Biraajo House, South Calcutta", "description": _BARSAAT_DESC_DINNER,
+     "price": 2500.0, "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Barsaat",
+     "seats_booked": 0, "is_published": True},
+]
+
 
 async def _run_migrations() -> None:
     # Grammar/copy corrections + stale "Twelve seats" in event descriptions.
@@ -549,6 +571,21 @@ async def _run_migrations() -> None:
                 i += 1
         await db.migrations.update_one({"id": "barsaat_videos_v1"}, {"$set": {"id": "barsaat_videos_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: barsaat_videos_v1")
+
+    # One-time: set finalized pricing (editable afterwards via the dashboard, so edits persist).
+    if not await db.migrations.find_one({"id": "pricing_final_v1"}):
+        await db.settings.update_one({"id": "global"}, {"$set": {"data.price_veg": PRICE_VEG, "data.price_nonveg": PRICE_NONVEG}}, upsert=True)
+        await db.migrations.update_one({"id": "pricing_final_v1"}, {"$set": {"id": "pricing_final_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: pricing_final_v1")
+
+    # One-time: publish the 3 August Barsaat dates.
+    if not await db.migrations.find_one({"id": "barsaat_aug_events_v1"}):
+        now = _now_iso()
+        for ev in _BARSAAT_AUG_EVENTS:
+            if not await db.events.find_one({"id": ev["id"]}):
+                await db.events.insert_one({**ev, "created_at": now})
+        await db.migrations.update_one({"id": "barsaat_aug_events_v1"}, {"$set": {"id": "barsaat_aug_events_v1", "applied_at": now}}, upsert=True)
+        logger.info("Migration applied: barsaat_aug_events_v1")
 
 
 # ---------- Startup ----------

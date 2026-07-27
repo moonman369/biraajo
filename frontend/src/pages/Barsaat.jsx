@@ -109,7 +109,7 @@ export default function Barsaat() {
   const scheduleNote = read(content, "barsaat.dates_block.schedule_note",
     "Doors open at 7:00 PM. The first course lands at 7:15 PM sharp. The evening closes by 10:00 PM.");
   const priceFootnote = read(content, "barsaat.dates_block.price_footnote",
-    "Per seat, all-inclusive.");
+    "Per seat, all-inclusive. Group discount available for parties of 4 or more.");
 
   return (
     <div className="bg-[#0A0504] text-[#F3EFE7] min-h-screen film-grain" data-testid="page-barsaat">

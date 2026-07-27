@@ -51,3 +51,8 @@
 - Public site reads prices live from /api/settings: Barsaat price box, Events landing cards (made dynamic), and booking modal.
 - Gallery: new POST /api/admin/media upload endpoint (image/video -> object storage -> /api/media URL, 50MB cap). GalleryAdmin now uploads from device (images + videos), renders video tiles with a "Video" badge, and keeps the paste-URL option. Uploaded media appears live on the landing gallery.
 - Known cosmetic: gallery video tiles show no poster/thumbnail until buffered.
+
+## 2026-07-27 — 3 August Barsaat dates + gallery upload reconfirmed
+- Added 3 upcoming Barsaat events via one-time migration `barsaat_aug_events_v1` (fixed ids, idempotent → appears on preview + production on redeploy): Lunch Aug 2 (13:00–15:30), Dinner Aug 7 (19:00–22:00), Dinner Aug 9 (19:00–22:00). 8 seats each, ₹2,500 veg / ₹2,800 non-veg (global settings), venue Biraajo House. Descriptions + Barsaat price footnote mention "Group discount available for parties of 4 or more."
+- NOTE: the old Jul events are now past (server date 2026-07-27) so only the 3 Aug dates show as upcoming.
+- Re-added lost `pricing_final_v1` migration (had reverted). Re-verified gallery upload endpoint POST /api/admin/media accepts images (200) + videos (200), rejects non-media (400); items render live on the gallery.
