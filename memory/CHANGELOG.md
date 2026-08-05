@@ -67,3 +67,8 @@
 - Removed all 4 Yaadein events and the Barsaat Aug 7 event. Source defs updated (_YAADEIN_EVENTS=[], Aug 7 dropped from _BARSAAT_AUG_EVENTS) so fresh DBs never recreate them.
 - New idempotent migration `retire_yaadein_aug7_v1`: reassigns Aug 7 registrations + offsite bookings to Aug 9 (barsaat-2026-08-09-dinner), deletes the Aug 7 event, deletes all yaadein-* events + their registrations, then recomputes Aug 9 seats_booked = active regs guests + offsite guests. Applies on preview now and on production at redeploy (production has the 2 real Aug 7 bookings → will show as 2 on Aug 9).
 - Remaining Barsaat Aug dates: Aug 2 (concluded, server date is Aug 5) + Aug 9 (upcoming). Yaadein UI on landing page + dashboard auto-hides (no coming_soon events).
+
+## 2026-08-05 (later) — Nav "Events" direct link, Move-booking feature, Karan Soni on Aug 9
+- Navbar: "Events" no longer opens a dropdown; it links straight to the #events section (desktop + mobile). Removed dropdown state/refs/ChevronDown.
+- Move booking feature: new backend endpoints POST /api/registrations/{id}/move and POST /api/admin/offsite-bookings/{id}/move (body {target_event_id}) — capacity-checked (8), decrements source + increments target seats_booked, updates event_id. Dashboard Registrations tab: added "Move" button per row + a modal with a target-date select (shows seats left). Works for both direct registrations and off-site bookings. Verified via curl both directions (seat math correct) + UI modal screenshot.
+- Karan Soni: added as an off-site booking (fixed id offsite-karan-soni-aug9, 2 veg seats, source Direct) on Aug 9 via idempotent migration `karan_soni_aug9_offsite_v1`. Aug 9 now shows 2/8 booked. Applies to production on redeploy.

@@ -630,6 +630,20 @@ async def _run_migrations() -> None:
         await db.migrations.update_one({"id": "retire_yaadein_aug7_v1"}, {"$set": {"id": "retire_yaadein_aug7_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: retire_yaadein_aug7_v1 (Aug 9 seats_booked=%s)", booked)
 
+    # One-time: add Karan Soni's off-site booking (party of 2, veg) to the Aug 9 date.
+    if not await db.migrations.find_one({"id": "karan_soni_aug9_offsite_v1"}):
+        aug9 = "barsaat-2026-08-09-dinner"
+        booking_id = "offsite-karan-soni-aug9"
+        if await db.events.find_one({"id": aug9}) and not await db.offsite_bookings.find_one({"id": booking_id}):
+            await db.offsite_bookings.insert_one({
+                "id": booking_id, "event_id": aug9, "full_name": "Karan Soni", "guests": 2,
+                "menu_preference": "Vegetarian", "source": "Direct", "contact": None,
+                "notes": "Moved from Aug 7", "created_at": _now_iso(),
+            })
+            await db.events.update_one({"id": aug9}, {"$inc": {"seats_booked": 2}})
+        await db.migrations.update_one({"id": "karan_soni_aug9_offsite_v1"}, {"$set": {"id": "karan_soni_aug9_offsite_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: karan_soni_aug9_offsite_v1")
+
 
 # ---------- Startup ----------
 @app.on_event("startup")
@@ -1051,6 +1065,32 @@ async def restore_registration(reg_id: str, user=Depends(get_current_admin)):
     return {"ok": True, "restored": True, "event_exists": event_exists}
 
 
+class MoveIn(BaseModel):
+    target_event_id: str
+
+
+@api.post("/registrations/{reg_id}/move")
+async def move_registration(reg_id: str, body: MoveIn, user=Depends(get_current_admin)):
+    reg = await db.registrations.find_one({"id": reg_id}, {"_id": 0})
+    if not reg:
+        raise HTTPException(status_code=404, detail="Registration not found")
+    src_id = reg.get("event_id")
+    if src_id == body.target_event_id:
+        raise HTTPException(status_code=400, detail="Booking is already on this date")
+    target = await db.events.find_one({"id": body.target_event_id}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="Target event not found")
+    guests = int(reg.get("guests", 1) or 1)
+    available = EVENT_CAPACITY - int(target.get("seats_booked", 0) or 0)
+    if guests > available:
+        raise HTTPException(status_code=400, detail=f"Only {max(0, available)} seat(s) left on the target date")
+    await db.registrations.update_one({"id": reg_id}, {"$set": {"event_id": body.target_event_id}})
+    if src_id:
+        await db.events.update_one({"id": src_id}, {"$inc": {"seats_booked": -guests}})
+    await db.events.update_one({"id": body.target_event_id}, {"$inc": {"seats_booked": guests}})
+    return {"ok": True, "moved_to": target.get("title", body.target_event_id)}
+
+
 # ---------- Off-site bookings (aggregators, partners, manual seats) ----------
 class OffsiteBookingIn(BaseModel):
     event_id: str
@@ -1103,6 +1143,28 @@ async def delete_offsite_booking(booking_id: str, user=Depends(get_current_admin
         {"$inc": {"seats_booked": -int(booking.get("guests", 1))}},
     )
     return {"ok": True}
+
+
+@api.post("/admin/offsite-bookings/{booking_id}/move")
+async def move_offsite_booking(booking_id: str, body: MoveIn, user=Depends(get_current_admin)):
+    booking = await db.offsite_bookings.find_one({"id": booking_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Off-site booking not found")
+    src_id = booking.get("event_id")
+    if src_id == body.target_event_id:
+        raise HTTPException(status_code=400, detail="Booking is already on this date")
+    target = await db.events.find_one({"id": body.target_event_id}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="Target event not found")
+    guests = int(booking.get("guests", 1) or 1)
+    available = EVENT_CAPACITY - int(target.get("seats_booked", 0) or 0)
+    if guests > available:
+        raise HTTPException(status_code=400, detail=f"Only {max(0, available)} seat(s) left on the target date")
+    await db.offsite_bookings.update_one({"id": booking_id}, {"$set": {"event_id": body.target_event_id}})
+    if src_id:
+        await db.events.update_one({"id": src_id}, {"$inc": {"seats_booked": -guests}})
+    await db.events.update_one({"id": body.target_event_id}, {"$inc": {"seats_booked": guests}})
+    return {"ok": True, "moved_to": target.get("title", body.target_event_id)}
 
 
 

@@ -618,6 +618,9 @@ function Registrations() {
   const [sendingId, setSendingId] = useState(null);
   const [archived, setArchived] = useState([]);
   const [showArchived, setShowArchived] = useState(false);
+  const [moving, setMoving] = useState(null); // row being moved
+  const [moveTarget, setMoveTarget] = useState("");
+  const [moveBusy, setMoveBusy] = useState(false);
 
   useEffect(() => { api.get("/events").then((r) => setEvents(r.data)); }, []);
 
@@ -713,6 +716,24 @@ function Registrations() {
     await api.delete(isOff ? `/admin/offsite-bookings/${r.id}` : `/registrations/${r.id}`);
     toast.success("Deleted");
     load();
+  };
+
+  const openMove = (r) => { setMoving(r); setMoveTarget(""); };
+  const confirmMove = async () => {
+    if (!moveTarget) { toast.error("Pick a date to move to."); return; }
+    setMoveBusy(true);
+    try {
+      const path = moving.is_offsite
+        ? `/admin/offsite-bookings/${moving.id}/move`
+        : `/registrations/${moving.id}/move`;
+      const res = await api.post(path, { target_event_id: moveTarget });
+      toast.success(`Moved ${moving.full_name} to ${res.data.moved_to}`);
+      setMoving(null); load();
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Could not move booking");
+    } finally {
+      setMoveBusy(false);
+    }
   };
 
   return (
@@ -834,6 +855,10 @@ function Registrations() {
                         Nudge
                       </button>
                     )}
+                    <button onClick={() => openMove(r)} data-testid={`move-reg-${r.id}`}
+                      className="px-2 py-1 border border-[#2D1D1A] text-[10px] tracking-[0.18em] uppercase hover:border-[#D9772B] hover:text-[#D9772B]">
+                      Move
+                    </button>
                     <button onClick={() => del(r)} data-testid={`delete-reg-${r.id}`}
                       className="px-2 py-1 border border-[#2D1D1A] text-[10px] tracking-[0.18em] uppercase hover:border-[#D94A3D] hover:text-[#D94A3D]">
                       Del
@@ -883,6 +908,44 @@ function Registrations() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {moving && (
+        <div className="fixed inset-0 z-[100] bg-[#0A0504]/90 backdrop-blur-sm flex items-center justify-center p-6"
+          onClick={() => !moveBusy && setMoving(null)} data-testid="move-booking-modal">
+          <div className="max-w-md w-full bg-[#140A09] border border-[#2D1D1A] p-8" onClick={(e) => e.stopPropagation()}>
+            <p className="text-overline text-[#D9772B]">Move booking</p>
+            <h3 className="font-display text-3xl mt-2">{moving.full_name}</h3>
+            <p className="text-sm text-[#B5A79E] mt-2">
+              {moving.guests} seat(s) · currently on <span className="text-[#F3EFE7]">{titleOf(moving.event_id)}</span>
+            </p>
+            <div className="mt-6">
+              <span className="text-overline block mb-2">Move to date</span>
+              <select
+                value={moveTarget} onChange={(e) => setMoveTarget(e.target.value)}
+                data-testid="move-target-select"
+                className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-sm text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+              >
+                <option value="">Select a date…</option>
+                {events.filter((e) => e.id !== moving.event_id).map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.title} — {(e.seats_total || 8) - (e.seats_booked || 0)} left
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mt-6 flex gap-3">
+              <button onClick={confirmMove} disabled={moveBusy} data-testid="move-confirm"
+                className="px-6 py-3 bg-[#5A1A1F] hover:bg-[#D9772B] hover:text-[#0A0504] text-[11px] tracking-[0.22em] uppercase disabled:opacity-50">
+                {moveBusy ? "Moving…" : "Move booking"}
+              </button>
+              <button onClick={() => setMoving(null)} disabled={moveBusy} data-testid="move-cancel"
+                className="px-6 py-3 border border-[#2D1D1A] text-[11px] tracking-[0.22em] uppercase text-[#B5A79E] hover:text-[#F3EFE7]">
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
