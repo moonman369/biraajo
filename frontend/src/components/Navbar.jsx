@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 // Hash links: when not on landing, prefix with "/" so they navigate to home then scroll.
@@ -18,9 +18,6 @@ function onLandingPath(id, loc) {
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const [eventsOpen, setEventsOpen] = useState(false);
-  const [mobileEventsOpen, setMobileEventsOpen] = useState(false);
-  const eventsRef = useRef(null);
   const href = useHashHref();
   const loc = useLocation();
 
@@ -28,14 +25,6 @@ export default function Navbar() {
     const onScroll = () => setScrolled(window.scrollY > 24);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    const close = (e) => {
-      if (eventsRef.current && !eventsRef.current.contains(e.target)) setEventsOpen(false);
-    };
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
   }, []);
 
   const linkCls =
@@ -60,43 +49,7 @@ export default function Navbar() {
           <a href={href("#about")} className={linkCls} data-testid="nav-story">Story</a>
           <Link to="/about-the-chef" className={linkCls} data-testid="nav-about-chef">About the Chef</Link>
 
-          {/* Events dropdown */}
-          <div className="relative" ref={eventsRef}>
-            <button
-              onClick={(e) => { e.stopPropagation(); setEventsOpen((v) => !v); }}
-              className={`${linkCls} inline-flex items-center gap-1`}
-              data-testid="nav-events-toggle"
-            >
-              Events <ChevronDown size={12} className={`transition-transform ${eventsOpen ? "rotate-180" : ""}`} />
-            </button>
-            <AnimatePresence>
-              {eventsOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.25 }}
-                  className="absolute top-full right-0 mt-3 w-64 bg-[#140A09] border border-[#2D1D1A] py-2"
-                >
-                  <a href={href("#events")} onClick={() => setEventsOpen(false)}
-                    className="block px-5 py-3 text-[11px] tracking-[0.22em] uppercase text-[#B5A79E] hover:bg-[#0A0504] hover:text-[#F3EFE7]"
-                    data-testid="nav-events-all">
-                    All upcoming
-                  </a>
-                  <Link to="/supper-club/barsaat" onClick={() => setEventsOpen(false)}
-                    className="block px-5 py-3 text-[11px] tracking-[0.22em] uppercase text-[#B5A79E] hover:bg-[#0A0504] hover:text-[#F3EFE7]"
-                    data-testid="nav-events-barsaat">
-                    Barsaat · Upcoming
-                  </Link>
-                  <Link to="/supper-club/naani-ghar" onClick={() => setEventsOpen(false)}
-                    className="block px-5 py-3 text-[11px] tracking-[0.22em] uppercase text-[#B5A79E] hover:bg-[#0A0504] hover:text-[#F3EFE7]"
-                    data-testid="nav-events-naani-ghar">
-                    Naani Ghar · Past
-                  </Link>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <a href={href("#events")} className={linkCls} data-testid="nav-events">Events</a>
 
           <Link to="/menus" className={linkCls} data-testid="nav-menu">Menu</Link>
           <Link to={onLandingPath("gallery", loc)} className={linkCls} data-testid="nav-gallery">Gallery</Link>
@@ -126,20 +79,7 @@ export default function Navbar() {
               <a href={href("#about")} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Story</a>
               <Link to="/about-the-chef" onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">About the Chef</Link>
 
-              <button
-                onClick={() => setMobileEventsOpen((v) => !v)}
-                className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A] flex items-center justify-between"
-                data-testid="mobile-nav-events-toggle"
-              >
-                Events <ChevronDown size={14} className={`transition-transform ${mobileEventsOpen ? "rotate-180" : ""}`} />
-              </button>
-              {mobileEventsOpen && (
-                <div className="border-b border-[#2D1D1A] pb-2 pl-4">
-                  <a href={href("#events")} onClick={() => setOpen(false)} className="block py-2 text-xs tracking-[0.18em] uppercase text-[#B5A79E]" data-testid="mobile-nav-events-all">All upcoming</a>
-                  <Link to="/supper-club/barsaat" onClick={() => setOpen(false)} className="block py-2 text-xs tracking-[0.18em] uppercase text-[#B5A79E]" data-testid="mobile-nav-events-barsaat">Barsaat · Upcoming</Link>
-                  <Link to="/supper-club/naani-ghar" onClick={() => setOpen(false)} className="block py-2 text-xs tracking-[0.18em] uppercase text-[#B5A79E]" data-testid="mobile-nav-events-naani-ghar">Naani Ghar · Past</Link>
-                </div>
-              )}
+              <a href={href("#events")} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-events">Events</a>
 
               <Link to="/menus" onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Menu</Link>
               <Link to={onLandingPath("gallery", loc)} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Gallery</Link>
