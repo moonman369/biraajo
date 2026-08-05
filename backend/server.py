@@ -524,10 +524,6 @@ _BARSAAT_AUG_EVENTS = [
      "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _BARSAAT_DESC_LUNCH,
      "price": 2500.0, "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Barsaat",
      "seats_booked": 0, "is_published": True},
-    {"id": "barsaat-2026-08-07-dinner", "title": "Barsaat — Dinner (Aug 7)", "date": "2026-08-07",
-     "time": "19:00 — 22:00", "venue": "Biraajo House, South Calcutta", "description": _BARSAAT_DESC_DINNER,
-     "price": 2500.0, "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Barsaat",
-     "seats_booked": 0, "is_published": True},
     {"id": "barsaat-2026-08-09-dinner", "title": "Barsaat — Dinner (Aug 9)", "date": "2026-08-09",
      "time": "19:00 — 22:00", "venue": "Biraajo House, South Calcutta", "description": _BARSAAT_DESC_DINNER,
      "price": 2500.0, "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Barsaat",
@@ -536,24 +532,7 @@ _BARSAAT_AUG_EVENTS = [
 
 _YAADEIN_DESC = ("Explores the relationship between food and politics and how their interactions "
                  "have impacted culture.")
-_YAADEIN_EVENTS = [
-    {"id": "yaadein-2026-08-15-dinner", "title": "Yaadein — Dinner (Aug 15)", "date": "2026-08-15",
-     "time": "19:00 — 22:00", "venue": "Kolkata", "description": _YAADEIN_DESC, "price": 2500.0,
-     "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Yaadein", "coming_soon": True,
-     "seats_booked": 0, "is_published": True},
-    {"id": "yaadein-2026-08-21-dinner", "title": "Yaadein — Dinner (Aug 21)", "date": "2026-08-21",
-     "time": "19:00 — 22:00", "venue": "Kolkata", "description": _YAADEIN_DESC, "price": 2500.0,
-     "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Yaadein", "coming_soon": True,
-     "seats_booked": 0, "is_published": True},
-    {"id": "yaadein-2026-08-23-lunch", "title": "Yaadein — Lunch (Aug 23)", "date": "2026-08-23",
-     "time": "13:00 — 15:30", "venue": "Kolkata", "description": _YAADEIN_DESC, "price": 2500.0,
-     "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Yaadein", "coming_soon": True,
-     "seats_booked": 0, "is_published": True},
-    {"id": "yaadein-2026-08-29-dinner", "title": "Yaadein — Dinner (Aug 29)", "date": "2026-08-29",
-     "time": "19:00 — 22:00", "venue": "Kolkata", "description": _YAADEIN_DESC, "price": 2500.0,
-     "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Yaadein", "coming_soon": True,
-     "seats_booked": 0, "is_published": True},
-]
+_YAADEIN_EVENTS = []
 
 
 async def _run_migrations() -> None:
@@ -626,6 +605,30 @@ async def _run_migrations() -> None:
                 await db.events.insert_one({**ev, "created_at": now})
         await db.migrations.update_one({"id": "yaadein_events_v1"}, {"$set": {"id": "yaadein_events_v1", "applied_at": now}}, upsert=True)
         logger.info("Migration applied: yaadein_events_v1")
+
+    # One-time: retire the Yaadein series + the Aug 7 Barsaat date. The two Aug 7
+    # bookings move to Aug 9, so its guest bookings are reassigned then seats recomputed.
+    if not await db.migrations.find_one({"id": "retire_yaadein_aug7_v1"}):
+        aug7, aug9 = "barsaat-2026-08-07-dinner", "barsaat-2026-08-09-dinner"
+        await db.registrations.update_many({"event_id": aug7}, {"$set": {"event_id": aug9}})
+        await db.offsite_bookings.update_many({"event_id": aug7}, {"$set": {"event_id": aug9}})
+        await db.events.delete_one({"id": aug7})
+        # Remove the Yaadein series entirely (events + any stray registrations).
+        await db.events.delete_many({"id": {"$regex": "^yaadein-"}})
+        await db.registrations.delete_many({"event_id": {"$regex": "^yaadein-"}})
+        # Recompute Aug 9 seats_booked from active registrations + off-site bookings.
+        reg_agg = await db.registrations.aggregate([
+            {"$match": {"event_id": aug9, "archived": {"$ne": True}, "payment_status": {"$in": ["pending", "confirmed"]}}},
+            {"$group": {"_id": None, "g": {"$sum": "$guests"}}},
+        ]).to_list(1)
+        off_agg = await db.offsite_bookings.aggregate([
+            {"$match": {"event_id": aug9}},
+            {"$group": {"_id": None, "g": {"$sum": "$guests"}}},
+        ]).to_list(1)
+        booked = (reg_agg[0]["g"] if reg_agg else 0) + (off_agg[0]["g"] if off_agg else 0)
+        await db.events.update_one({"id": aug9}, {"$set": {"seats_booked": booked}})
+        await db.migrations.update_one({"id": "retire_yaadein_aug7_v1"}, {"$set": {"id": "retire_yaadein_aug7_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: retire_yaadein_aug7_v1 (Aug 9 seats_booked=%s)", booked)
 
 
 # ---------- Startup ----------

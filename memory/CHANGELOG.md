@@ -62,3 +62,8 @@
 - Admin Events form (AdminDashboard.jsx EventForm): added "Thumbnail image" section with live preview + "Upload from device" (reuses POST /api/admin/media). Lets admin change any event thumbnail (incl. each Barsaat card) without pasting a URL. Still supports Image URL paste. Changes go live on event Save.
 - Final health check + cleanup (was pending from earlier): all services RUNNING; endpoints /events,/settings,/gallery = 200; media image GET 200; media video Range = 206 (iOS Safari OK). Purged 4 leftover TEST registrations (@example.com) from preview DB + recomputed seats_booked for all events; cleaned __pycache__. /tmp/biraajo_media_cache (30M) left intact (functional runtime cache).
 - DEPLOY BLOCKER FIXED: PUBLIC_SITE_URL no longer hardcodes the preview URL. Added PUBLIC_SITE_URL to backend/.env (production domain) and updated the code fallback. deployment_agent re-scan = PASS (no blockers).
+
+## 2026-08-05 — Retired Yaadein series + Aug 7 Barsaat; moved its 2 bookings to Aug 9
+- Removed all 4 Yaadein events and the Barsaat Aug 7 event. Source defs updated (_YAADEIN_EVENTS=[], Aug 7 dropped from _BARSAAT_AUG_EVENTS) so fresh DBs never recreate them.
+- New idempotent migration `retire_yaadein_aug7_v1`: reassigns Aug 7 registrations + offsite bookings to Aug 9 (barsaat-2026-08-09-dinner), deletes the Aug 7 event, deletes all yaadein-* events + their registrations, then recomputes Aug 9 seats_booked = active regs guests + offsite guests. Applies on preview now and on production at redeploy (production has the 2 real Aug 7 bookings → will show as 2 on Aug 9).
+- Remaining Barsaat Aug dates: Aug 2 (concluded, server date is Aug 5) + Aug 9 (upcoming). Yaadein UI on landing page + dashboard auto-hides (no coming_soon events).
