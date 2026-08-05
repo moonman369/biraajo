@@ -44,7 +44,7 @@ export default function Barsaat() {
     api.get("/events", { params: { upcoming: "true" } })
       .then((r) => {
         const list = (r.data || []).filter((e) => /barsaat|monsoon/i.test(`${e.title} ${e.tag || ""}`));
-        list.sort((a, b) => (a.date < b.date ? -1 : 1));
+        list.sort((a, b) => (a.date > b.date ? -1 : 1));
         setEvents(list);
         const firstAvailable = list.find((e) => (e.seats_total - (e.seats_booked || 0)) > 0);
         setSelectedId((firstAvailable || list[0])?.id || "");

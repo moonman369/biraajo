@@ -683,7 +683,7 @@ async def auth_me(user=Depends(get_current_admin)):
 @api.get("/events")
 async def list_events(upcoming: bool = False):
     q = {}
-    docs = await db.events.find(q, {"_id": 0}).sort("date", 1).to_list(500)
+    docs = await db.events.find(q, {"_id": 0}).sort("date", -1).to_list(500)
     if upcoming:
         today = datetime.now(timezone.utc).date().isoformat()
         docs = [d for d in docs if d.get("date", "") >= today]
