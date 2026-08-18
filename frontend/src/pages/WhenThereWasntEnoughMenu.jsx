@@ -56,7 +56,7 @@ export default function WhenThereWasntEnoughMenu() {
           </Link>
           <p className="text-overline">{menuEyebrow}</p>
           <h1 className="font-display uppercase text-5xl sm:text-6xl mt-6 leading-[1.05] tracking-wide">
-            {hasMenu && menuTitle ? menuTitle : "Abhav Ke Bhav"}
+            {hasMenu && menuTitle ? menuTitle : "Abhāv Ke Bhāv"}
           </h1>
           <p className="text-sm sm:text-base tracking-[0.35em] uppercase text-[#D9772B] font-body mt-4">
             {hasMenu && menuTitleItalic ? menuTitleItalic : "When there wasn't enough"}
@@ -113,7 +113,7 @@ export default function WhenThereWasntEnoughMenu() {
                   data-testid="wtwe-menu-book-btn"
                   className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {registrationsOpen ? "Join the table" : "Reservations paused"}
+                  {registrationsOpen ? "Book a seat" : "Reservations paused"}
                 </button>
                 <Link
                   to="/supper-club/when-there-wasnt-enough"
@@ -145,7 +145,7 @@ export default function WhenThereWasntEnoughMenu() {
                   data-testid="wtwe-menu-book-btn"
                   className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {registrationsOpen ? "Join the table" : "Reservations paused"}
+                  {registrationsOpen ? "Book a seat" : "Reservations paused"}
                 </button>
               </div>
             </motion.div>

@@ -104,7 +104,7 @@ export default function Menus() {
               <div className="relative aspect-[4/5] overflow-hidden img-zoom">
                 <img
                   src="https://customer-assets-gfyr7b9c.emergentagent.net/job_5694519e-f9bb-446a-a36e-fdf292c1f3e4/artifacts/eofl6aqm_when.jpg"
-                  alt="Abhav Ke Bhav — When there wasn't enough"
+                  alt="Abhāv Ke Bhāv — When there wasn't enough"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504] via-[#0A0504]/30 to-transparent" />

@@ -130,7 +130,7 @@ export default function Suppers() {
             data-testid="supper-card-wtwe"
           >
             <div className="md:col-span-5 relative aspect-[4/3] md:aspect-auto img-zoom">
-              <img src="https://customer-assets-gfyr7b9c.emergentagent.net/job_5694519e-f9bb-446a-a36e-fdf292c1f3e4/artifacts/eofl6aqm_when.jpg" alt="Abhav Ke Bhav — When there wasn't enough" className="w-full h-full object-cover" />
+              <img src="https://customer-assets-gfyr7b9c.emergentagent.net/job_5694519e-f9bb-446a-a36e-fdf292c1f3e4/artifacts/eofl6aqm_when.jpg" alt="Abhāv Ke Bhāv — When there wasn't enough" className="w-full h-full object-cover" />
               <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">Now booking</span>
             </div>
             <div className="md:col-span-7 p-8 sm:p-12 flex flex-col justify-between gap-8">
@@ -148,7 +148,7 @@ export default function Suppers() {
                 </Link>
                 <Link to="/supper-club/when-there-wasnt-enough" data-testid="supper-wtwe-join-table"
                   className="inline-flex items-center justify-center px-6 py-3 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
-                  Join the table
+                  Book a seat
                 </Link>
               </div>
             </div>

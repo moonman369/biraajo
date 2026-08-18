@@ -318,6 +318,7 @@ class EventIn(BaseModel):
     image_url: str = ""
     tag: Optional[str] = "Supper Club"
     coming_soon: bool = False
+    registrations_closed: bool = False
 
 
 class Event(EventIn):
@@ -388,6 +389,7 @@ class GalleryImageIn(BaseModel):
     url: str
     caption: Optional[str] = ""
     order: int = 0
+    event_tag: Optional[str] = None
 
 
 class GalleryImage(GalleryImageIn):
@@ -542,7 +544,7 @@ _WTWE_DESC = ("A menu built from necessity — dishes born of scarce seasons, a 
     "and the quiet art of upcycling leftovers. Each course opens a conversation about eating habits and "
     "food history. Eight seats only. Same price for veg and non-veg.")
 _WTWE_IMG = "https://customer-assets-gfyr7b9c.emergentagent.net/job_5694519e-f9bb-446a-a36e-fdf292c1f3e4/artifacts/eofl6aqm_when.jpg"
-_WTWE_NAME = "Abhav Ke Bhav"
+_WTWE_NAME = "Abhāv Ke Bhāv"
 _WTWE_EVENTS = [
     {"id": "wtwe-2026-08-23-lunch", "title": f"{_WTWE_NAME} — Lunch (Aug 23)", "date": "2026-08-23",
      "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
@@ -787,6 +789,31 @@ async def _run_migrations() -> None:
         await db.migrations.update_one({"id": "wtwe_concept_story_v1"}, {"$set": {"id": "wtwe_concept_story_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: wtwe_concept_story_v1")
 
+    # One-time: correct pronunciation spelling (Abhāv Ke Bhāv with macrons), CTA wording
+    # ("Book a seat" / "See the menu" / "Check out events"), and event titles/tags to match.
+    if not await db.migrations.find_one({"id": "wtwe_pronunciation_ctas_v1"}):
+        default_wtwe = get_default_content().get("wtwe", {})
+        default_landing = get_default_content().get("landing", {})
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc:
+                continue
+            data = doc["data"]
+            if "wtwe" in data:
+                wtwe = data["wtwe"]
+                wtwe.setdefault("hero", {})["title"] = default_wtwe.get("hero", {}).get("title", "")
+                wtwe.setdefault("menu", {})["title"] = default_wtwe.get("menu", {}).get("title", "")
+                wtwe.setdefault("closer", {})["cta_label"] = default_wtwe.get("closer", {}).get("cta_label", "Book a seat")
+                if "story" in wtwe and wtwe["story"].get("paragraphs"):
+                    wtwe["story"]["paragraphs"] = default_wtwe.get("story", {}).get("paragraphs", wtwe["story"]["paragraphs"])
+            if "landing" in data:
+                data["landing"].setdefault("hero", {})["secondary_cta_label"] = default_landing.get("hero", {}).get("secondary_cta_label", "Check out events")
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        for ev in _WTWE_EVENTS:
+            await db.events.update_one({"id": ev["id"]}, {"$set": {"title": ev["title"], "tag": ev["tag"]}})
+        await db.migrations.update_one({"id": "wtwe_pronunciation_ctas_v1"}, {"$set": {"id": "wtwe_pronunciation_ctas_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: wtwe_pronunciation_ctas_v1")
+
     # One-time: restore/enrich the Naani Ghar & Barsaat concept pages with their story,
     # heritage and soundscape copy (menus/photos untouched — not invented, already correct).
     if not await db.migrations.find_one({"id": "concept_pages_restore_v1"}):
@@ -823,6 +850,27 @@ async def _run_migrations() -> None:
             await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
         await db.migrations.update_one({"id": "barsaat_menu_correction_v1"}, {"$set": {"id": "barsaat_menu_correction_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: barsaat_menu_correction_v1")
+
+    # One-time: force-correct wtwe.closer.cta_label back to "Book a seat" — a prior
+    # migration/edit left it as "Reserve now" in the stored site_content.
+    if not await db.migrations.find_one({"id": "wtwe_closer_cta_fix_v1"}):
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc or "wtwe" not in doc.get("data", {}):
+                continue
+            data = doc["data"]
+            data["wtwe"].setdefault("closer", {})["cta_label"] = "Book a seat"
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        await db.migrations.update_one({"id": "wtwe_closer_cta_fix_v1"}, {"$set": {"id": "wtwe_closer_cta_fix_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: wtwe_closer_cta_fix_v1")
+
+    # One-time: Barsaat has concluded — explicitly close bookings on all its events
+    # (not just date-hidden), so a stale/direct link can no longer be booked.
+    if not await db.migrations.find_one({"id": "barsaat_close_bookings_v1"}):
+        res = await db.events.update_many({"tag": "Barsaat"}, {"$set": {"registrations_closed": True}})
+        logger.info(f"Barsaat events closed for booking: {res.modified_count}")
+        await db.migrations.update_one({"id": "barsaat_close_bookings_v1"}, {"$set": {"id": "barsaat_close_bookings_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: barsaat_close_bookings_v1")
 
 
 # ---------- Startup ----------
@@ -997,6 +1045,8 @@ async def register_event(event_id: str, body: RegistrationIn):
         raise HTTPException(status_code=404, detail="Event not found")
     if event.get("coming_soon"):
         raise HTTPException(status_code=403, detail="Bookings for this series aren't open yet.")
+    if event.get("registrations_closed"):
+        raise HTTPException(status_code=403, detail="This event has concluded and is no longer accepting bookings.")
 
     payload = body.model_dump()
     payload["event_id"] = event_id
@@ -1500,8 +1550,9 @@ async def upload_media(file: UploadFile = File(...), user=Depends(get_current_ad
 
 
 @api.get("/gallery")
-async def list_gallery():
-    docs = await db.gallery.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+async def list_gallery(event_tag: Optional[str] = None):
+    query = {"event_tag": event_tag} if event_tag else {}
+    docs = await db.gallery.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
     return docs
 
 
@@ -1510,6 +1561,21 @@ async def create_gallery(body: GalleryImageIn, user=Depends(get_current_admin)):
     img = GalleryImage(**body.model_dump())
     await db.gallery.insert_one(img.model_dump())
     return img.model_dump()
+
+
+class GalleryImagePatch(BaseModel):
+    event_tag: Optional[str] = None
+    caption: Optional[str] = None
+
+
+@api.patch("/gallery/{image_id}")
+async def update_gallery(image_id: str, body: GalleryImagePatch, user=Depends(get_current_admin)):
+    updates = body.model_dump(exclude_unset=True)
+    if not updates:
+        return {"ok": True}
+    await db.gallery.update_one({"id": image_id}, {"$set": updates})
+    doc = await db.gallery.find_one({"id": image_id}, {"_id": 0})
+    return doc
 
 
 @api.delete("/gallery/{image_id}")

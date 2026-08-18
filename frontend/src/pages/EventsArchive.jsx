@@ -3,39 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-
-const CHAPTERS = [
-  {
-    number: "03",
-    name: "Abhav Ke Bhav",
-    tagline: "When there wasn't enough",
-    status: "Now booking",
-    active: true,
-    description: "The current chapter — eight courses built entirely from necessity, scarcity and upcycled memory.",
-    image: "https://customer-assets-gfyr7b9c.emergentagent.net/job_5694519e-f9bb-446a-a36e-fdf292c1f3e4/artifacts/eofl6aqm_when.jpg",
-    href: "/supper-club/when-there-wasnt-enough",
-  },
-  {
-    number: "02",
-    name: "Barsaat",
-    tagline: "A supper with the rain",
-    status: "Series concluded",
-    active: false,
-    description: "A monsoon-season menu built from Gujarat and Rajasthan's micro-regional traditions, woven through with Bengali influence — and a live three-hour soundscape composed by Rajneesh.",
-    image: "/api/media/biraajo/media/31cf3839eeb74061.jpg",
-    href: "/supper-club/barsaat",
-  },
-  {
-    number: "01",
-    name: "Naani Ghar",
-    tagline: "Grandmother's house",
-    status: "Series concluded",
-    active: false,
-    description: "Biraajo's first chapter — childhood memory and Nani's own recipes, rebuilt through a contemporary European format.",
-    image: "/api/media/biraajo/media/6a6d9d936ab71fa4.jpg",
-    href: "/supper-club/naani-ghar",
-  },
-];
+import { CHAPTERS } from "@/lib/chapters";
 
 export default function EventsArchive() {
   return (

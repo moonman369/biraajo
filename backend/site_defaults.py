@@ -12,7 +12,7 @@ DEFAULT_CONTENT = {
             "body": "Twelve seats. Once a month. Cooked by hand, plated with care, and meant for people who like long evenings and longer conversations.",
             "primary_cta_label": "Reserve a seat",
             "primary_cta_href": "#events",
-            "secondary_cta_label": "See the menu",
+            "secondary_cta_label": "Check out events",
             "secondary_cta_href": "#menu",
             "image": "/api/media/biraajo/media/6a6d9d936ab71fa4.jpg",
         },
@@ -303,7 +303,7 @@ DEFAULT_CONTENT = {
         "visible": True,
         "hero": {
             "eyebrow": "An immersive supper",
-            "title": "Abhav Ke Bhav",
+            "title": "Abhāv Ke Bhāv",
             "title_italic": "When there wasn't enough",
             "concept": "A supper built from scarcity — and the ingenuity it demanded.",
             "body": "Eight courses that each grew out of a moment of scarcity — a lean season, a traveller's limited stores, "
@@ -340,7 +340,7 @@ DEFAULT_CONTENT = {
             "title": "Not a lost recipe.",
             "title_italic": "A living question.",
             "paragraphs": [
-                "Abhav Ke Bhav isn't a collection of lost recipes, or a re-enactment of hardship. It's an attempt to "
+                "Abhāv Ke Bhāv isn't a collection of lost recipes, or a re-enactment of hardship. It's an attempt to "
                 "start a conversation about culinary knowledge itself — knowledge that rarely lived in books. It lived "
                 "in kitchens, in memory, in gestures passed from one generation to the next, shaped by family, "
                 "geography, community and circumstance. As those generations disappear, so do fragments of what they knew.",
@@ -382,12 +382,12 @@ DEFAULT_CONTENT = {
             "title": "Eight seats.",
             "title_italic": "Five evenings this season.",
             "body": "We hold a small house. We cook one menu, built from necessity. If that calls to you, the door is open.",
-            "cta_label": "Reserve now",
+            "cta_label": "Book a seat",
         },
         "menu": {
             "visible": True,
             "eyebrow": "The Menu",
-            "title": "Abhav Ke Bhav",
+            "title": "Abhāv Ke Bhāv",
             "title_italic": "When there wasn't enough",
             "intro": "Each course carries its own story of necessity — a scarce season, ingredients a traveller could "
                       "carry, a way of upcycling leftovers, or a private moment stolen from a busy day. Please indicate "

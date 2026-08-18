@@ -1,0 +1,36 @@
+{
+  "summary": "Verified homepage 3-chapter Events rebuild, hero secondary CTA, Events archive/WTWE macron spelling and CTAs, and Gallery admin event_tag UX (dropdown, filter, retag, persistence). Backend gallery event_tag POST/PATCH/DELETE and filter query param all work. One CMS content bug found: WTWE closer CTA renders 'Reserve now' from siteContent DB override instead of required 'Book a seat'.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "WhenThereWasntEnough closer section",
+        "issue": "data-testid=wtwe-closer-cta renders 'RESERVE NOW' instead of required 'Book a seat'. Root cause: /api/site-content wtwe.closer.cta_label is stored as 'Reserve now' in DB; the JSX fallback in WhenThereWasntEnough.jsx line 96 is already 'Book a seat' but the DB value overrides it. Fix: update site content (PATCH /api/site-content) or update the seeded default so wtwe.closer.cta_label = 'Book a seat'.",
+        "selector": "[data-testid='wtwe-closer-cta']",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Update site-content DB (or seed) so wtwe.closer.cta_label = 'Book a seat' (currently 'Reserve now') so the closer CTA on /supper-club/when-there-wasnt-enough matches the required label."
+  ],
+  "critical_code_review_comments": [
+    "AdminDashboard.jsx is very large (>1400 lines) — consider splitting each *Admin sub-component (GalleryAdmin, EventsAdmin, etc.) into its own file for maintainability.",
+    "Events.jsx seat info hardcodes 'wtwe-' prefix filter — acceptable now but couples homepage to a naming convention; consider surfacing an 'active_chapter' flag from backend.",
+    "chapters.js image URLs mix an absolute customer-assets emergentagent URL and relative /api/media paths — fine but inconsistent."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "95%"},
+  "test_credentials": "reachbiraajo@gmail.com / Biraajo@2026 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Uploaded one test gallery item (picsum testbarsaat) during test, retagged Barsaat->Naani Ghar to verify persistence, then deleted via API cleanup. No residual test data.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Homepage /events grid now renders exactly 3 chapter cards (03 Abhāv Ke Bhāv active/Book a seat, 02 Barsaat, 01 Naani Ghar) with 3 distinct images and active-chapter seat info ('40 seats left · 5 evenings'). Hero secondary CTA text = 'Check out events' -> /events (verified). /events archive shows 'Abhāv Ke Bhāv' with macrons and navigates to /supper-club/when-there-wasnt-enough. WTWE page: hero title macrons OK, wtwe-jump-dates and wtwe-reserve-main-cta = 'Book a seat', BUT wtwe-closer-cta shows 'Reserve now' from DB site-content override (needs main agent CMS/seed fix). Gallery admin verified end-to-end: tag select (4 options incl. macron chapter), filter bar with live counts, upload with event_tag persists (POST /api/gallery with event_tag), retag via gallery-retag-{id} select persists across reload (PATCH /api/gallery/{id} with event_tag). Backend /api/gallery?event_tag= query filter also works.",
+  "rca of the issue": "wtwe-closer-cta label mismatch RCA: /app/frontend/src/pages/WhenThereWasntEnough.jsx line 96 uses read(content, 'wtwe.closer.cta_label', 'Book a seat'). GET /api/site-content returns wtwe.closer.cta_label = 'Reserve now', so the CMS value wins. Mitigation: PATCH /api/site-content to set wtwe.closer.cta_label='Book a seat' (or update the seed in backend/server.py to match)."
+}

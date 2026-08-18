@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Calendar, Users, Mail, MessageSquare, LogOut, Plus, Trash2, Download, Edit2, Edit3, BarChart3, Eye, Smartphone, Monitor, Tablet, Archive } from "lucide-react";
 import { api, clearToken, formatApiError } from "@/lib/api";
+import { CHAPTERS } from "@/lib/chapters";
 
 const TABS = [
   { id: "overview", label: "Overview" },
@@ -1262,10 +1263,14 @@ function isVideoUrl(u) {
   return /\.(mp4|webm|mov|m4v|ogg)(\?|$)/i.test(u || "");
 }
 
+const CHAPTER_NAMES = CHAPTERS.map((c) => c.name);
+
 function GalleryAdmin() {
   const [items, setItems] = useState([]);
   const [url, setUrl] = useState("");
   const [caption, setCaption] = useState("");
+  const [eventTag, setEventTag] = useState("");
+  const [filterTag, setFilterTag] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
 
@@ -1273,7 +1278,7 @@ function GalleryAdmin() {
   useEffect(() => { load(); }, []);
 
   const addToGallery = async (finalUrl, cap) => {
-    await api.post("/gallery", { url: finalUrl, caption: cap || "", order: items.length });
+    await api.post("/gallery", { url: finalUrl, caption: cap || "", order: items.length, event_tag: eventTag || null });
     await load();
   };
 
@@ -1309,6 +1314,13 @@ function GalleryAdmin() {
 
   const del = async (id) => { await api.delete(`/gallery/${id}`); load(); };
 
+  const retag = async (id, tag) => {
+    await api.patch(`/gallery/${id}`, { event_tag: tag || null });
+    load();
+  };
+
+  const filtered = filterTag ? items.filter((i) => i.event_tag === filterTag) : items;
+
   return (
     <div>
       <h2 className="font-display text-4xl mb-2">Gallery</h2>
@@ -1327,21 +1339,56 @@ function GalleryAdmin() {
         <p className="text-[11px] text-[#6E625B] mt-2">Images &amp; videos up to 50MB · JPG, PNG, WebP, MP4, WebM</p>
       </div>
 
-      <form onSubmit={addByUrl} className="bg-[#140A09] border border-[#2D1D1A] p-6 grid grid-cols-1 sm:grid-cols-12 gap-3 mb-8">
+      <form onSubmit={addByUrl} className="bg-[#140A09] border border-[#2D1D1A] p-6 grid grid-cols-1 sm:grid-cols-12 gap-3 mb-4">
         <input
           required value={url} onChange={(e) => setUrl(e.target.value)} placeholder="…or paste an image / video URL"
           data-testid="gallery-url-input"
-          className="sm:col-span-6 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+          className="sm:col-span-5 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
         />
         <input
           value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Caption (optional)"
-          className="sm:col-span-4 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+          className="sm:col-span-3 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
         />
         <button type="submit" data-testid="gallery-add-button" className="sm:col-span-2 px-4 py-3 bg-[#5A1A1F] hover:bg-[#D9772B] hover:text-[#0A0504] text-[11px] tracking-[0.22em] uppercase">Add</button>
       </form>
 
+      <div className="bg-[#140A09] border border-[#2D1D1A] p-4 mb-8 flex items-center gap-3 flex-wrap" data-testid="gallery-tag-picker">
+        <span className="text-[11px] tracking-[0.18em] uppercase text-[#B5A79E]">Tag new uploads to:</span>
+        <select
+          value={eventTag}
+          onChange={(e) => setEventTag(e.target.value)}
+          data-testid="gallery-tag-select"
+          className="bg-[#0A0504] border border-[#2D1D1A] px-3 py-2 text-sm text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+        >
+          <option value="">No chapter</option>
+          {CHAPTER_NAMES.map((n) => (
+            <option key={n} value={n}>{n}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap mb-4" data-testid="gallery-filter-bar">
+        <button
+          onClick={() => setFilterTag("")}
+          data-testid="gallery-filter-all"
+          className={`px-3 py-1.5 text-[11px] tracking-[0.18em] uppercase border transition-colors ${filterTag === "" ? "border-[#D9772B] text-[#D9772B]" : "border-[#2D1D1A] text-[#B5A79E] hover:text-[#F3EFE7]"}`}
+        >
+          All ({items.length})
+        </button>
+        {CHAPTER_NAMES.map((n) => (
+          <button
+            key={n}
+            onClick={() => setFilterTag(n)}
+            data-testid={`gallery-filter-${n.replace(/\s+/g, "-")}`}
+            className={`px-3 py-1.5 text-[11px] tracking-[0.18em] uppercase border transition-colors ${filterTag === n ? "border-[#D9772B] text-[#D9772B]" : "border-[#2D1D1A] text-[#B5A79E] hover:text-[#F3EFE7]"}`}
+          >
+            {n} ({items.filter((i) => i.event_tag === n).length})
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3" data-testid="gallery-grid">
-        {items.map((i) => (
+        {filtered.map((i) => (
           <div key={i.id} className="relative group bg-[#140A09] border border-[#2D1D1A]" data-testid={`gallery-item-${i.id}`}>
             {isVideoUrl(i.url) ? (
               <video src={i.url} className="w-full aspect-square object-cover" muted playsInline preload="metadata" />
@@ -1351,14 +1398,31 @@ function GalleryAdmin() {
             {isVideoUrl(i.url) && (
               <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-[#0A0504]/80 text-[9px] tracking-[0.18em] uppercase text-[#D9772B]">Video</span>
             )}
+            {i.event_tag && (
+              <span className="absolute bottom-2 right-2 px-2 py-0.5 bg-[#0A0504]/80 text-[9px] tracking-[0.18em] uppercase text-[#F3EFE7] max-w-[80%] truncate">{i.event_tag}</span>
+            )}
             <button
               onClick={() => del(i.id)} aria-label="Delete" data-testid={`gallery-delete-${i.id}`}
               className="absolute top-2 right-2 p-2 bg-[#0A0504]/80 text-[#F3EFE7] opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <Trash2 size={14} />
             </button>
+            <select
+              value={i.event_tag || ""}
+              onChange={(e) => retag(i.id, e.target.value)}
+              data-testid={`gallery-retag-${i.id}`}
+              className="absolute top-2 left-2 max-w-[70%] bg-[#0A0504]/90 border border-[#2D1D1A] text-[9px] text-[#F3EFE7] px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity outline-none"
+            >
+              <option value="">No chapter</option>
+              {CHAPTER_NAMES.map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
           </div>
         ))}
+        {filtered.length === 0 && (
+          <p className="col-span-full text-[#6E625B] text-sm py-6" data-testid="gallery-empty-filtered">No media tagged to this chapter yet.</p>
+        )}
       </div>
     </div>
   );

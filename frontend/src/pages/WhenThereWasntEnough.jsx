@@ -58,7 +58,7 @@ export default function WhenThereWasntEnough() {
 
   const heroImg = read(content, "wtwe.hero.image", "");
   const heroEyebrow = read(content, "wtwe.hero.eyebrow", "An immersive supper");
-  const heroTitle = read(content, "wtwe.hero.title", "Abhav Ke Bhav");
+  const heroTitle = read(content, "wtwe.hero.title", "Abhāv Ke Bhāv");
   const heroTitleIt = read(content, "wtwe.hero.title_italic", "When there wasn't enough");
   const heroConcept = read(content, "wtwe.hero.concept",
     "A supper built from scarcity — and the ingenuity it demanded.");
@@ -93,7 +93,7 @@ export default function WhenThereWasntEnough() {
   const closerTitleIt = read(content, "wtwe.closer.title_italic", "Five evenings this season.");
   const closerBody = read(content, "wtwe.closer.body",
     "We hold a small house. We cook one menu, built from necessity. If that calls to you, the door is open.");
-  const closerCta = read(content, "wtwe.closer.cta_label", "Reserve now");
+  const closerCta = read(content, "wtwe.closer.cta_label", "Book a seat");
 
   const csEyebrow = read(content, "wtwe.concept_statement.eyebrow", "The concept");
   const csQuote = read(content, "wtwe.concept_statement.quote",
@@ -162,11 +162,11 @@ export default function WhenThereWasntEnough() {
           <div className="mt-9 flex flex-wrap gap-4 justify-center">
             <a href="#dates" data-testid="wtwe-jump-dates"
               className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
-              Join the table <ArrowRight size={14} className="ml-2" />
+              Book a seat <ArrowRight size={14} className="ml-2" />
             </a>
             <Link to="/menus/when-there-wasnt-enough" data-testid="wtwe-view-menu"
               className="inline-flex items-center justify-center px-8 py-4 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
-              View the menu
+              See the menu
             </Link>
           </div>
         </div>
@@ -264,7 +264,7 @@ export default function WhenThereWasntEnough() {
               data-testid="wtwe-reserve-main-cta"
               className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {settings.registrations_open ? "Reserve now" : "Reservations paused"} <ArrowRight size={14} className="ml-2" />
+              {settings.registrations_open ? "Book a seat" : "Reservations paused"} <ArrowRight size={14} className="ml-2" />
             </button>
           </div>
         </div>

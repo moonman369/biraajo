@@ -30,7 +30,7 @@ export default function Hero() {
       window.location.hash = "#newsletter";
       return;
     }
-    navigate("/supper-club/barsaat#dates");
+    navigate("/supper-club/when-there-wasnt-enough#dates");
   };
 
   const h = content?.landing?.hero;
@@ -98,8 +98,8 @@ export default function Hero() {
                 <button onClick={onReserveClick} data-testid="hero-reserve-seat-button" className="inline-flex items-center justify-center px-7 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
                   {primaryLabel}
                 </button>
-                <Link to="/menus" data-testid="hero-see-menu-button" className="inline-flex items-center justify-center px-7 py-4 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
-                  {read(content, "landing.hero.secondary_cta_label", "See the menu")}
+                <Link to="/events" data-testid="hero-see-menu-button" className="inline-flex items-center justify-center px-7 py-4 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
+                  {read(content, "landing.hero.secondary_cta_label", "Check out events")}
                 </Link>
               </div>
             </div>
