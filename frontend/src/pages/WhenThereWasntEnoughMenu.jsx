@@ -55,13 +55,12 @@ export default function WhenThereWasntEnoughMenu() {
             <ArrowLeft size={14} /> back to menus
           </Link>
           <p className="text-overline">{menuEyebrow}</p>
-          <h1 className="font-display text-5xl sm:text-6xl mt-6 leading-[1.02] tracking-tight">
-            {hasMenu && menuTitle ? (
-              <>{menuTitle}{menuTitleItalic && <> <span className="italic text-[#D9772B]">{menuTitleItalic}</span></>}</>
-            ) : (
-              <>अभाव के भाव <span className="italic text-[#D9772B]">When there wasn&apos;t enough.</span></>
-            )}
+          <h1 className="font-display uppercase text-5xl sm:text-6xl mt-6 leading-[1.05] tracking-wide">
+            {hasMenu && menuTitle ? menuTitle : "Abhav Ke Bhav"}
           </h1>
+          <p className="text-sm sm:text-base tracking-[0.35em] uppercase text-[#D9772B] font-body mt-4">
+            {hasMenu && menuTitleItalic ? menuTitleItalic : "When there wasn't enough"}
+          </p>
           <p className="mt-4 text-[#B5A79E] text-sm tracking-[0.16em] uppercase">Now booking · Five dates</p>
           {hasMenu && menuIntro && (
             <p className="mt-6 text-[#B5A79E] leading-relaxed max-w-2xl" data-testid="wtwe-menu-intro">{menuIntro}</p>

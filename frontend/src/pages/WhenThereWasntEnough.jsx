@@ -58,8 +58,8 @@ export default function WhenThereWasntEnough() {
 
   const heroImg = read(content, "wtwe.hero.image", "");
   const heroEyebrow = read(content, "wtwe.hero.eyebrow", "An immersive supper");
-  const heroTitle = read(content, "wtwe.hero.title", "अभाव के भाव");
-  const heroTitleIt = read(content, "wtwe.hero.title_italic", "When there wasn't enough.");
+  const heroTitle = read(content, "wtwe.hero.title", "Abhav Ke Bhav");
+  const heroTitleIt = read(content, "wtwe.hero.title_italic", "When there wasn't enough");
   const heroBody = read(content, "wtwe.hero.body",
     "Eight courses that each grew out of a moment of scarcity. Not just a meal, but a conversation about how — and why — we eat what we eat.");
 
@@ -106,11 +106,12 @@ export default function WhenThereWasntEnough() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-end">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="lg:col-span-7">
               <p className="text-overline">{heroEyebrow}</p>
-              <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 leading-[1.02] tracking-tight">
+              <h1 className="font-display uppercase text-5xl sm:text-6xl lg:text-7xl mt-6 leading-[1.05] tracking-wide">
                 {heroTitle}
-                <br />
-                <span className="italic text-[#D9772B]">{heroTitleIt}</span>
               </h1>
+              <p className="text-sm sm:text-base tracking-[0.35em] uppercase text-[#D9772B] font-body mt-5">
+                {heroTitleIt}
+              </p>
               <p className="mt-8 text-[#B5A79E] text-lg leading-relaxed max-w-xl">{heroBody}</p>
 
               <div className="mt-10 flex flex-wrap gap-4">
@@ -127,7 +128,7 @@ export default function WhenThereWasntEnough() {
 
             <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.2 }} className="lg:col-span-5">
               <div className="img-zoom relative aspect-[4/5] w-full overflow-hidden">
-                {heroImg && <img src={heroImg} alt="When There Wasn't Enough" className="w-full h-full object-cover" />}
+                {heroImg && <img src={heroImg} alt="Abhav Ke Bhav — When there wasn't enough" className="w-full h-full object-cover" />}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/55 to-transparent" />
               </div>
             </motion.div>

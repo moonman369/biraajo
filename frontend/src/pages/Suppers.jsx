@@ -130,15 +130,12 @@ export default function Suppers() {
             data-testid="supper-card-wtwe"
           >
             <div className="md:col-span-5 relative aspect-[4/3] md:aspect-auto img-zoom">
-              <img src="https://images.unsplash.com/photo-1567934124115-2eca8953796b?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200" alt="When There Wasn't Enough" className="w-full h-full object-cover" />
+              <img src="https://customer-assets-gfyr7b9c.emergentagent.net/job_5694519e-f9bb-446a-a36e-fdf292c1f3e4/artifacts/eofl6aqm_when.jpg" alt="Abhav Ke Bhav — When there wasn't enough" className="w-full h-full object-cover" />
               <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">Now booking</span>
             </div>
             <div className="md:col-span-7 p-8 sm:p-12 flex flex-col justify-between gap-8">
               <div>
                 <p className="text-overline">Next series</p>
-                <h2 className="font-display text-4xl mt-3 leading-tight">
-                  अभाव के भाव <span className="italic text-[#D9772B]">When there wasn&apos;t enough.</span>
-                </h2>
                 <p className="mt-4 text-[#B5A79E] leading-relaxed">
                   Eight courses built from necessity — scarce seasons, upcycled leftovers, a traveller's rations.
                   Same price for veg and non-veg. Eight seats only, five dates.

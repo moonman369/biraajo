@@ -541,8 +541,8 @@ _YAADEIN_EVENTS = []
 _WTWE_DESC = ("A menu built from necessity — dishes born of scarce seasons, a traveller's limited stores, "
     "and the quiet art of upcycling leftovers. Each course opens a conversation about eating habits and "
     "food history. Eight seats only. Same price for veg and non-veg.")
-_WTWE_IMG = "https://images.unsplash.com/photo-1567934124115-2eca8953796b?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200"
-_WTWE_NAME = "अभाव के भाव"
+_WTWE_IMG = "https://customer-assets-gfyr7b9c.emergentagent.net/job_5694519e-f9bb-446a-a36e-fdf292c1f3e4/artifacts/eofl6aqm_when.jpg"
+_WTWE_NAME = "Abhav Ke Bhav"
 _WTWE_EVENTS = [
     {"id": "wtwe-2026-08-23-lunch", "title": f"{_WTWE_NAME} — Lunch (Aug 23)", "date": "2026-08-23",
      "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
@@ -730,6 +730,30 @@ async def _run_migrations() -> None:
             await db.events.update_one({"id": ev["id"]}, {"$set": {"title": ev["title"], "tag": ev["tag"]}})
         await db.migrations.update_one({"id": "wtwe_rename_events_v1"}, {"$set": {"id": "wtwe_rename_events_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: wtwe_rename_events_v1")
+
+    # One-time: correct series name spelling (Abhav Ke Bhav, Roman script) + swap in the real cover photo.
+    if not await db.migrations.find_one({"id": "wtwe_brand_fix_v1"}):
+        for ev in _WTWE_EVENTS:
+            await db.events.update_one({"id": ev["id"]}, {"$set": {"title": ev["title"], "tag": ev["tag"], "image_url": ev["image_url"]}})
+        default_wtwe = get_default_content().get("wtwe", {})
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc or "wtwe" not in doc.get("data", {}):
+                continue
+            data = doc["data"]
+            wtwe = data["wtwe"]
+            wtwe.setdefault("hero", {}).update({
+                "title": default_wtwe.get("hero", {}).get("title", ""),
+                "title_italic": default_wtwe.get("hero", {}).get("title_italic", ""),
+                "image": default_wtwe.get("hero", {}).get("image", ""),
+            })
+            wtwe.setdefault("menu", {}).update({
+                "title": default_wtwe.get("menu", {}).get("title", ""),
+                "title_italic": default_wtwe.get("menu", {}).get("title_italic", ""),
+            })
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        await db.migrations.update_one({"id": "wtwe_brand_fix_v1"}, {"$set": {"id": "wtwe_brand_fix_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: wtwe_brand_fix_v1")
 
 
 # ---------- Startup ----------

@@ -268,12 +268,12 @@ DEFAULT_CONTENT = {
         "visible": True,
         "hero": {
             "eyebrow": "An immersive supper",
-            "title": "अभाव के भाव",
-            "title_italic": "When there wasn't enough.",
+            "title": "Abhav Ke Bhav",
+            "title_italic": "When there wasn't enough",
             "body": "Eight courses that each grew out of a moment of scarcity — a lean season, a traveller's limited stores, "
                      "a way of using up what was left, a private thought stolen from a busy day. Not just a meal, but a "
                      "conversation about how — and why — we eat what we eat.",
-            "image": "https://images.unsplash.com/photo-1567934124115-2eca8953796b?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200",
+            "image": "https://customer-assets-gfyr7b9c.emergentagent.net/job_5694519e-f9bb-446a-a36e-fdf292c1f3e4/artifacts/eofl6aqm_when.jpg",
         },
         "dates_block": {
             "eyebrow": "Reserve your seat",
@@ -314,8 +314,8 @@ DEFAULT_CONTENT = {
         "menu": {
             "visible": True,
             "eyebrow": "The Menu",
-            "title": "अभाव के भाव",
-            "title_italic": "When there wasn't enough.",
+            "title": "Abhav Ke Bhav",
+            "title_italic": "When there wasn't enough",
             "intro": "Each course carries its own story of necessity — a scarce season, ingredients a traveller could "
                       "carry, a way of upcycling leftovers, or a private moment stolen from a busy day. Please indicate "
                       "your preference at booking.",
