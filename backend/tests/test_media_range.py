@@ -3,7 +3,7 @@ import os
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://event-booking-test-1.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://premium-chef-demo.preview.emergentagent.com").rstrip("/")
 
 VIDEO_PATH = "/api/media/biraajo/media/61fb00fd9c77f388.mp4"
 IMAGE_PATH = "/api/media/biraajo/media/7b3c136adf5f5431.jpg"

@@ -1,51 +1,48 @@
-<analysis>**original_problem_statement**: Build a premium personal chef landing page for Biraajo by Vidip Shah. The site must have a dark, luxury hospitality aesthetic, be mobile-first, and visually immersive. PRODUCT REQUIREMENTS include dynamic events CRUD, an event booking workflow storing submissions in DB, confirmation emails, an internal Admin Dashboard to manage bookings/menus/demographics, off-site sales tracking, and a custom CMS to edit site content with snapshot versioning to prevent data loss.
+<analysis>**original_problem_statement**: Build a premium personal chef landing page for Biraajo by Vidip Shah. The site must have a dark, luxury hospitality aesthetic, be mobile-first, and visually immersive. PRODUCT REQUIREMENTS include dynamic events CRUD (with a strict capacity of 8), an event booking workflow storing submissions in DB, a manual confirmation email trigger via Admin dashboard, an internal Admin Dashboard to manage bookings/menus/gallery/traffic, off-site sales tracking, and a custom CMS to edit site content.
 
-**User's preferred language**: English (INSTRUCT next agent to respond in English)
+**User's preferred language**: English (INSTRUCT next agent to respond in English only)
 
-**what currently exists?**: A robust React frontend and FastAPI/MongoDB backend. Features include:
-- Complex Event Booking Workflow: Multi-step modal (guest details -> UPI QR code scan -> screenshot upload).
-- Menus & Suppers: Dynamic pages for Naani Ghar and Barsaat with immersive sensory content, embedded reels, and dynamic course menus.
-- Admin Dashboard: Tracks registrations, off-site bookings, newsletter, contacts, and handles event/menu/gallery CRUD.
-- Edit Website CMS: A side-panel editor with live iframe preview. Includes a Version History snapshot feature to restore past versions, and an auth-recovery modal that catches expired sessions to prevent unsaved data loss.
-- Resend Email Integration: Currently sends to admin (awaiting domain verification for guest delivery).
+**what currently exists?** 
+A robust React frontend and FastAPI/MongoDB backend. Features include:
+- Complex Event Booking Workflow: Strict capacity enforcement (8), including integration of off-site sales. 
+- Admin Dashboard: Tracks registrations, off-site bookings, newsletter, traffic. Includes a live Menu Pricing editor, image/video gallery uploads, a thumbnail updater for events, and a Move Booking utility to reschedule guests.
+- Migrations Pipeline: Content and structural DB changes automatically sync to the separate production database upon redeployment.
+- Media Proxy: Self-hosted endpoint supporting HTTP 206 Partial Content for iOS Safari video playback.
 
 **Last working item**: 
-    - Last item agent was working: Fixing the  functionality for Gallery and Reach out navbar links so they properly navigate to the landing page and scroll to the correct section. Also deleted a corrupt file reference () from the gallery database.
-    - Status: TESTING PENDING
-    - Agent Testing Done: N (Agent implemented the final  logic for  but did not run the testing agent afterward).
-    - Which testing method agent to use? Frontend testing agent
+    - Last item agent was working: Ensuring that all lists across the application (events, bookings, pictures) sort globally from newest/latest on top to oldest at the bottom. The backend event query was modified to sort descending by date.
+    - Status: USER VERIFICATION PENDING
+    - Agent Testing Done: Y
+    - Which testing method agent to use? manual testing by curl/ bash 
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:  
-  Issue 1: Verify  routing for Navbar
-     - Attempted fixes: Agent added  to  component in  to ensure the DOM paints before attempting to scroll to  or  after a route change.
-     - Next debug checklist: Check  and Navbar  tags. Run frontend testing agent to ensure clicking Gallery or Reach out from  properly routes to  and scrolls down.
-     - Why fix this issue and what will be achieved with the fix? Core UX requirement for navigation.
-     - Status: TESTING PENDING
-     - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Frontend
-     - Blocked on other issue: None
+None active. 
 
-**In progress Task List**: None
+**In progress Task List**: 
+None active.
 
 **Upcoming and Future Tasks**
     Upcoming Tasks:
-    - P1: Domain Verification for Resend (Wait for user to complete DNS verification so confirmation emails can be delivered to real guests instead of just the admin email).
-
+    - P0: Redeploy App (Prompt the user to trigger a redeploy to push the new migrations—removing Yaadein/Aug 7, adding Karan Soni, moving bookings—and the latest code to their live production environment).
+    - P1: Domain Verification for Resend (Wait for user to complete DNS verification. Currently, the confirmation email button only works to send to the admin's own email because Resend restricts unverified domains. Do not alter Resend logic unless the user verifies their domain).
+    
     Future Tasks:
+    - P2: Add group discount auto-calculation in the booking flow (e.g., % off when a guest selects 4+ seats). 
     - P2: Optional Admin notification system (WhatsApp via Twilio or Telegram Bot) on new form submissions.
+    - P3: Add a blurred placeholder (LQIP) or auto-generated video poster thumbnails for the gallery.
 
 **Completed work in this session**
-- Removed AI-generated menu and built dedicated , , and  pages (DONE)
-- Replaced UPI ID text with UPI QR Code image in payment step (DONE)
-- Built interactive Admin Menu Editor for courses (DONE)
-- Built Off-site sales tracking in Admin Dashboard to log aggregator bookings (DONE)
-- Handled critical data-loss bug: Created  snapshot system for CMS, protected  endpoint, and added Version History UI (DONE)
-- Fixed silent CMS autosave failures (401 Unauthorized) by adding an auth-recovery modal and local storage backup (DONE)
-- Barsaat page heavily upgraded with sensory texts, chef notes, 3-column video reels, and early-bird pricing logic (DONE)
-- Fixed broken Unsplash/CDN images returning 403 Forbidden (DONE)
-- Removed confusing Experiences section from Landing and Navbar (DONE)
-- Cancelled Google Sheets webhook integration as per user request (DONE)
+- Consolidated Yaadein frontend UI into a single box with a new image and removed Work in progress buttons (DONE)
+- Added direct Upload from device thumbnail updater to the Event edit form in the Admin Dashboard (DONE)
+- Ran full system health check, removed stale caches (), and purged leftover TEST registrations (DONE)
+- Fixed  hardcoded values in backend  to support proper deployment (DONE)
+- Grouped Yaadein events in the Admin Dashboard list into a single collapsible block (DONE)
+- Built backend migration to completely remove Yaadein dates and the Aug 7 Barsaat event, automatically transferring existing Aug 7 bookings to Aug 9 (DONE)
+- Added new manual off-site booking for Karan Soni (2 veg seats) to Aug 9 via migration (DONE)
+- Updated Navbar Events dropdown to act as a direct anchor scroll link (DONE)
+- Built a comprehensive Move booking feature (backend API + Admin UI) to easily reschedule both registered and off-site guests (DONE)
+- Flipped global event sorting in the backend to ensure events display newest-first across all frontend and admin views (DONE)
 
 **Earlier issues found/mentioned but not fixed**
    Issue 1: 
@@ -57,91 +54,81 @@
 **Known issue recurrence from previous fork**
   - Issue recurrence in previous fork: Google Sheets Webhook 405 error.
   - Recurrence count: 5+
-  - Status: BLOCKED / CANCELLED BY USER
+  - Status: CANCELLED BY USER
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-Frontend: React, Tailwind CSS, Framer Motion, Shadcn UI, CMS Context API, ScrollToHash routing
-Backend: FastAPI, Motor (AsyncIOMotorClient)
+Frontend: React, Tailwind CSS, Framer Motion, Shadcn UI
+Backend: FastAPI, AsyncIOMotorClient (Motor)
 Database: MongoDB
-Auth: Custom JWT (Cookies/Local storage implementation)
+Media: Object Storage proxied through local FastApi endpoint for HTTP 206 Range headers. 
 
 **key DB schema**
-  - events: {title, date, time, venue, description, price_veg, price_nonveg, seats_total, seats_booked, image_url}
-  - registrations: {event_id, full_name, email, guests, menu_preference, payment_status, total_amount, ...}
-  - offsite_bookings: {event_id, full_name, guests, menu_preference, source}
-  - site_content: {section, type (draft/published), data}
-  - site_content_history: {id, reason, actor, created_at, data}
-  - gallery: {id, url, caption, order}
+  - events: 
+  - registrations: 
+  - offsite_bookings: 
+  - site_content: 
+  - gallery: 
+  - settings: 
 
 **changes in tech stack**
-  - None
+  - None newly introduced.
 
 **All files of reference** 
-  -  &  (For ScrollToHash logic)
-  -  (Contains CMS safety-net logic and auth-recovery modal)
-  -  (Contains snapshot logic and updated pricing logic)
-  -  (Contains admin credentials)
+  -  (Heavily updated with new migrations,  API endpoints for bookings, and ascending date sorts flipped to descending)
+  -  (Updated to enforce proper  variable)
+  -  (Updated with Image upload UI, Yaadein grouping, and the Move Booking modal)
+  -  (Redesigned Yaadein display)
+  -  (Converted Events dropdown to direct anchor link)
 
 **Areas that need refactoring**: 
-  -  is quite large (>1100 lines) with endpoints, settings, and CMS snapshot logic.
+  -  is very large (>1700 lines) and could ideally be split into modular routers.
 
 **key api endpoints**
-  - 
-  -  (Creates off-site booking and increments )
-  - 
-  -  (Creates a snapshot in )
-  - 
+  -  (Accepts multipart/form-data for event thumbnails and gallery)
+  -  (Moves a user registration to a new event date)
+  -  (Moves an offsite booking to a new event date)
+  -  (Now returns dates strictly newest-first)
 
 **Critical Info for New Agent** 
-- **Google Sheets is Cancelled:** The user explicitly said: *Do i really need the google sheets integration? I feel you should cancel that*. The webhook env var was cleared. Do not try to fix this.
-- **CMS Data Loss Prevention:** The testing agent previously wiped the DB by calling . To prevent this, the reset endpoint now requires a  payload, and a full snapshot versioning system is active. DO NOT attempt to bypass these protections.
-- **ScrollToHash Routing:** The latest changes involved wrapping  in  to allow Navbar links (Gallery, Reach out) to navigate to  and scroll down properly. Verify this works using the frontend testing agent immediately.
+- **Preview vs Production Environments:** The user deploys to a live production site that uses a *separate* database from the preview environment. Data changes (like deleting events or adding Karan Soni) are actively managed using the  startup function in  so they automatically apply to the production database when the user redeploys.
+- **Sorting Consistency:** The user specifically requested that *everything* (events, gallery, bookings) must sort newest to oldest. This is implemented server-side.
+- **Email Delivery Restriction:** Resend is restricted to sandbox limits. It can currently *only* send emails to the admin address. Do not attempt to bypass this; the user must verify their domain in the Resend console first.
 
 **documents and test reports created in this job** 
-  - 
-  - 
-  -  through 
+  -  updated
 
 **Last 10 User Messages and any pending HUMAN messages** 
- - (Msg 526) User reported none of the images were visible (Agent found  in gallery and fixed it).
- - (Msg 485) User reported Gallery and Reach out buttons were not functioning (Agent implemented ScrollToHash).
- - (Msg 459) User requested removing Experiences section, fixing uneditable Barsaat text, removing broken images, and ensuring payment model works.
- - (Msg 423) User uploaded 5 videos, asked to add them to Barsaat and Gallery, and requested moving dates to the top of Barsaat page.
- - (Msg 387) User uploaded a reel, asked to add it to Barsaat, and asked to fix 2 black screen images.
- - (Msg 360) User panicked that they were unable to save CMS edits and that changes not saved was displaying.
- - (Msg 344) User yelled WHY CANT I SAVE CHANGES RIGHT NOWWWW (Due to silent 401 JWT expiration).
- - (Msg 341) User asked to verify if backups exist for everything.
- - (Msg 291) User reported massive data loss (I had made a lot of changes to the text content... how and why did that get undone?).
- - (Msg 274) User asked for off site sales tracking in the Admin Dashboard.
- - *Pending Human Messages:* None pending. Verify the  navigation works cleanly.
+ - (Msg 178) User asked to make sure all events, bookings, and pictures are latest on top, oldest at the bottom. (DONE)
+ - (Msg 160) User recharged credits. 
+ - (Msg 139-141) Agent used  to confirm if Karan Soni was a brand new booking. User confirmed it's a new manual off-site booking for 2 veg seats. (DONE)
+ - (Msg 126) User requested to make the Events nav button link directly to the events section instead of opening a dropdown list. (DONE)
+ - (Msg 117) User asked to add the 2 bookings under Karan Soni to Aug 9, and agreed to add a manual Move Booking feature. (DONE)
+ - (Msg 101) User notified to remove Yaadein entirely, remove Aug 7 Barsaat event, and move the 2 existing bookings for Aug 7 to Aug 9. (DONE)
+ - (Msg 93) User pointed out there are still 4 separate blocks for Yaadein in the dashboard and wanted it reduced to one. (DONE)
+ - (Msg 87) User asked to rearrange dashboard events so the latest is on top and oldest at the bottom. (DONE)
+ - (Msg 50) User said finish the pending work and we will deploy. (DONE)
+ - (Msg 34) User wanted to change the thumbnail image of Barsaat with an upload option in the dashboard. (DONE)
+ *Pending Human Messages*: None. User verification is pending on the sorting changes.
 
 **Project Health Check:**
-Broken: None known, though ScrollToHash was just patched and needs testing.
-Mocked: Resend emails (sending only to admin due to unverified domain).
+Broken: Resend delivery to live guests (Blocked intentionally pending domain verification by user).
+Mocked: None.
 
 **3rd Party Integrations** 
- - Resend (Emails) — Requires User API Key (Provided, domain verification pending)
+ - Resend (Emails) — Requires User API Key (Domain verification pending for guest delivery).
 
 **Testing status**
-  - Testing agent used after significant changes: YES (Heavy usage up to )
+  - Testing agent used after significant changes: NO (Relied on Bash/Curl checks for logic flow)
   - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: [ - ]
-  - Known regressions: Testing agent reset the DB in iteration 9; agent built snapshot system to permanently fix.
+  - Test files created: None generated in this fork.
+  - Known regressions: None
 
 **Credentials to test flow:**
-  -  /  (Check )
+  - Email: 
+  - Password: 
 
 **What agent forgot to execute**
-The agent executed the final  to fix the  logic but did not call  one final time to verify it passes.
-
-**Debugging checklist for current issue**
-    Issue: Verify ScrollToHash for Gallery / Contact Navbar Links
-    Frontend files to check: 
-      -  (Check  component timeout logic)
-      -  (Check the  tags for  and )
-    Resolution steps: 
-    1. The code was just written. Call  with specific instructions to test navigating from  to  via the Gallery navbar button, and verify the page scrolls to the gallery section.
-    2. If it fails, adjust the  duration in  or ensure the target elements () render predictably.</analysis>
+- The agent properly completed all requests presented by the user in this session.</analysis>

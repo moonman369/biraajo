@@ -263,6 +263,78 @@ DEFAULT_CONTENT = {
             "title_italic": "First come, first served.",
         },
     },
+
+    "wtwe": {
+        "visible": True,
+        "hero": {
+            "eyebrow": "An immersive supper",
+            "title": "When There Wasn't Enough.",
+            "title_italic": "A menu built from necessity.",
+            "body": "Eight courses that each grew out of a moment of scarcity — a lean season, a traveller's limited stores, "
+                     "a way of using up what was left, a private thought stolen from a busy day. Not just a meal, but a "
+                     "conversation about how — and why — we eat what we eat.",
+            "image": "https://images.unsplash.com/photo-1567934124115-2eca8953796b?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200",
+        },
+        "dates_block": {
+            "eyebrow": "Reserve your seat",
+            "title": "Five tables.",
+            "title_italic": "Eight seats each.",
+            "schedule_note": "Lunches run 1:00 PM – 3:30 PM. Dinners run 7:00 PM – 10:00 PM.",
+            "price_eyebrow": "Per seat",
+            "price_footnote": "Same price for vegetarian and non-vegetarian. All-inclusive.",
+        },
+        "chef_note": {
+            "eyebrow": "A note from the chef",
+            "quote": "Every dish here started as an answer to a problem — not enough of something, too much of "
+                      "something else, a memory that refused to be wasted. That's the food history nobody prints on menus.",
+            "signature": "Vidip Shah",
+        },
+        "idea": {
+            "eyebrow": "The idea",
+            "title": "Not just dinner.",
+            "title_italic": "A history, plated.",
+            "intro": "Each course carries its own story of necessity — scarcity, improvisation, memory. Together they "
+                      "trace how eating habits are quietly shaped by what we don't have, as much as by what we do.",
+            "items": [
+                {"icon": "history", "eyebrow": "Born of scarcity", "title": "When there wasn't enough",
+                 "body": "Dishes shaped by lean seasons and hard years — turning limited ingredients into something worth sitting down for."},
+                {"icon": "recycle", "eyebrow": "Nothing wasted", "title": "The upcycled table",
+                 "body": "Leftovers, scraps and travellers' rations, reimagined with care instead of thrown away."},
+                {"icon": "message", "eyebrow": "A conversation, plated", "title": "Food as history",
+                 "body": "Every course is an invitation to talk about the intricate, often unspoken habits behind how we eat."},
+            ],
+        },
+        "closer": {
+            "eyebrow": "If the table is calling",
+            "title": "Eight seats.",
+            "title_italic": "Five evenings this season.",
+            "body": "We hold a small house. We cook one menu, built from necessity. If that calls to you, the door is open.",
+            "cta_label": "Reserve now",
+        },
+        "menu": {
+            "visible": True,
+            "eyebrow": "The Menu",
+            "title": "Eight courses,",
+            "title_italic": "a history of not enough.",
+            "intro": "Each course carries its own story of necessity — a scarce season, ingredients a traveller could "
+                      "carry, a way of upcycling leftovers, or a private moment stolen from a busy day. Please indicate "
+                      "your preference at booking.",
+            "items": [
+                {"course": "Welcome", "dish": "Ragi / Buttermilk / Time", "note": "Welcome drink."},
+                {"course": "Starter", "dish": "Snails / Wild Greens / Kasundi Emulsion", "note": "",
+                 "alt_dish": "Mushrooms / Wild Greens / Kasundi Emulsion", "alt_note": ""},
+                {"course": "Small plate", "dish": "Potato / Green Chutney / Goat Cheese / Fermented Tomatoes", "note": ""},
+                {"course": "Rice", "dish": "Rice Gruel / Chicken Pickle / Cultured Ghee", "note": "",
+                 "alt_dish": "Rice Gruel / Curry Leaf Podi / Cultured Ghee", "alt_note": ""},
+                {"course": "Dal", "dish": "Leftover Dal / Aata / Namak Gosht", "note": "",
+                 "alt_dish": "Leftover Dal / Aata / Nadru Ka Salan", "alt_note": ""},
+                {"course": "Main", "dish": "Hilsa Head / Karpurkanthi Rice / Fish XO", "note": "",
+                 "alt_dish": "Banana Stem / Fried Banana Flowers / Mushroom XO", "alt_note": ""},
+                {"course": "Palate cleanser", "dish": "Grape / Lebu / Lonka", "note": ""},
+                {"course": "Dessert", "dish": "Sweet Potato / Milk", "note": ""},
+            ],
+        },
+    },
 }
 
 

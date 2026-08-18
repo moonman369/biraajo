@@ -27,7 +27,7 @@ export default function Menus() {
       </section>
 
       <section className="pb-32">
-        <div className="max-w-5xl mx-auto px-6 sm:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-10">
+        <div className="max-w-5xl mx-auto px-6 sm:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-10">
           {/* Naani Ghar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -86,6 +86,38 @@ export default function Menus() {
                   </h2>
                   <p className="mt-3 text-[#B5A79E] text-sm leading-relaxed">
                     Ten monsoon courses. Veg & non-veg. Reserve early.
+                  </p>
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+
+          {/* When There Wasn't Enough */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.16 }}
+            data-testid="menu-card-wtwe"
+          >
+            <Link to="/menus/when-there-wasnt-enough" className="block group">
+              <div className="relative aspect-[4/5] overflow-hidden img-zoom">
+                <img
+                  src="https://images.unsplash.com/photo-1567934124115-2eca8953796b?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200"
+                  alt="When There Wasn't Enough menu"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504] via-[#0A0504]/30 to-transparent" />
+                <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">
+                  Now booking
+                </span>
+                <div className="absolute bottom-0 left-0 right-0 p-7 sm:p-9">
+                  <p className="text-overline">Next series</p>
+                  <h2 className="font-display text-3xl sm:text-4xl mt-3 leading-tight">
+                    When There Wasn&apos;t Enough.
+                  </h2>
+                  <p className="mt-3 text-[#B5A79E] text-sm leading-relaxed">
+                    Eight courses built from necessity. Veg & non-veg, same price. Five dates.
                   </p>
                 </div>
               </div>

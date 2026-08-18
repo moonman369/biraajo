@@ -122,6 +122,40 @@ export default function Suppers() {
               </div>
             </div>
           </motion.article>
+
+          {/* When There Wasn't Enough — now booking */}
+          <motion.article
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.16 }}
+            className="border border-[#2D1D1A] bg-[#140A09] grid grid-cols-1 md:grid-cols-12 overflow-hidden"
+            data-testid="supper-card-wtwe"
+          >
+            <div className="md:col-span-5 relative aspect-[4/3] md:aspect-auto img-zoom">
+              <img src="https://images.unsplash.com/photo-1567934124115-2eca8953796b?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200" alt="When There Wasn't Enough" className="w-full h-full object-cover" />
+              <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">Now booking</span>
+            </div>
+            <div className="md:col-span-7 p-8 sm:p-12 flex flex-col justify-between gap-8">
+              <div>
+                <p className="text-overline">Next series</p>
+                <h2 className="font-display text-4xl mt-3 leading-tight">
+                  When There Wasn&apos;t Enough.
+                </h2>
+                <p className="mt-4 text-[#B5A79E] leading-relaxed">
+                  Eight courses built from necessity — scarce seasons, upcycled leftovers, a traveller's rations.
+                  Same price for veg and non-veg. Eight seats only, five dates.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Link to="/menus/when-there-wasnt-enough" data-testid="supper-wtwe-view-menu"
+                  className="inline-flex items-center justify-center px-6 py-3 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
+                  View menu
+                </Link>
+                <Link to="/supper-club/when-there-wasnt-enough" data-testid="supper-wtwe-join-table"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
+                  Join the table
+                </Link>
+              </div>
+            </div>
+          </motion.article>
         </div>
       </section>
 

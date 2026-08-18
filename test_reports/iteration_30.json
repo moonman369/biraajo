@@ -1,0 +1,52 @@
+{
+  "summary": "End-to-end testing of the new 'When There Wasn't Enough' (WTWE) feature — 5 real bookable events, dedicated story page, menu page, /menus + /suppers 3rd card, per-event pricing override, and site_content 'wtwe' block. Backend: 11 passed / 1 skipped (regression-only skip). Frontend: full booking flow verified end-to-end (form -> UPI QR -> screenshot upload -> confirmed). Pricing model change is backwards-compatible — Barsaat still uses global ₹2,500 veg / ₹2,800 non-veg.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_wtwe_feature.py",
+    "/app/test_reports/pytest/wtwe_results.xml"
+  ],
+  "action_items": [
+    "MINOR (non-blocking): The wrapper grid on /supper-club/when-there-wasnt-enough uses data-testid='wtwe-date-grid'. This collides with the prefix query [data-testid^=\"wtwe-date-\"] used in selectors, returning 6 elements instead of 5. Consider renaming the container to 'wtwe-dates-grid' to avoid selector ambiguity in future tests. Visually only the 5 real date cards render — no functional issue.",
+    "MINOR (non-blocking): The 'Now booking' pill on /menus wtwe card is present visually (rendered via CSS badge) but the text was not picked up via page.inner_text() during automation — confirmed present in the DOM/HTML. No user-facing bug."
+  ],
+  "critical_code_review_comments": [
+    "server.py `_calc_total` correctly reads event.price_veg / event.price_nonveg and falls back to global settings — good backward compatibility for Barsaat/Naani Ghar events (verified via live booking that produced total=2500 for global veg).",
+    "Migration `wtwe_events_v1` is idempotent (checks db.migrations before running) — safe on restarts.",
+    "server.py file is ~1750 lines. Consider splitting into modules (events, registrations, admin, media, content) for maintainability. Not blocking."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_wtwe_feature.py (new)"
+  ],
+  "success_rate": {
+    "backend": "100% (11/11 executed passed; 1 regression test skipped only because no self-service skip fixture, verified manually via curl instead)",
+    "frontend": "100% for core WTWE flows (home #events, /menus, /menus/wtwe, /supper-club/wtwe, /suppers, full booking + screenshot upload + confirmed state)"
+  },
+  "test_credentials": "Admin: reachbiraajo@gmail.com / Biraajo@2026 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "None. Test-created bookings were cleaned up (all wtwe events reset to seats_booked=0; barsaat regression booking also cleaned).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "WTWE feature is fully functional. Backend tests live at /app/backend/tests/test_wtwe_feature.py (run with REACT_APP_BACKEND_URL env var set). All 5 wtwe events (wtwe-2026-08-23-lunch, 08-30-dinner, 09-06-lunch, 09-11-dinner, 09-13-lunch) exist with price_veg=price_nonveg=2800, seats_total=8, tag='When There Wasn't Enough'. Barsaat events continue to use global settings pricing (verified live). Admin dashboard UI tabs (Events/Menu/CMS) were not deep-tested via Playwright but underlying APIs are healthy — main agent can self-verify if needed.",
+  "verified_e2e_flows": [
+    "GET /api/events returns 5 wtwe events with correct pricing/tag/capacity",
+    "POST /api/events/wtwe-*/register with Vegetarian → total=guests*2800",
+    "POST /api/events/wtwe-*/register with Non-Vegetarian → total=guests*2800",
+    "POST with guests=9 → 400 (capacity of 8 enforced)",
+    "seats_booked increments on booking, decrements on admin delete",
+    "POST /api/registrations/{id}/payment-screenshot → has_screenshot=true",
+    "GET /api/site-content contains wtwe.{hero, dates_block, chef_note, idea, closer, menu} with 8 items and alt_dish on Starter/Rice/Dal/Main only",
+    "Barsaat booking uses global 2500 veg pricing (regression pass)",
+    "Frontend: WTWE story page renders hero + 5 date cards + ₹2,800 flat price box + reserve CTA",
+    "Frontend: WTWE menu page renders 8 courses with vegetarian variants under exactly Starter/Rice/Dal/Main",
+    "Frontend: /menus 3-card layout with wtwe card; /suppers 3-card layout with wtwe card",
+    "Frontend: Home /#events shows 5 wtwe cards with '₹2,800 veg & non-veg' flat display",
+    "Frontend: EventRegistrationModal booking end-to-end (fill → 200 register → UPI QR + ₹2,800 total → upload screenshot → 'CONFIRMED' state)"
+  ]
+}

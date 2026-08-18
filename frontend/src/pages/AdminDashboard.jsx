@@ -228,8 +228,10 @@ const PAGE_NAMES = {
   "/menus": "Menus",
   "/menus/naani-ghar": "Menu · Naani Ghar",
   "/menus/barsaat": "Menu · Barsaat",
+  "/menus/when-there-wasnt-enough": "Menu · When There Wasn't Enough",
   "/supper-club/naani-ghar": "Naani Ghar",
   "/supper-club/barsaat": "Barsaat",
+  "/supper-club/when-there-wasnt-enough": "When There Wasn't Enough",
 };
 const prettyPage = (p) => PAGE_NAMES[p] || (p.startsWith("/booking/") ? "Booking status" : p);
 
@@ -393,19 +395,26 @@ function Traffic() {
 function emptyEvent() {
   return {
     title: "", date: "", time: "19:30", venue: "", description: "",
-    price: 3500, seats_total: 8, image_url: "", tag: "Supper Club",
+    price_veg: "", price_nonveg: "", seats_total: 8, image_url: "", tag: "Supper Club",
   };
 }
 
 function Events() {
   const [events, setEvents] = useState([]);
   const [editing, setEditing] = useState(null);
+  const [prices, setPrices] = useState({ price_veg: 2500, price_nonveg: 2800 });
 
   const load = () => api.get("/events").then((r) => {
     const sorted = [...(r.data || [])].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
     setEvents(sorted);
   });
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    api.get("/settings").then((r) => setPrices({
+      price_veg: r.data?.price_veg ?? 2500,
+      price_nonveg: r.data?.price_nonveg ?? 2800,
+    })).catch(() => {});
+  }, []);
 
   const save = async (ev) => {
     try {
@@ -493,7 +502,7 @@ function Events() {
                   <h3 className="font-display text-2xl mt-2">{ev.title}</h3>
                   <p className="text-sm text-[#B5A79E] mt-2">{ev.date} · {ev.time} · {ev.venue}</p>
                   <p className="text-sm text-[#B5A79E] mt-3">
-                    {ev.seats_booked || 0} / {ev.seats_total} booked · ₹{ev.price}
+                    {ev.seats_booked || 0} / {ev.seats_total} booked · ₹{ev.price_veg ?? prices.price_veg} veg · ₹{ev.price_nonveg ?? prices.price_nonveg} non-veg
                   </p>
                   <div className="mt-4 flex gap-2">
                     <button onClick={() => setEditing(ev)} className="px-3 py-2 border border-[#2D1D1A] text-xs inline-flex items-center gap-2 hover:border-[#D9772B]">
@@ -542,7 +551,12 @@ function EventForm({ event, onCancel, onSave }) {
 
   return (
     <form
-      onSubmit={(e) => { e.preventDefault(); onSave({ ...f, price: Number(f.price) || 0, seats_total: Number(f.seats_total) || 1 }); }}
+      onSubmit={(e) => { e.preventDefault(); onSave({
+        ...f,
+        price_veg: f.price_veg === "" || f.price_veg == null ? null : Number(f.price_veg),
+        price_nonveg: f.price_nonveg === "" || f.price_nonveg == null ? null : Number(f.price_nonveg),
+        seats_total: Number(f.seats_total) || 1,
+      }); }}
       className="bg-[#140A09] border border-[#2D1D1A] p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 gap-4"
     >
       <Inp label="Title" value={f.title} onChange={h("title")} required />
@@ -550,8 +564,9 @@ function EventForm({ event, onCancel, onSave }) {
       <Inp label="Date" type="date" value={f.date} onChange={h("date")} required />
       <Inp label="Time" value={f.time} onChange={h("time")} placeholder="19:30" required />
       <Inp label="Venue" value={f.venue} onChange={h("venue")} required />
-      <Inp label="Price (INR)" type="number" value={f.price} onChange={h("price")} />
-      <Inp label="Seats total (fixed at 10)" type="number" value={10} readOnly disabled data-testid="event-seats-total-input" />
+      <Inp label="Price · Veg (INR, optional)" type="number" value={f.price_veg ?? ""} onChange={h("price_veg")} placeholder="Site default" data-testid="event-price-veg-input" />
+      <Inp label="Price · Non-veg (INR, optional)" type="number" value={f.price_nonveg ?? ""} onChange={h("price_nonveg")} placeholder="Site default" data-testid="event-price-nonveg-input" />
+      <Inp label={`Seats total (fixed at ${8})`} type="number" value={8} readOnly disabled data-testid="event-seats-total-input" />
       <Inp label="Image URL" value={f.image_url} onChange={h("image_url")} />
 
       <div className="sm:col-span-2">
@@ -1367,6 +1382,7 @@ function MenuAdmin() {
 
   const naaniItems = content?.naani_ghar?.menu?.items || [];
   const barsaatItems = content?.barsaat?.menu?.items || [];
+  const wtweItems = content?.wtwe?.menu?.items || [];
 
   return (
     <div>
@@ -1396,6 +1412,14 @@ function MenuAdmin() {
           badgeClass="text-[#D9772B] border-[#D9772B]/60"
           items={barsaatItems}
           onChange={(items) => updateMenu("barsaat", items)}
+        />
+        <SeriesMenuEditor
+          pageKey="wtwe"
+          title="When There Wasn't Enough"
+          badge="Now booking"
+          badgeClass="text-[#D9772B] border-[#D9772B]/60"
+          items={wtweItems}
+          onChange={(items) => updateMenu("wtwe", items)}
         />
       </div>
     </div>

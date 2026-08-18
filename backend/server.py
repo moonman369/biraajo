@@ -310,6 +310,8 @@ class EventIn(BaseModel):
     venue: str
     description: str
     price: float = 0.0
+    price_veg: Optional[float] = None
+    price_nonveg: Optional[float] = None
     seats_total: int = 8
     image_url: str = ""
     tag: Optional[str] = "Supper Club"
@@ -534,6 +536,33 @@ _YAADEIN_DESC = ("Explores the relationship between food and politics and how th
                  "have impacted culture.")
 _YAADEIN_EVENTS = []
 
+_WTWE_DESC = ("A menu built from necessity — dishes born of scarce seasons, a traveller's limited stores, "
+    "and the quiet art of upcycling leftovers. Each course opens a conversation about eating habits and "
+    "food history. Eight seats only. Same price for veg and non-veg.")
+_WTWE_IMG = "https://images.unsplash.com/photo-1567934124115-2eca8953796b?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200"
+_WTWE_EVENTS = [
+    {"id": "wtwe-2026-08-23-lunch", "title": "When There Wasn't Enough — Lunch (Aug 23)", "date": "2026-08-23",
+     "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
+     "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
+     "tag": "When There Wasn't Enough", "seats_booked": 0, "is_published": True},
+    {"id": "wtwe-2026-08-30-dinner", "title": "When There Wasn't Enough — Dinner (Aug 30)", "date": "2026-08-30",
+     "time": "19:00 — 22:00", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
+     "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
+     "tag": "When There Wasn't Enough", "seats_booked": 0, "is_published": True},
+    {"id": "wtwe-2026-09-06-lunch", "title": "When There Wasn't Enough — Lunch (Sep 6)", "date": "2026-09-06",
+     "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
+     "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
+     "tag": "When There Wasn't Enough", "seats_booked": 0, "is_published": True},
+    {"id": "wtwe-2026-09-11-dinner", "title": "When There Wasn't Enough — Dinner (Sep 11)", "date": "2026-09-11",
+     "time": "19:00 — 22:00", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
+     "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
+     "tag": "When There Wasn't Enough", "seats_booked": 0, "is_published": True},
+    {"id": "wtwe-2026-09-13-lunch", "title": "When There Wasn't Enough — Lunch (Sep 13)", "date": "2026-09-13",
+     "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
+     "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
+     "tag": "When There Wasn't Enough", "seats_booked": 0, "is_published": True},
+]
+
 
 async def _run_migrations() -> None:
     # Grammar/copy corrections + stale "Twelve seats" in event descriptions.
@@ -629,6 +658,23 @@ async def _run_migrations() -> None:
         await db.events.update_one({"id": aug9}, {"$set": {"seats_booked": booked}})
         await db.migrations.update_one({"id": "retire_yaadein_aug7_v1"}, {"$set": {"id": "retire_yaadein_aug7_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: retire_yaadein_aug7_v1 (Aug 9 seats_booked=%s)", booked)
+
+    # One-time: publish the "When There Wasn't Enough" series dates.
+    if not await db.migrations.find_one({"id": "wtwe_events_v1"}):
+        now = _now_iso()
+        for ev in _WTWE_EVENTS:
+            if not await db.events.find_one({"id": ev["id"]}):
+                await db.events.insert_one({**ev, "created_at": now})
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc:
+                continue
+            data = doc["data"]
+            if "wtwe" not in data:
+                data["wtwe"] = get_default_content().get("wtwe", {})
+                await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        await db.migrations.update_one({"id": "wtwe_events_v1"}, {"$set": {"id": "wtwe_events_v1", "applied_at": now}}, upsert=True)
+        logger.info("Migration applied: wtwe_events_v1")
 
     # One-time: add Karan Soni's off-site booking (party of 2, veg) to the Aug 9 date.
     if not await db.migrations.find_one({"id": "karan_soni_aug9_offsite_v1"}):
@@ -745,10 +791,12 @@ async def delete_event(event_id: str, user=Depends(get_current_admin)):
 
 
 # ---------- Registrations ----------
-async def _calc_total(menu_preference: str, guests: int) -> int:
+async def _calc_total(event: dict, menu_preference: str, guests: int) -> int:
     s = await _get_settings()
-    veg = int(s.get("price_veg", PRICE_VEG))
-    nonveg = int(s.get("price_nonveg", PRICE_NONVEG))
+    veg = event.get("price_veg")
+    veg = int(veg) if veg is not None else int(s.get("price_veg", PRICE_VEG))
+    nonveg = event.get("price_nonveg")
+    nonveg = int(nonveg) if nonveg is not None else int(s.get("price_nonveg", PRICE_NONVEG))
     per_seat = veg if menu_preference == "Vegetarian" else nonveg
     return int(per_seat) * max(1, int(guests or 1))
 
@@ -814,7 +862,7 @@ async def register_event(event_id: str, body: RegistrationIn):
     payload = body.model_dump()
     payload["event_id"] = event_id
     payload["email"] = payload["email"].lower()
-    total = await _calc_total(payload.get("menu_preference", ""), payload.get("guests", 1))
+    total = await _calc_total(event, payload.get("menu_preference", ""), payload.get("guests", 1))
 
     existing = await db.registrations.find_one({"event_id": event_id, "email": payload["email"]})
     if existing and existing.get("payment_status") == "confirmed":

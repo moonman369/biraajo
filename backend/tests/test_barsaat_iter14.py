@@ -4,7 +4,7 @@ import re
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://event-booking-test-1.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://premium-chef-demo.preview.emergentagent.com").rstrip("/")
 API = f"{BASE_URL}/api"
 
 NEW_KEYS = ["i2tx6jvh", "a7qweymb", "ana7ash1", "xe0xmfhh", "u3sgtdb0"]

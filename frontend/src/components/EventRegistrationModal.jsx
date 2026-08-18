@@ -33,11 +33,11 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
   useEffect(() => {
     api.get("/settings").then((r) => {
       setPrices({
-        veg: Number(r.data?.price_veg ?? 2500),
-        nonveg: Number(r.data?.price_nonveg ?? 2800),
+        veg: Number(event.price_veg ?? r.data?.price_veg ?? 2500),
+        nonveg: Number(event.price_nonveg ?? r.data?.price_nonveg ?? 2800),
       });
     }).catch(() => {});
-  }, []);
+  }, [event]);
 
   const handle = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 

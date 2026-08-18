@@ -9,6 +9,7 @@ const PREVIEW_PAGES = [
   { label: "About the Chef", path: "/about-the-chef" },
   { label: "Naani Ghar", path: "/supper-club/naani-ghar" },
   { label: "Barsaat", path: "/supper-club/barsaat" },
+  { label: "When There Wasn't Enough", path: "/supper-club/when-there-wasnt-enough" },
 ];
 
 // Schema describes WHICH fields are editable in the side panel.
@@ -296,6 +297,69 @@ const SCHEMA = {
           fields: [
             { key: "url", label: "Video URL (.mp4)", type: "url" },
             { key: "label", label: "Label", type: "text" },
+          ],
+        },
+      },
+      closer: {
+        label: "Closer",
+        fields: [
+          { key: "eyebrow", label: "Eyebrow", type: "text" },
+          { key: "title", label: "Title (before italic)", type: "text" },
+          { key: "title_italic", label: "Title (italic)", type: "text" },
+          { key: "body", label: "Body", type: "textarea" },
+          { key: "cta_label", label: "CTA label", type: "text" },
+        ],
+      },
+    },
+  },
+  wtwe: {
+    label: "When There Wasn't Enough · page",
+    sections: {
+      hero: {
+        label: "Hero",
+        fields: [
+          { key: "eyebrow", label: "Eyebrow", type: "text" },
+          { key: "title", label: "Title", type: "text" },
+          { key: "title_italic", label: "Title (italic)", type: "text" },
+          { key: "body", label: "Body", type: "textarea" },
+          { key: "image", label: "Hero image URL", type: "url" },
+        ],
+      },
+      dates_block: {
+        label: "Dates & reserve block",
+        fields: [
+          { key: "eyebrow", label: "Eyebrow", type: "text" },
+          { key: "title", label: "Title (before italic)", type: "text" },
+          { key: "title_italic", label: "Title (italic)", type: "text" },
+          { key: "schedule_note", label: "Schedule note", type: "textarea" },
+          { key: "price_eyebrow", label: "Price eyebrow", type: "text" },
+          { key: "price_footnote", label: "Price footnote", type: "textarea" },
+        ],
+      },
+      chef_note: {
+        label: "Chef's signature quote",
+        fields: [
+          { key: "eyebrow", label: "Eyebrow", type: "text" },
+          { key: "quote", label: "The quote", type: "textarea" },
+          { key: "signature", label: "Signature (— name)", type: "text" },
+        ],
+      },
+      idea: {
+        label: "The idea (story pillars)",
+        fields: [
+          { key: "eyebrow", label: "Eyebrow", type: "text" },
+          { key: "title", label: "Title (before italic)", type: "text" },
+          { key: "title_italic", label: "Title (italic)", type: "text" },
+          { key: "intro", label: "Intro paragraph", type: "textarea" },
+        ],
+        list: {
+          key: "items",
+          label: "Story pillars (cards)",
+          itemLabel: (i, it) => it?.title || `Card ${i + 1}`,
+          fields: [
+            { key: "eyebrow", label: "Eyebrow", type: "text" },
+            { key: "title", label: "Card title", type: "text" },
+            { key: "body", label: "Card body", type: "textarea" },
           ],
         },
       },

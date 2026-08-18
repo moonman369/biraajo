@@ -1,0 +1,297 @@
+import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { ArrowLeft, ArrowRight, History, Recycle, MessageCircle } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import EventRegistrationModal from "@/components/EventRegistrationModal";
+import { api } from "@/lib/api";
+import { useSiteContent, read } from "@/lib/siteContent";
+
+const IDEA_ICONS = { history: History, recycle: Recycle, message: MessageCircle };
+
+function formatDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "long", year: "numeric" });
+}
+
+function sessionLabel(title) {
+  if (/lunch/i.test(title)) return "Lunch";
+  if (/dinner/i.test(title)) return "Dinner";
+  return "";
+}
+
+export default function WhenThereWasntEnough() {
+  const { content } = useSiteContent();
+  const [events, setEvents] = useState([]);
+  const [settings, setSettings] = useState({ price_veg: 2500, price_nonveg: 2800, registrations_open: true });
+  const [selectedId, setSelectedId] = useState("");
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    api.get("/events", { params: { upcoming: "true" } })
+      .then((r) => {
+        const list = (r.data || []).filter((e) => /wasn.t enough/i.test(`${e.title} ${e.tag || ""}`));
+        list.sort((a, b) => (a.date > b.date ? 1 : -1));
+        setEvents(list);
+        const firstAvailable = list.find((e) => (e.seats_total - (e.seats_booked || 0)) > 0);
+        setSelectedId((firstAvailable || list[0])?.id || "");
+      }).catch(() => {});
+    api.get("/settings")
+      .then((r) => setSettings(r.data || {})).catch(() => {});
+  }, []);
+
+  const selectedEvent = useMemo(() => events.find((e) => e.id === selectedId) || null, [events, selectedId]);
+  if (content?.wtwe?.visible === false) return null;
+
+  const onReserve = () => {
+    if (!settings.registrations_open) return;
+    if (!selectedEvent) return;
+    setOpen(true);
+  };
+
+  const priceVeg = Number(selectedEvent?.price_veg ?? settings.price_veg ?? 2500);
+  const priceNonVeg = Number(selectedEvent?.price_nonveg ?? settings.price_nonveg ?? 2800);
+  const samePricing = priceVeg === priceNonVeg;
+
+  const heroImg = read(content, "wtwe.hero.image", "");
+  const heroEyebrow = read(content, "wtwe.hero.eyebrow", "An immersive supper");
+  const heroTitle = read(content, "wtwe.hero.title", "When There Wasn't Enough.");
+  const heroTitleIt = read(content, "wtwe.hero.title_italic", "A menu built from necessity.");
+  const heroBody = read(content, "wtwe.hero.body",
+    "Eight courses that each grew out of a moment of scarcity. Not just a meal, but a conversation about how — and why — we eat what we eat.");
+
+  const datesEyebrow = read(content, "wtwe.dates_block.eyebrow", "Reserve your seat");
+  const datesTitle = read(content, "wtwe.dates_block.title", "Five tables.");
+  const datesTitleIt = read(content, "wtwe.dates_block.title_italic", "Eight seats each.");
+  const scheduleNote = read(content, "wtwe.dates_block.schedule_note",
+    "Lunches run 1:00 PM – 3:30 PM. Dinners run 7:00 PM – 10:00 PM.");
+  const priceFootnote = read(content, "wtwe.dates_block.price_footnote",
+    "Same price for vegetarian and non-vegetarian. All-inclusive.");
+
+  const q = read(content, "wtwe.chef_note.quote",
+    "Every dish here started as an answer to a problem — not enough of something, too much of something else, a memory that refused to be wasted.");
+  const qEyebrow = read(content, "wtwe.chef_note.eyebrow", "A note from the chef");
+  const qSig = read(content, "wtwe.chef_note.signature", "Vidip Shah");
+
+  const ideaEyebrow = read(content, "wtwe.idea.eyebrow", "The idea");
+  const ideaTitle = read(content, "wtwe.idea.title", "Not just dinner.");
+  const ideaTitleIt = read(content, "wtwe.idea.title_italic", "A history, plated.");
+  const ideaIntro = read(content, "wtwe.idea.intro",
+    "Each course carries its own story of necessity — scarcity, improvisation, memory.");
+  const ideaItems = (() => {
+    const items = read(content, "wtwe.idea.items", []);
+    return Array.isArray(items) && items.length ? items : [];
+  })();
+
+  const closerEyebrow = read(content, "wtwe.closer.eyebrow", "If the table is calling");
+  const closerTitle = read(content, "wtwe.closer.title", "Eight seats.");
+  const closerTitleIt = read(content, "wtwe.closer.title_italic", "Five evenings this season.");
+  const closerBody = read(content, "wtwe.closer.body",
+    "We hold a small house. We cook one menu, built from necessity. If that calls to you, the door is open.");
+  const closerCta = read(content, "wtwe.closer.cta_label", "Reserve now");
+
+  return (
+    <div className="bg-[#0A0504] text-[#F3EFE7] min-h-screen film-grain" data-testid="page-wtwe">
+      <Navbar />
+
+      {/* HERO */}
+      <section className="relative pt-32 pb-16 sm:pt-44 sm:pb-24 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+          <Link to="/" className="text-overline inline-flex items-center gap-2 mb-8 hover:text-[#D9772B] transition-colors" data-testid="wtwe-back-home">
+            <ArrowLeft size={14} /> back to home
+          </Link>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-end">
+            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="lg:col-span-7">
+              <p className="text-overline">{heroEyebrow}</p>
+              <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 leading-[1.02] tracking-tight">
+                {heroTitle}
+                <br />
+                <span className="italic text-[#D9772B]">{heroTitleIt}</span>
+              </h1>
+              <p className="mt-8 text-[#B5A79E] text-lg leading-relaxed max-w-xl">{heroBody}</p>
+
+              <div className="mt-10 flex flex-wrap gap-4">
+                <a href="#dates" data-testid="wtwe-jump-dates"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
+                  Join the table <ArrowRight size={14} className="ml-2" />
+                </a>
+                <Link to="/menus/when-there-wasnt-enough" data-testid="wtwe-view-menu"
+                  className="inline-flex items-center justify-center px-8 py-4 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
+                  View the menu
+                </Link>
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.2 }} className="lg:col-span-5">
+              <div className="img-zoom relative aspect-[4/5] w-full overflow-hidden">
+                {heroImg && <img src={heroImg} alt="When There Wasn't Enough" className="w-full h-full object-cover" />}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/55 to-transparent" />
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* DATES + RESERVE */}
+      <section id="dates" className="py-20 sm:py-28 border-t border-[#2D1D1A] bg-[#140A09]" data-testid="wtwe-dates-section">
+        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-end mb-14">
+            <div className="lg:col-span-7">
+              <p className="text-overline">{datesEyebrow}</p>
+              <h2 className="font-display text-4xl sm:text-5xl mt-6 leading-[1.05] tracking-tight">
+                {datesTitle} <span className="italic text-[#D9772B]">{datesTitleIt}</span>
+              </h2>
+              <p className="text-[#B5A79E] mt-5 max-w-xl leading-relaxed">{scheduleNote}</p>
+            </div>
+            <div className="lg:col-span-5 border border-[#2D1D1A] bg-[#0A0504] p-6" data-testid="wtwe-price-box">
+              {samePricing ? (
+                <div>
+                  <p className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E]">Per seat · veg & non-veg</p>
+                  <p className="font-display text-3xl mt-1">₹{priceVeg.toLocaleString("en-IN")}</p>
+                </div>
+              ) : (
+                <div className="flex items-baseline gap-6 flex-wrap">
+                  <div>
+                    <p className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E]">Vegetarian</p>
+                    <p className="font-display text-3xl mt-1">₹{priceVeg.toLocaleString("en-IN")}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E]">Non-vegetarian</p>
+                    <p className="font-display text-3xl mt-1">₹{priceNonVeg.toLocaleString("en-IN")}</p>
+                  </div>
+                </div>
+              )}
+              <p className="text-[12px] text-[#B5A79E] mt-4 leading-relaxed">{priceFootnote}</p>
+            </div>
+          </div>
+
+          {events.length === 0 ? (
+            <p className="text-[#B5A79E]">Dates will be published shortly.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#2D1D1A] border border-[#2D1D1A]" data-testid="wtwe-dates-grid">
+              {events.map((e, i) => {
+                const left = Math.max(0, e.seats_total - (e.seats_booked || 0));
+                const soldOut = left === 0;
+                const isSelected = e.id === selectedId;
+                return (
+                  <button
+                    key={e.id}
+                    onClick={() => !soldOut && setSelectedId(e.id)}
+                    disabled={soldOut}
+                    data-testid={`wtwe-date-${i}`}
+                    className={`text-left bg-[#0A0504] p-8 sm:p-10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
+                      ${isSelected ? "ring-2 ring-[#D9772B] -ring-offset-1" : "hover:bg-[#140A09]"}`}
+                  >
+                    <p className="text-overline">{sessionLabel(e.title) || "Table"}</p>
+                    <p className="font-display text-3xl mt-4 leading-tight">{formatDate(e.date)}</p>
+                    <p className="text-[#B5A79E] mt-3 text-sm">{e.time}</p>
+                    <div className="mt-6 flex items-center justify-between pt-5 border-t border-[#2D1D1A]">
+                      <p className="text-[11px] tracking-[0.18em] uppercase text-[#B5A79E]">
+                        {soldOut ? "Sold out" : `${left} of ${e.seats_total} left`}
+                      </p>
+                      <span className={`text-[10px] tracking-[0.22em] uppercase px-2.5 py-1 border ${isSelected ? "border-[#D9772B] text-[#D9772B]" : "border-[#2D1D1A] text-[#B5A79E]"}`}>
+                        {isSelected ? "Selected" : "Choose"}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="mt-12 flex flex-wrap items-center gap-4 justify-between">
+            <p className="text-[#B5A79E] text-sm">
+              {selectedEvent
+                ? <>Selected: <span className="text-[#F3EFE7]">{formatDate(selectedEvent.date)}</span></>
+                : "Select a date above to reserve."}
+            </p>
+            <button
+              onClick={onReserve}
+              disabled={!selectedEvent || !settings.registrations_open}
+              data-testid="wtwe-reserve-main-cta"
+              className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {settings.registrations_open ? "Reserve now" : "Reservations paused"} <ArrowRight size={14} className="ml-2" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* CHEF'S NOTE */}
+      <section className="py-20 sm:py-28 border-t border-[#2D1D1A] bg-[#140A09]" data-testid="wtwe-chef-note">
+        <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
+          <p className="text-overline">{qEyebrow}</p>
+          <p className="font-display italic text-2xl sm:text-3xl mt-7 leading-[1.35] text-[#F3EFE7]">&ldquo;{q}&rdquo;</p>
+          <p className="text-overline mt-7 text-[#D9772B]">— {qSig}</p>
+        </div>
+      </section>
+
+      {/* THE IDEA */}
+      {ideaItems.length > 0 && (
+        <section className="py-24 sm:py-32 border-t border-[#2D1D1A]" data-testid="wtwe-idea">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 mb-14">
+              <div className="lg:col-span-5">
+                <p className="text-overline">{ideaEyebrow}</p>
+                <h2 className="font-display text-4xl sm:text-5xl mt-6 leading-[1.05] tracking-tight">
+                  {ideaTitle}
+                  <br />
+                  <span className="italic text-[#D9772B]">{ideaTitleIt}</span>
+                </h2>
+              </div>
+              <div className="lg:col-span-7 lg:pt-3">
+                <p className="text-[#B5A79E] text-lg leading-relaxed">{ideaIntro}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#2D1D1A] border border-[#2D1D1A]">
+              {ideaItems.map((s, i) => {
+                const Icon = IDEA_ICONS[s.icon] || History;
+                return (
+                  <motion.div
+                    key={s.title || i}
+                    initial={{ opacity: 0, y: 18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7, delay: i * 0.08 }}
+                    className="bg-[#0A0504] p-9 sm:p-12"
+                    data-testid={`wtwe-idea-${i}`}
+                  >
+                    <Icon className="text-[#D9772B]" size={22} strokeWidth={1.4} />
+                    <p className="text-overline mt-6">{s.eyebrow}</p>
+                    <h3 className="font-display text-2xl sm:text-[28px] mt-3 leading-tight">{s.title}</h3>
+                    <p className="text-[#B5A79E] mt-4 leading-relaxed text-[15px]">{s.body}</p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* CLOSER */}
+      <section className="py-24 sm:py-32 border-t border-[#2D1D1A]" data-testid="wtwe-closer">
+        <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
+          <p className="text-overline mb-6">{closerEyebrow}</p>
+          <p className="font-display text-3xl sm:text-4xl leading-[1.15]">
+            {closerTitle} <span className="italic text-[#D9772B]">{closerTitleIt}</span>
+          </p>
+          <p className="mt-6 text-[#B5A79E] leading-relaxed">{closerBody}</p>
+          <a href="#dates" data-testid="wtwe-closer-cta"
+            className="mt-10 inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
+            {closerCta} <ArrowRight size={14} className="ml-2" />
+          </a>
+        </div>
+      </section>
+
+      <Footer />
+
+      {open && selectedEvent && (
+        <EventRegistrationModal event={selectedEvent} onClose={() => setOpen(false)} onSuccess={() => setOpen(false)} />
+      )}
+    </div>
+  );
+}

@@ -145,12 +145,24 @@ export default function Events() {
                   <div className="mt-7 flex items-end justify-between pt-5 border-t border-[#2D1D1A]">
                     <div>
                       <p className="text-overline">Per seat</p>
-                      <p className="font-display text-2xl text-[#F3EFE7] mt-1 leading-tight">
-                        ₹{Number(prices.veg).toLocaleString("en-IN")} <span className="text-sm text-[#B5A79E]">veg</span>
-                      </p>
-                      <p className="font-display text-2xl text-[#F3EFE7] leading-tight">
-                        ₹{Number(prices.nonveg).toLocaleString("en-IN")} <span className="text-sm text-[#B5A79E]">non-veg</span>
-                      </p>
+                      {(() => {
+                        const veg = Number(ev.price_veg ?? prices.veg);
+                        const nonveg = Number(ev.price_nonveg ?? prices.nonveg);
+                        return veg === nonveg ? (
+                          <p className="font-display text-2xl text-[#F3EFE7] mt-1 leading-tight">
+                            ₹{veg.toLocaleString("en-IN")} <span className="text-sm text-[#B5A79E]">veg & non-veg</span>
+                          </p>
+                        ) : (
+                          <>
+                            <p className="font-display text-2xl text-[#F3EFE7] mt-1 leading-tight">
+                              ₹{veg.toLocaleString("en-IN")} <span className="text-sm text-[#B5A79E]">veg</span>
+                            </p>
+                            <p className="font-display text-2xl text-[#F3EFE7] leading-tight">
+                              ₹{nonveg.toLocaleString("en-IN")} <span className="text-sm text-[#B5A79E]">non-veg</span>
+                            </p>
+                          </>
+                        );
+                      })()}
                     </div>
                     <div className="text-right">
                       <p className="text-overline">{soldOut ? "Sold out" : "Seats left"}</p>
