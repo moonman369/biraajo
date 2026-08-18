@@ -33,7 +33,7 @@ export default function WhenThereWasntEnough() {
   useEffect(() => {
     api.get("/events", { params: { upcoming: "true" } })
       .then((r) => {
-        const list = (r.data || []).filter((e) => /wasn.t enough/i.test(`${e.title} ${e.tag || ""}`));
+        const list = (r.data || []).filter((e) => e.id.startsWith("wtwe-"));
         list.sort((a, b) => (a.date > b.date ? 1 : -1));
         setEvents(list);
         const firstAvailable = list.find((e) => (e.seats_total - (e.seats_booked || 0)) > 0);

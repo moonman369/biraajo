@@ -542,27 +542,28 @@ _WTWE_DESC = ("A menu built from necessity — dishes born of scarce seasons, a 
     "and the quiet art of upcycling leftovers. Each course opens a conversation about eating habits and "
     "food history. Eight seats only. Same price for veg and non-veg.")
 _WTWE_IMG = "https://images.unsplash.com/photo-1567934124115-2eca8953796b?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200"
+_WTWE_NAME = "अभाव के भाव"
 _WTWE_EVENTS = [
-    {"id": "wtwe-2026-08-23-lunch", "title": "When There Wasn't Enough — Lunch (Aug 23)", "date": "2026-08-23",
+    {"id": "wtwe-2026-08-23-lunch", "title": f"{_WTWE_NAME} — Lunch (Aug 23)", "date": "2026-08-23",
      "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
      "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
-     "tag": "When There Wasn't Enough", "seats_booked": 0, "is_published": True},
-    {"id": "wtwe-2026-08-30-dinner", "title": "When There Wasn't Enough — Dinner (Aug 30)", "date": "2026-08-30",
+     "tag": _WTWE_NAME, "seats_booked": 0, "is_published": True},
+    {"id": "wtwe-2026-08-30-dinner", "title": f"{_WTWE_NAME} — Dinner (Aug 30)", "date": "2026-08-30",
      "time": "19:00 — 22:00", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
      "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
-     "tag": "When There Wasn't Enough", "seats_booked": 0, "is_published": True},
-    {"id": "wtwe-2026-09-06-lunch", "title": "When There Wasn't Enough — Lunch (Sep 6)", "date": "2026-09-06",
+     "tag": _WTWE_NAME, "seats_booked": 0, "is_published": True},
+    {"id": "wtwe-2026-09-06-lunch", "title": f"{_WTWE_NAME} — Lunch (Sep 6)", "date": "2026-09-06",
      "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
      "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
-     "tag": "When There Wasn't Enough", "seats_booked": 0, "is_published": True},
-    {"id": "wtwe-2026-09-11-dinner", "title": "When There Wasn't Enough — Dinner (Sep 11)", "date": "2026-09-11",
+     "tag": _WTWE_NAME, "seats_booked": 0, "is_published": True},
+    {"id": "wtwe-2026-09-11-dinner", "title": f"{_WTWE_NAME} — Dinner (Sep 11)", "date": "2026-09-11",
      "time": "19:00 — 22:00", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
      "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
-     "tag": "When There Wasn't Enough", "seats_booked": 0, "is_published": True},
-    {"id": "wtwe-2026-09-13-lunch", "title": "When There Wasn't Enough — Lunch (Sep 13)", "date": "2026-09-13",
+     "tag": _WTWE_NAME, "seats_booked": 0, "is_published": True},
+    {"id": "wtwe-2026-09-13-lunch", "title": f"{_WTWE_NAME} — Lunch (Sep 13)", "date": "2026-09-13",
      "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
      "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
-     "tag": "When There Wasn't Enough", "seats_booked": 0, "is_published": True},
+     "tag": _WTWE_NAME, "seats_booked": 0, "is_published": True},
 ]
 
 
@@ -722,6 +723,13 @@ async def _run_migrations() -> None:
             await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
         await db.migrations.update_one({"id": "wtwe_rename_v1"}, {"$set": {"id": "wtwe_rename_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: wtwe_rename_v1")
+
+    # One-time: rename existing wtwe event docs' title/tag to Hindi (event ids/routes unchanged).
+    if not await db.migrations.find_one({"id": "wtwe_rename_events_v1"}):
+        for ev in _WTWE_EVENTS:
+            await db.events.update_one({"id": ev["id"]}, {"$set": {"title": ev["title"], "tag": ev["tag"]}})
+        await db.migrations.update_one({"id": "wtwe_rename_events_v1"}, {"$set": {"id": "wtwe_rename_events_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: wtwe_rename_events_v1")
 
 
 # ---------- Startup ----------

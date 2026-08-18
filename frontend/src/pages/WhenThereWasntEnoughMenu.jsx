@@ -19,7 +19,7 @@ export default function WhenThereWasntEnoughMenu() {
     api.get("/events", { params: { upcoming: "true" } })
       .then((r) => {
         const list = r.data || [];
-        const match = list.find((e) => /wasn.t enough/i.test(`${e.title} ${e.tag || ""}`));
+        const match = list.find((e) => e.id.startsWith("wtwe-"));
         setEvent(match || null);
       }).catch(() => {});
     api.get("/settings")
