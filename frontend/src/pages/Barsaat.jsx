@@ -18,11 +18,12 @@ const DEFAULT_SENSES = [
 ];
 const SENSE_ICONS = { cloud: CloudRain, music: Music2, sparkles: Sparkles };
 
-const DEFAULT_RAJNEESH_NOTE = "The soundscape is a collaboration. I came in with a stack of tracks and ambient cues, like rain on a tin roof, distant thunder, the chatter of an old radio. Rajneesh wove them into a single chronology that travels with the food. Ambient at the start, nostalgic instrumentals through the middle, a peak that lifts with the main courses, and then a gentle drop into dessert. What he composed is impossible without him.";
+const DEFAULT_RAJNEESH_NOTE = "The soundscape is a full collaboration with visual and sound artist Rajneesh — a continuous, roughly three-hour composition that runs underneath the entire menu, never repeating, always shifting with the room. It opens with rain falling on a tin roof, drifts through a train-station announcement that dissolves into house music, and keeps changing tempo as the evening moves — rising and falling with the spice, intensity and potency of each course.";
 const DEFAULT_RAJNEESH_BULLETS = [
-  "Rain on a tin roof, distant thunder, the chatter of an old radio",
-  "Nostalgic music blended with live instrumentals",
-  "Intensity rises with the mains, then settles toward dessert",
+  "Rain on a tin roof, easing into the first course",
+  "A train announcement that dissolves into house music",
+  "Tempo shifts continuously with the mood of the room",
+  "Energy rises and falls with the spice and intensity of each dish",
 ];
 const DEFAULT_QUOTE = "Barsaat, to me, is an irreplaceable feeling. A yearning that returns the moment the clouds turn. This menu is that feeling, plated. A room that is entirely my own making.";
 
@@ -121,17 +122,20 @@ export default function Barsaat() {
           <Link to="/" className="text-overline inline-flex items-center gap-2 mb-8 hover:text-[#D9772B] transition-colors" data-testid="back-to-home">
             <ArrowLeft size={14} /> back to home
           </Link>
+          <Link to="/events" className="text-overline inline-flex items-center gap-2 mb-8 ml-6 hover:text-[#D9772B] transition-colors" data-testid="barsaat-all-concepts">
+            all concepts
+          </Link>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-end">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="lg:col-span-7">
-              <p className="text-overline">An immersive supper</p>
+              <p className="text-overline">{read(content, "barsaat.hero.eyebrow", "An immersive supper")}</p>
               <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 leading-[1.02] tracking-tight">
                 Barsaat.
                 <br />
                 <span className="italic text-[#D9772B]">A supper with the rain.</span>
               </h1>
               <p className="mt-8 text-[#B5A79E] text-lg leading-relaxed max-w-xl">
-                Ten courses written from monsoon memory — Gujarati at its core, modern and European at its edges.
-                A composed soundscape, a perfumed room, a long table set for eight.
+                {read(content, "barsaat.hero.body",
+                  "Barsaat draws from the micro-regional food of Gujarat and Rajasthan — my own family's culinary roots — reinterpreted through a contemporary lens, with Bengali influence woven into almost every dish. Ten courses, plated entirely from what the monsoon gives.")}
               </p>
 
               <div className="mt-10 flex flex-wrap gap-4">

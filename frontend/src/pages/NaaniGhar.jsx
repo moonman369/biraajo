@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Home, Heart, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useSiteContent, read } from "@/lib/siteContent";
+
+const APPROACH_ICONS = { home: Home, heart: Heart, sparkles: Sparkles };
 
 export default function NaaniGhar() {
   const { content } = useSiteContent();
@@ -16,6 +18,9 @@ export default function NaaniGhar() {
   const menuVisible = read(content, "naani_ghar.menu.visible", true) !== false;
   const photosVisible = read(content, "naani_ghar.photos_block.visible", true) !== false;
   const closerVisible = read(content, "naani_ghar.closer.visible", true) !== false;
+  const chefNoteVisible = read(content, "naani_ghar.chef_note.visible", true) !== false;
+  const approachVisible = read(content, "naani_ghar.approach.visible", true) !== false;
+  const approachItems = read(content, "naani_ghar.approach.items", []);
 
   return (
     <div className="bg-[#0A0504] text-[#F3EFE7] min-h-screen film-grain" data-testid="page-naani-ghar">
@@ -26,6 +31,9 @@ export default function NaaniGhar() {
           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
             <Link to="/" className="text-overline inline-flex items-center gap-2 mb-8 hover:text-[#D9772B] transition-colors" data-testid="back-to-home">
               <ArrowLeft size={14} /> back to home
+            </Link>
+            <Link to="/events" className="text-overline inline-flex items-center gap-2 mb-8 ml-6 hover:text-[#D9772B] transition-colors" data-testid="naani-all-concepts">
+              all concepts
             </Link>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-end">
               <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="lg:col-span-7">
@@ -46,6 +54,60 @@ export default function NaaniGhar() {
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/55 to-transparent" />
                 </div>
               </motion.div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {chefNoteVisible && (
+        <section className="py-20 sm:py-28 border-t border-[#2D1D1A] bg-[#140A09]" data-testid="naani-chef-note">
+          <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
+            <p className="text-overline">{read(content, "naani_ghar.chef_note.eyebrow", "A note from the chef")}</p>
+            <p className="font-display italic text-2xl sm:text-3xl mt-7 leading-[1.35] text-[#F3EFE7]">
+              &ldquo;{read(content, "naani_ghar.chef_note.quote", "")}&rdquo;
+            </p>
+            <p className="text-overline mt-7 text-[#D9772B]">— {read(content, "naani_ghar.chef_note.signature", "Vidip Shah")}</p>
+          </div>
+        </section>
+      )}
+
+      {approachVisible && approachItems.length > 0 && (
+        <section className="py-24 sm:py-32 border-t border-[#2D1D1A]" data-testid="naani-approach">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 mb-14">
+              <div className="lg:col-span-5">
+                <p className="text-overline">{read(content, "naani_ghar.approach.eyebrow", "The concept")}</p>
+                <h2 className="font-display text-4xl sm:text-5xl mt-6 leading-[1.05] tracking-tight">
+                  {read(content, "naani_ghar.approach.title", "Homecoming,")}
+                  <br />
+                  <span className="italic text-[#D9772B]">{read(content, "naani_ghar.approach.title_italic", "reinterpreted.")}</span>
+                </h2>
+              </div>
+              <div className="lg:col-span-7 lg:pt-3">
+                <p className="text-[#B5A79E] text-lg leading-relaxed">{read(content, "naani_ghar.approach.intro", "")}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#2D1D1A] border border-[#2D1D1A]">
+              {approachItems.map((s, i) => {
+                const Icon = APPROACH_ICONS[s.icon] || Home;
+                return (
+                  <motion.div
+                    key={s.title || i}
+                    initial={{ opacity: 0, y: 18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7, delay: i * 0.08 }}
+                    className="bg-[#0A0504] p-9 sm:p-12"
+                    data-testid={`naani-approach-${i}`}
+                  >
+                    <Icon className="text-[#D9772B]" size={22} strokeWidth={1.4} />
+                    <p className="text-overline mt-6">{s.eyebrow}</p>
+                    <h3 className="font-display text-2xl sm:text-[28px] mt-3 leading-tight">{s.title}</h3>
+                    <p className="text-[#B5A79E] mt-4 leading-relaxed text-[15px]">{s.body}</p>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </section>

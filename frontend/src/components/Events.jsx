@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Calendar, Clock, MapPin, ArrowRight } from "lucide-react";
 import { api } from "@/lib/api";
 import EventRegistrationModal from "@/components/EventRegistrationModal";
 
@@ -61,6 +62,9 @@ export default function Events() {
             <p className="text-[#B5A79E] leading-relaxed">
               Eight seats per evening. (Up to ten for private gatherings.) Menus revealed at the table. Bring someone who eats slowly.
             </p>
+            <Link to="/events" className="text-overline inline-flex items-center gap-2 mt-5 hover:text-[#D9772B] transition-colors" data-testid="events-view-archive-link">
+              See past chapters <ArrowRight size={12} />
+            </Link>
           </div>
         </div>
 

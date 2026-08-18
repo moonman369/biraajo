@@ -768,6 +768,29 @@ async def _run_migrations() -> None:
         await db.migrations.update_one({"id": "wtwe_hero_concept_v1"}, {"$set": {"id": "wtwe_hero_concept_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: wtwe_hero_concept_v1")
 
+    # One-time: restore/enrich the Naani Ghar & Barsaat concept pages with their story,
+    # heritage and soundscape copy (menus/photos untouched — not invented, already correct).
+    if not await db.migrations.find_one({"id": "concept_pages_restore_v1"}):
+        defaults = get_default_content()
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc:
+                continue
+            data = doc["data"]
+            if "naani_ghar" in data:
+                ng_default = defaults.get("naani_ghar", {})
+                data["naani_ghar"]["hero"]["body"] = ng_default.get("hero", {}).get("body", "")
+                data["naani_ghar"]["chef_note"] = ng_default.get("chef_note", {})
+                data["naani_ghar"]["approach"] = ng_default.get("approach", {})
+            if "barsaat" in data:
+                bar_default = defaults.get("barsaat", {})
+                data["barsaat"]["hero"]["eyebrow"] = bar_default.get("hero", {}).get("eyebrow", "")
+                data["barsaat"]["hero"]["body"] = bar_default.get("hero", {}).get("body", "")
+                data["barsaat"]["rajneesh"] = bar_default.get("rajneesh", {})
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        await db.migrations.update_one({"id": "concept_pages_restore_v1"}, {"$set": {"id": "concept_pages_restore_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: concept_pages_restore_v1")
+
 
 # ---------- Startup ----------
 @app.on_event("startup")

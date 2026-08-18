@@ -13,6 +13,7 @@ import Suppers from "@/pages/Suppers";
 import Menus from "@/pages/Menus";
 import NaaniGharMenu from "@/pages/NaaniGharMenu";
 import BarsaatMenu from "@/pages/BarsaatMenu";
+import EventsArchive from "@/pages/EventsArchive";
 import WhenThereWasntEnough from "@/pages/WhenThereWasntEnough";
 import WhenThereWasntEnoughMenu from "@/pages/WhenThereWasntEnoughMenu";
 import { getToken } from "@/lib/api";
@@ -95,6 +96,7 @@ export default function App() {
         <AnalyticsTracker />
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/events" element={<EventsArchive />} />
           <Route path="/about-the-chef" element={<AboutTheChef />} />
           <Route path="/supper-club/naani-ghar" element={<NaaniGhar />} />
           <Route path="/supper-club/barsaat" element={<Barsaat />} />

@@ -49,7 +49,7 @@ export default function Navbar() {
           <a href={href("#about")} className={linkCls} data-testid="nav-story">Story</a>
           <Link to="/about-the-chef" className={linkCls} data-testid="nav-about-chef">About the Chef</Link>
 
-          <a href={href("#events")} className={linkCls} data-testid="nav-events">Events</a>
+          <Link to="/events" className={linkCls} data-testid="nav-events">Events</Link>
 
           <Link to="/menus" className={linkCls} data-testid="nav-menu">Menu</Link>
           <Link to={onLandingPath("gallery", loc)} className={linkCls} data-testid="nav-gallery">Gallery</Link>
@@ -79,7 +79,7 @@ export default function Navbar() {
               <a href={href("#about")} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Story</a>
               <Link to="/about-the-chef" onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">About the Chef</Link>
 
-              <a href={href("#events")} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-events">Events</a>
+              <Link to="/events" onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-events">Events</Link>
 
               <Link to="/menus" onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Menu</Link>
               <Link to={onLandingPath("gallery", loc)} onClick={() => setOpen(false)} className="text-sm tracking-[0.18em] uppercase text-[#B5A79E] py-3 border-b border-[#2D1D1A]" data-testid="mobile-nav-link">Gallery</Link>
