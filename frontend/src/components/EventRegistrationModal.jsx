@@ -27,7 +27,7 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
   const [registration, setRegistration] = useState(null);
   const [copied, setCopied] = useState(false);
   const [screenshotName, setScreenshotName] = useState("");
-  const [prices, setPrices] = useState({ veg: 2500, nonveg: 2800 });
+  const [prices, setPrices] = useState({ veg: 2500, nonveg: 2800, discountPct: 20, discountMinGuests: 4 });
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -35,6 +35,8 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
       setPrices({
         veg: Number(event.price_veg ?? r.data?.price_veg ?? 2500),
         nonveg: Number(event.price_nonveg ?? r.data?.price_nonveg ?? 2800),
+        discountPct: Number(r.data?.group_discount_pct ?? 20),
+        discountMinGuests: Number(r.data?.group_discount_min_guests ?? 4),
       });
     }).catch(() => {});
   }, [event]);
@@ -44,7 +46,10 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
   const seatsLeft = Math.max(1, event.seats_total - (event.seats_booked || 0));
 
   const perSeat = form.menu_preference === "Vegetarian" ? prices.veg : form.menu_preference === "Non-Vegetarian" ? prices.nonveg : 0;
-  const total = perSeat * (Number(form.guests) || 1);
+  const guestsNum = Number(form.guests) || 1;
+  const subtotal = perSeat * guestsNum;
+  const groupDiscountApplies = guestsNum >= prices.discountMinGuests;
+  const total = groupDiscountApplies ? Math.round(subtotal * (100 - prices.discountPct) / 100) : subtotal;
 
   const submitForm = async (e) => {
     e.preventDefault();
@@ -223,6 +228,9 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
                   <input required type="number" min={1} max={seatsLeft}
                     value={form.guests} onChange={handle("guests")}
                     data-testid="reg-guests-input" className={inputCls} />
+                  <p className="mt-1.5 text-[11px] text-[#D9772B]" data-testid="reg-group-discount-hint">
+                    Book {prices.discountMinGuests}+ seats and get {prices.discountPct}% off.
+                  </p>
                 </Field>
                 <Field label="Preferred Event Date" required>
                   <input readOnly value={`${event.date}${event.time ? ` · ${event.time}` : ""}`}
@@ -245,11 +253,21 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
                 </div>
 
                 {perSeat > 0 && (
-                  <div className="sm:col-span-2 flex items-baseline justify-between border-t border-[#2D1D1A] pt-4">
-                    <p className="text-overline">Total</p>
-                    <p className="font-display text-3xl text-[#F3EFE7]" data-testid="reg-total">
-                      ₹{total.toLocaleString("en-IN")}
-                    </p>
+                  <div className="sm:col-span-2 border-t border-[#2D1D1A] pt-4">
+                    {groupDiscountApplies && (
+                      <div className="flex items-baseline justify-between text-sm text-[#B5A79E] mb-1" data-testid="reg-group-discount-note">
+                        <p>Subtotal <span className="opacity-70">({guestsNum} × ₹{perSeat.toLocaleString("en-IN")})</span></p>
+                        <p className="line-through">₹{subtotal.toLocaleString("en-IN")}</p>
+                      </div>
+                    )}
+                    <div className="flex items-baseline justify-between">
+                      <p className="text-overline">
+                        {groupDiscountApplies ? `Total · ${prices.discountPct}% group discount applied` : "Total"}
+                      </p>
+                      <p className="font-display text-3xl text-[#F3EFE7]" data-testid="reg-total">
+                        ₹{total.toLocaleString("en-IN")}
+                      </p>
+                    </div>
                   </div>
                 )}
 

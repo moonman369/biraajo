@@ -1,0 +1,28 @@
+{
+  "summary": "Verified group-discount feature end-to-end. Backend: /api/settings exposes group_discount_pct=20 & group_discount_min_guests=4; _calc_total applies 20% off for guests>=4, full price for guests<=3, admin PUT /api/admin/settings persists new % and next booking uses new rate (25% test => 8400 for 4x2800). Admin UI Overview tab has new 'group-discount-input' field alongside veg/nonveg, Save prices saves via PUT and toast confirms. EventRegistrationModal shows hint 'Book 4+ seats and get 20% off.' always, strikethrough subtotal + '...group discount applied' label + discounted total appear only for guests>=4 (verified guests=1..6, all correct). Admin email notifications fire on pending creation (confirmed via backend logs; Resend [EMAIL SENT] to=reachbiraajo@gmail.com for every test booking). Confirmed payment path uses same send_admin_notification wired at server.py:943. Cleaned up all TEST_ registrations, restored group_discount_pct to 20, seats_booked matches pre-test state.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_group_discount.py",
+    "/app/test_reports/pytest/iter31_discount.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is 1767 lines — nearing size where a split into routers/(events, registrations, settings, admin, media) would improve maintainability; not a bug, just tech-debt.",
+    "public /api/settings hard-codes group_discount_min_guests to GROUP_DISCOUNT_MIN_GUESTS constant (4) — the admin cannot edit the threshold, only the percentage. If future requirements ask to change threshold from 4 to another number this will require a code change. Consider persisting it in settings for parity with group_discount_pct.",
+    "Minor UX observation (not in scope): /menus/barsaat 'Reserve a seat' button appears to open a WhenThereWasntEnough event modal instead of a Barsaat event (looks like BarsaatMenu.jsx picks the first upcoming event which is currently a WTWE date). Discount math still works correctly, but the button may mis-route bookings between series. Recommend main agent verify BarsaatMenu.jsx event selection scopes to series='barsaat'.",
+    "Group discount % input in AdminDashboard accepts values >100 client-side but backend clamps to 100 — acceptable but could add HTML max=100 validation feedback in UI."
+  ],
+  "updated_files": ["/app/backend/tests/test_group_discount.py"],
+  "success_rate": {"backend": "100% (6/6)", "frontend": "100% (all discount UI cases + admin editor E2E)"},
+  "test_credentials": "reachbiraajo@gmail.com / Biraajo@2026",
+  "seed_data_creation": "Created + deleted 4 TEST_ registrations during test; group_discount_pct toggled 20->25->20 and restored. Final state clean.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Group discount feature fully working. If main agent addresses the BarsaatMenu.jsx 'first upcoming event' vs series-scoping observation, re-test /menus/barsaat routes to correct series.",
+  "rca of the issue": "No blocking issues found. See critical_code_review_comments for optional improvements."
+}

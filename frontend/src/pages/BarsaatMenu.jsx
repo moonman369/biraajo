@@ -20,7 +20,7 @@ export default function BarsaatMenu() {
       .then((r) => {
         const list = r.data || [];
         const match = list.find((e) => /barsaat|monsoon/i.test(`${e.title} ${e.tag || ""}`));
-        setEvent(match || list[0] || null);
+        setEvent(match || null);
       }).catch(() => {});
     api.get("/settings")
       .then((r) => setRegistrationsOpen(r.data?.registrations_open !== false)).catch(() => {});

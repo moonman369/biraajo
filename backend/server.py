@@ -33,6 +33,8 @@ from pydantic import BaseModel, Field, EmailStr, ConfigDict
 # ---------- Pricing ----------
 PRICE_VEG = 2500
 PRICE_NONVEG = 2800
+GROUP_DISCOUNT_PCT = 20
+GROUP_DISCOUNT_MIN_GUESTS = 4
 UPI_ID = os.environ.get("UPI_ID", "vidipshah14-1@oksbi")
 
 # ---------- Capacity ----------
@@ -690,6 +692,19 @@ async def _run_migrations() -> None:
         await db.migrations.update_one({"id": "karan_soni_aug9_offsite_v1"}, {"$set": {"id": "karan_soni_aug9_offsite_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: karan_soni_aug9_offsite_v1")
 
+    # One-time: seed the per-course story notes for "When There Wasn't Enough" menu.
+    if not await db.migrations.find_one({"id": "wtwe_menu_notes_v1"}):
+        new_items = get_default_content().get("wtwe", {}).get("menu", {}).get("items", [])
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc or "wtwe" not in doc.get("data", {}):
+                continue
+            data = doc["data"]
+            data.setdefault("wtwe", {}).setdefault("menu", {})["items"] = new_items
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        await db.migrations.update_one({"id": "wtwe_menu_notes_v1"}, {"$set": {"id": "wtwe_menu_notes_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: wtwe_menu_notes_v1")
+
 
 # ---------- Startup ----------
 @app.on_event("startup")
@@ -798,7 +813,12 @@ async def _calc_total(event: dict, menu_preference: str, guests: int) -> int:
     nonveg = event.get("price_nonveg")
     nonveg = int(nonveg) if nonveg is not None else int(s.get("price_nonveg", PRICE_NONVEG))
     per_seat = veg if menu_preference == "Vegetarian" else nonveg
-    return int(per_seat) * max(1, int(guests or 1))
+    guests = max(1, int(guests or 1))
+    total = per_seat * guests
+    if guests >= GROUP_DISCOUNT_MIN_GUESTS:
+        pct = int(s.get("group_discount_pct", GROUP_DISCOUNT_PCT))
+        total = round(total * (100 - pct) / 100)
+    return int(total)
 
 
 def _check_seats(event: dict, requested: int, baseline_guests: int = 0) -> int:
@@ -1547,6 +1567,7 @@ DEFAULT_SETTINGS = {
     "registrations_open": True,
     "price_veg": PRICE_VEG,
     "price_nonveg": PRICE_NONVEG,
+    "group_discount_pct": GROUP_DISCOUNT_PCT,
 }
 
 
@@ -1566,6 +1587,8 @@ async def public_settings():
         "registrations_open": bool(s.get("registrations_open", True)),
         "price_veg": int(s.get("price_veg", PRICE_VEG)),
         "price_nonveg": int(s.get("price_nonveg", PRICE_NONVEG)),
+        "group_discount_pct": int(s.get("group_discount_pct", GROUP_DISCOUNT_PCT)),
+        "group_discount_min_guests": GROUP_DISCOUNT_MIN_GUESTS,
     }
 
 
@@ -1580,6 +1603,11 @@ async def update_settings(body: dict, user=Depends(get_current_admin)):
             merged[pk] = max(0, int(merged[pk]))
         except (ValueError, TypeError):
             raise HTTPException(status_code=400, detail=f"{pk} must be a non-negative number")
+    if "group_discount_pct" in merged:
+        try:
+            merged["group_discount_pct"] = max(0, min(100, int(merged["group_discount_pct"])))
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=400, detail="group_discount_pct must be a number between 0 and 100")
     await db.settings.update_one(
         {"id": "global"},
         {"$set": {"data": merged, "updated_at": _now_iso()}},

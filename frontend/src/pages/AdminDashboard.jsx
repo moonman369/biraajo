@@ -95,7 +95,11 @@ function Overview() {
     api.get("/stats").then((r) => setStats(r.data)).catch(() => {});
     api.get("/settings").then((r) => {
       setRegsOpen(r.data?.registrations_open !== false);
-      setPrices({ price_veg: r.data?.price_veg ?? 2500, price_nonveg: r.data?.price_nonveg ?? 2800 });
+      setPrices({
+        price_veg: r.data?.price_veg ?? 2500,
+        price_nonveg: r.data?.price_nonveg ?? 2800,
+        group_discount_pct: r.data?.group_discount_pct ?? 20,
+      });
     }).catch(() => {});
   }, []);
 
@@ -105,8 +109,13 @@ function Overview() {
       const res = await api.put("/admin/settings", {
         price_veg: Number(prices.price_veg),
         price_nonveg: Number(prices.price_nonveg),
+        group_discount_pct: Number(prices.group_discount_pct),
       });
-      setPrices({ price_veg: res.data.price_veg, price_nonveg: res.data.price_nonveg });
+      setPrices({
+        price_veg: res.data.price_veg,
+        price_nonveg: res.data.price_nonveg,
+        group_discount_pct: res.data.group_discount_pct,
+      });
       toast.success("Menu prices updated — live on the site now.");
     } catch {
       toast.error("Could not save prices");
@@ -203,6 +212,15 @@ function Overview() {
                 className="mt-2 w-44 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] font-display text-2xl focus:border-[#5A1A1F] outline-none"
               />
             </label>
+            <label className="block">
+              <span className="text-[10px] tracking-[0.22em] uppercase text-[#B5A79E]">Group discount % (4+ seats)</span>
+              <input
+                type="number" min="0" max="100" value={prices.group_discount_pct}
+                onChange={(e) => setPrices((p) => ({ ...p, group_discount_pct: e.target.value }))}
+                data-testid="group-discount-input"
+                className="mt-2 w-44 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] font-display text-2xl focus:border-[#5A1A1F] outline-none"
+              />
+            </label>
             <button
               onClick={savePrices} disabled={savingPrice}
               data-testid="price-save-button"
@@ -211,6 +229,9 @@ function Overview() {
               {savingPrice ? "Saving…" : "Save prices"}
             </button>
           </div>
+          <p className="text-[11px] text-[#6E625B] mt-4">
+            Applies automatically to any booking of 4 or more seats, across every series.
+          </p>
         </div>
       )}
       <p className="mt-10 text-[#B5A79E] max-w-2xl">
