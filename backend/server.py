@@ -755,6 +755,19 @@ async def _run_migrations() -> None:
         await db.migrations.update_one({"id": "wtwe_brand_fix_v1"}, {"$set": {"id": "wtwe_brand_fix_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: wtwe_brand_fix_v1")
 
+    # One-time: add a short concept teaser line above the hero poster image.
+    if not await db.migrations.find_one({"id": "wtwe_hero_concept_v1"}):
+        concept = get_default_content().get("wtwe", {}).get("hero", {}).get("concept", "")
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc or "wtwe" not in doc.get("data", {}):
+                continue
+            data = doc["data"]
+            data["wtwe"].setdefault("hero", {})["concept"] = concept
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        await db.migrations.update_one({"id": "wtwe_hero_concept_v1"}, {"$set": {"id": "wtwe_hero_concept_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: wtwe_hero_concept_v1")
+
 
 # ---------- Startup ----------
 @app.on_event("startup")

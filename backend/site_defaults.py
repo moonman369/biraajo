@@ -270,6 +270,7 @@ DEFAULT_CONTENT = {
             "eyebrow": "An immersive supper",
             "title": "Abhav Ke Bhav",
             "title_italic": "When there wasn't enough",
+            "concept": "A supper built from scarcity — and the ingenuity it demanded.",
             "body": "Eight courses that each grew out of a moment of scarcity — a lean season, a traveller's limited stores, "
                      "a way of using up what was left, a private thought stolen from a busy day. Not just a meal, but a "
                      "conversation about how — and why — we eat what we eat.",

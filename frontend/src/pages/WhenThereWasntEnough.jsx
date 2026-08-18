@@ -60,6 +60,8 @@ export default function WhenThereWasntEnough() {
   const heroEyebrow = read(content, "wtwe.hero.eyebrow", "An immersive supper");
   const heroTitle = read(content, "wtwe.hero.title", "Abhav Ke Bhav");
   const heroTitleIt = read(content, "wtwe.hero.title_italic", "When there wasn't enough");
+  const heroConcept = read(content, "wtwe.hero.concept",
+    "A supper built from scarcity — and the ingenuity it demanded.");
   const heroBody = read(content, "wtwe.hero.body",
     "Eight courses that each grew out of a moment of scarcity. Not just a meal, but a conversation about how — and why — we eat what we eat.");
 
@@ -97,41 +99,53 @@ export default function WhenThereWasntEnough() {
     <div className="bg-[#0A0504] text-[#F3EFE7] min-h-screen film-grain" data-testid="page-wtwe">
       <Navbar />
 
-      {/* HERO */}
-      <section className="relative pt-32 pb-16 sm:pt-44 sm:pb-24 overflow-hidden">
+      {/* HERO — recreates the original poster composition, uncropped */}
+      <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-          <Link to="/" className="text-overline inline-flex items-center gap-2 mb-8 hover:text-[#D9772B] transition-colors" data-testid="wtwe-back-home">
+          <Link to="/" className="text-overline inline-flex items-center gap-2 mb-10 hover:text-[#D9772B] transition-colors" data-testid="wtwe-back-home">
             <ArrowLeft size={14} /> back to home
           </Link>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-end">
-            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="lg:col-span-7">
-              <p className="text-overline">{heroEyebrow}</p>
-              <h1 className="font-display uppercase text-5xl sm:text-6xl lg:text-7xl mt-6 leading-[1.05] tracking-wide">
-                {heroTitle}
-              </h1>
-              <p className="text-sm sm:text-base tracking-[0.35em] uppercase text-[#D9772B] font-body mt-5">
-                {heroTitleIt}
-              </p>
-              <p className="mt-8 text-[#B5A79E] text-lg leading-relaxed max-w-xl">{heroBody}</p>
+        </div>
 
-              <div className="mt-10 flex flex-wrap gap-4">
-                <a href="#dates" data-testid="wtwe-jump-dates"
-                  className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
-                  Join the table <ArrowRight size={14} className="ml-2" />
-                </a>
-                <Link to="/menus/when-there-wasnt-enough" data-testid="wtwe-view-menu"
-                  className="inline-flex items-center justify-center px-8 py-4 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
-                  View the menu
-                </Link>
-              </div>
-            </motion.div>
+        <div className="max-w-xl mx-auto px-6 text-center">
+          <p className="text-overline">{heroEyebrow}</p>
+          {heroConcept && (
+            <p className="font-display italic text-2xl sm:text-3xl mt-6 leading-[1.3] text-[#F3EFE7]" data-testid="wtwe-hero-concept">
+              {heroConcept}
+            </p>
+          )}
+        </div>
 
-            <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.2 }} className="lg:col-span-5">
-              <div className="img-zoom relative aspect-[4/5] w-full overflow-hidden">
-                {heroImg && <img src={heroImg} alt="Abhav Ke Bhav — When there wasn't enough" className="w-full h-full object-cover" />}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/55 to-transparent" />
-              </div>
-            </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 28, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1.1, ease: "easeOut" }}
+          className="relative mx-auto mt-8 w-full max-w-[420px] sm:max-w-[480px] lg:max-w-[540px] px-6"
+        >
+          <div className="relative" style={{ boxShadow: "0 50px 120px -30px rgba(0,0,0,0.7)" }}>
+            {heroImg && (
+              <img
+                src={heroImg}
+                alt={`${heroTitle} — ${heroTitleIt}`}
+                className="w-full h-auto"
+                data-testid="wtwe-poster-image"
+              />
+            )}
+          </div>
+        </motion.div>
+
+        <div className="max-w-xl mx-auto px-6 mt-12 text-center">
+          <p className="text-[#B5A79E] text-lg leading-relaxed">{heroBody}</p>
+
+          <div className="mt-9 flex flex-wrap gap-4 justify-center">
+            <a href="#dates" data-testid="wtwe-jump-dates"
+              className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
+              Join the table <ArrowRight size={14} className="ml-2" />
+            </a>
+            <Link to="/menus/when-there-wasnt-enough" data-testid="wtwe-view-menu"
+              className="inline-flex items-center justify-center px-8 py-4 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
+              View the menu
+            </Link>
           </div>
         </div>
       </section>

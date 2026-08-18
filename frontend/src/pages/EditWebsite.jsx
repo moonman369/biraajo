@@ -321,6 +321,7 @@ const SCHEMA = {
           { key: "eyebrow", label: "Eyebrow", type: "text" },
           { key: "title", label: "Title", type: "text" },
           { key: "title_italic", label: "Title (italic)", type: "text" },
+          { key: "concept", label: "Concept teaser (shown above the poster image)", type: "textarea" },
           { key: "body", label: "Body", type: "textarea" },
           { key: "image", label: "Hero image URL", type: "url" },
         ],
