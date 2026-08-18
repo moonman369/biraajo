@@ -9,9 +9,12 @@ const UPI_QR_URL = "/api/media/biraajo/media/a6dfec35dcbb1331.png";
 const CONTACT = "+91 93313 08405";
 const PAYEE_NAME = "Vidip Shah";
 
-export default function EventRegistrationModal({ event, onClose, onSuccess, disclaimer = "" }) {
+export default function EventRegistrationModal({ event, events, onClose, onSuccess, disclaimer = "" }) {
+  const dateOptions = events && events.length ? events : event ? [event] : [];
+  const firstAvailable = dateOptions.find((e) => (e.seats_total - (e.seats_booked || 0)) > 0) || dateOptions[0];
   // step: "form" | "payment" | "done"
   const [step, setStep] = useState("form");
+  const [selectedEventId, setSelectedEventId] = useState(firstAvailable?.id || "");
   const [form, setForm] = useState({
     full_name: "",
     email: "",
@@ -30,20 +33,25 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
   const [prices, setPrices] = useState({ veg: 2500, nonveg: 2800, discountPct: 20, discountMinGuests: 4 });
   const fileInputRef = useRef(null);
 
+  const activeEvent = dateOptions.find((e) => e.id === selectedEventId) || firstAvailable;
+
   useEffect(() => {
+    if (!activeEvent) return;
     api.get("/settings").then((r) => {
       setPrices({
-        veg: Number(event.price_veg ?? r.data?.price_veg ?? 2500),
-        nonveg: Number(event.price_nonveg ?? r.data?.price_nonveg ?? 2800),
+        veg: Number(activeEvent.price_veg ?? r.data?.price_veg ?? 2500),
+        nonveg: Number(activeEvent.price_nonveg ?? r.data?.price_nonveg ?? 2800),
         discountPct: Number(r.data?.group_discount_pct ?? 20),
         discountMinGuests: Number(r.data?.group_discount_min_guests ?? 4),
       });
     }).catch(() => {});
-  }, [event]);
+  }, [activeEvent]);
+
+  if (!activeEvent) return null;
 
   const handle = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const seatsLeft = Math.max(1, event.seats_total - (event.seats_booked || 0));
+  const seatsLeft = Math.max(1, activeEvent.seats_total - (activeEvent.seats_booked || 0));
 
   const perSeat = form.menu_preference === "Vegetarian" ? prices.veg : form.menu_preference === "Non-Vegetarian" ? prices.nonveg : 0;
   const guestsNum = Number(form.guests) || 1;
@@ -59,9 +67,9 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
     }
     setSubmitting(true);
     try {
-      const { data } = await api.post(`/events/${event.id}/register`, {
+      const { data } = await api.post(`/events/${activeEvent.id}/register`, {
         ...form,
-        event_id: event.id,
+        event_id: activeEvent.id,
         guests: Number(form.guests) || 1,
       });
       setRegistration(data);
@@ -88,7 +96,7 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
   const openUpi = () => {
     if (!registration) return;
     const amt = registration.total_amount || total;
-    const note = `Biraajo · ${event.title}`;
+    const note = `Biraajo · ${activeEvent.title}`;
     const url = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(PAYEE_NAME)}&am=${amt}&cu=INR&tn=${encodeURIComponent(note)}`;
     window.location.href = url;
   };
@@ -167,10 +175,10 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
               )}
               <p className="text-overline">Reserve your seat</p>
               <h3 className="font-display text-3xl sm:text-4xl mt-3 text-[#F3EFE7] leading-tight">
-                {event.title}
+                {activeEvent.title}
               </h3>
               <p className="mt-2 text-[#B5A79E] text-sm">
-                {event.venue} · {event.time}
+                {activeEvent.venue} · {activeEvent.time}
               </p>
 
               <div className="mt-5 grid grid-cols-2 gap-px bg-[#2D1D1A] border border-[#2D1D1A]">
@@ -233,8 +241,36 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
                   </p>
                 </Field>
                 <Field label="Preferred Event Date" required>
-                  <input readOnly value={`${event.date}${event.time ? ` · ${event.time}` : ""}`}
-                    data-testid="reg-event-date" className={`${inputCls} cursor-not-allowed opacity-80`} />
+                  {dateOptions.length > 1 ? (
+                    <select
+                      required
+                      value={selectedEventId}
+                      onChange={(e) => {
+                        const newId = e.target.value;
+                        setSelectedEventId(newId);
+                        const newEvent = dateOptions.find((ev) => ev.id === newId);
+                        if (newEvent) {
+                          const newLeft = Math.max(1, newEvent.seats_total - (newEvent.seats_booked || 0));
+                          setForm((f) => ({ ...f, guests: Math.min(Number(f.guests) || 1, newLeft) }));
+                        }
+                      }}
+                      data-testid="reg-event-date-select"
+                      className={inputCls}
+                    >
+                      {dateOptions.map((e) => {
+                        const left = Math.max(0, e.seats_total - (e.seats_booked || 0));
+                        const soldOut = left === 0;
+                        return (
+                          <option key={e.id} value={e.id} disabled={soldOut}>
+                            {e.date}{e.time ? ` · ${e.time}` : ""}{soldOut ? " · Sold out" : ` · ${left} left`}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  ) : (
+                    <input readOnly value={`${activeEvent.date}${activeEvent.time ? ` · ${activeEvent.time}` : ""}`}
+                      data-testid="reg-event-date" className={`${inputCls} cursor-not-allowed opacity-80`} />
+                  )}
                 </Field>
 
                 <div className="sm:col-span-2">
@@ -293,7 +329,7 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
               </h3>
               <p className="mt-3 text-[#B5A79E]">
                 A welcome note is on its way to <span className="text-[#F3EFE7]">{registration.email}</span>. To lock your seat for{" "}
-                <span className="text-[#F3EFE7]">{event.title}</span>, complete the UPI payment below and upload the screenshot.
+                <span className="text-[#F3EFE7]">{activeEvent.title}</span>, complete the UPI payment below and upload the screenshot.
               </p>
 
               <div className="mt-7 border border-[#2D1D1A] bg-[#0A0504] p-6">
@@ -368,8 +404,8 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
                 See you soon, {registration.full_name.split(" ")[0]}.
               </h3>
               <p className="mt-3 text-[#B5A79E]">
-                Your seat for <span className="text-[#F3EFE7]">{event.title}</span> on{" "}
-                <span className="text-[#F3EFE7]">{event.date}</span> is locked. A confirmation email is on its way.
+                Your seat for <span className="text-[#F3EFE7]">{activeEvent.title}</span> on{" "}
+                <span className="text-[#F3EFE7]">{activeEvent.date}</span> is locked. A confirmation email is on its way.
                 If anything changes, we&apos;ll reach you on WhatsApp.
               </p>
 
@@ -377,7 +413,7 @@ export default function EventRegistrationModal({ event, onClose, onSuccess, disc
                 <Detail label="Guests" value={registration.guests} />
                 <Detail label="Menu" value={registration.menu_preference} />
                 <Detail label="Amount paid" value={`₹${Number(registration.total_amount || 0).toLocaleString("en-IN")}`} />
-                <Detail label="Venue" value={event.venue} />
+                <Detail label="Venue" value={activeEvent.venue} />
               </div>
 
               <button onClick={close}

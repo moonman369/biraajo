@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import EventRegistrationModal from "@/components/EventRegistrationModal";
 import { api } from "@/lib/api";
+import { WTWE_COVER } from "@/lib/chapters";
 
 export default function Suppers() {
   const [event, setEvent] = useState(null);
@@ -130,7 +131,7 @@ export default function Suppers() {
             data-testid="supper-card-wtwe"
           >
             <div className="md:col-span-5 relative aspect-[4/3] md:aspect-auto img-zoom">
-              <img src="https://customer-assets-gfyr7b9c.emergentagent.net/job_5694519e-f9bb-446a-a36e-fdf292c1f3e4/artifacts/eofl6aqm_when.jpg" alt="Abhāv Ke Bhāv — When there wasn't enough" className="w-full h-full object-cover" />
+              <video src={WTWE_COVER} className="w-full h-full object-cover" autoPlay muted loop playsInline preload="metadata" onCanPlay={(e) => { try { e.currentTarget.play(); } catch { /* ignore */ } }} />
               <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">Now booking</span>
             </div>
             <div className="md:col-span-7 p-8 sm:p-12 flex flex-col justify-between gap-8">

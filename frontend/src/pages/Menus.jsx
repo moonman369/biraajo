@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { WTWE_COVER } from "@/lib/chapters";
 
 export default function Menus() {
   return (
@@ -102,10 +103,15 @@ export default function Menus() {
           >
             <Link to="/menus/when-there-wasnt-enough" className="block group">
               <div className="relative aspect-[4/5] overflow-hidden img-zoom">
-                <img
-                  src="https://customer-assets-gfyr7b9c.emergentagent.net/job_5694519e-f9bb-446a-a36e-fdf292c1f3e4/artifacts/eofl6aqm_when.jpg"
-                  alt="Abhāv Ke Bhāv — When there wasn't enough"
+                <video
+                  src={WTWE_COVER}
                   className="w-full h-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  onCanPlay={(e) => { try { e.currentTarget.play(); } catch { /* ignore */ } }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504] via-[#0A0504]/30 to-transparent" />
                 <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">

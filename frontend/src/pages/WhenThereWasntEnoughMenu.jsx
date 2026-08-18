@@ -11,16 +11,16 @@ import { useSiteContent, read } from "@/lib/siteContent";
 
 export default function WhenThereWasntEnoughMenu() {
   const { content } = useSiteContent();
-  const [event, setEvent] = useState(null);
+  const [events, setEvents] = useState([]);
   const [registrationsOpen, setRegistrationsOpen] = useState(true);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     api.get("/events", { params: { upcoming: "true" } })
       .then((r) => {
-        const list = r.data || [];
-        const match = list.find((e) => e.id.startsWith("wtwe-"));
-        setEvent(match || null);
+        const list = (r.data || []).filter((e) => e.id.startsWith("wtwe-"));
+        list.sort((a, b) => (a.date > b.date ? 1 : -1));
+        setEvents(list);
       }).catch(() => {});
     api.get("/settings")
       .then((r) => setRegistrationsOpen(r.data?.registrations_open !== false)).catch(() => {});
@@ -38,7 +38,7 @@ export default function WhenThereWasntEnoughMenu() {
       toast.info("Reservations are paused for now. Please reach out via WhatsApp.");
       return;
     }
-    if (!event) {
+    if (!events.length) {
       toast.info("No seats are open right now — check back soon.");
       return;
     }
@@ -155,9 +155,9 @@ export default function WhenThereWasntEnoughMenu() {
 
       <Footer />
 
-      {open && event && (
+      {open && events.length > 0 && (
         <EventRegistrationModal
-          event={event}
+          events={events}
           onClose={() => setOpen(false)}
           onSuccess={() => setOpen(false)}
         />

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { api } from "@/lib/api";
 import { CHAPTERS } from "@/lib/chapters";
+import { isVideoUrl } from "@/lib/media";
 
 export default function Events() {
   const [seatInfo, setSeatInfo] = useState(null);
@@ -41,7 +42,7 @@ export default function Events() {
           </div>
           <div className="lg:col-span-4">
             <p className="text-[#B5A79E] leading-relaxed">
-              Biraajo doesn't repeat a menu. Each chapter is its own concept — its own story, season and soundscape.
+              Biraajo doesn't repeat a menu. Each chapter is its own concept — its own story and season.
             </p>
             <Link
               to="/events"
@@ -68,7 +69,20 @@ export default function Events() {
               data-testid={`homepage-chapter-card-${c.number}`}
             >
               <div className="img-zoom relative aspect-[4/3] overflow-hidden">
-                <img src={c.image} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
+                {isVideoUrl(c.image) ? (
+                  <video
+                    src={c.image}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    onCanPlay={(e) => { try { e.currentTarget.play(); } catch { /* ignore */ } }}
+                  />
+                ) : (
+                  <img src={c.image} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/70 to-transparent" />
                 <span
                   className={`absolute top-4 left-4 text-[10px] tracking-[0.22em] uppercase px-2.5 py-1 border backdrop-blur-sm bg-[#0A0504]/70 ${
@@ -93,7 +107,7 @@ export default function Events() {
                   </p>
                 )}
                 <Link
-                  to={c.href + (c.active ? "#dates" : "")}
+                  to={c.href}
                   data-testid={`homepage-chapter-cta-${c.number}`}
                   className={`mt-6 inline-flex items-center justify-center gap-2 px-6 py-4 tracking-[0.18em] uppercase text-[11px] transition-all duration-500 ${
                     c.active

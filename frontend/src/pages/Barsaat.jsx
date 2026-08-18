@@ -79,14 +79,13 @@ export default function Barsaat() {
   // CMS reads with sensible fallbacks
   const q = read(content, "barsaat.chef_note.quote", DEFAULT_QUOTE);
   const qEyebrow = read(content, "barsaat.chef_note.eyebrow", "A note from the chef");
-  const qSig = read(content, "barsaat.chef_note.signature", "Vidip Shah");
   const senses = (() => {
     const cmsItems = read(content, "barsaat.sensory.items", []);
     return Array.isArray(cmsItems) && cmsItems.length ? cmsItems : DEFAULT_SENSES;
   })();
   const sensEyebrow = read(content, "barsaat.sensory.eyebrow", "The experience");
-  const sensTitle = read(content, "barsaat.sensory.title", "Not just dinner.");
-  const sensTitleIt = read(content, "barsaat.sensory.title_italic", "A monsoon, indoors.");
+  const sensTitle = read(content, "barsaat.sensory.title", "Sight, sound, smell.");
+  const sensTitleIt = read(content, "barsaat.sensory.title_italic", "In that order.");
   const sensIntro = read(content, "barsaat.sensory.intro",
     "Every element of Barsaat is composed to lift the food from the plate into the room. From the moment you step in, the senses are spoken to in sequence, sight, sound, smell, until the table feels less like a restaurant and more like a memory being shared.");
   const rajEyebrow = read(content, "barsaat.rajneesh.eyebrow", "A collaboration");
@@ -247,7 +246,6 @@ export default function Barsaat() {
           <p className="font-display italic text-2xl sm:text-3xl mt-7 leading-[1.35] text-[#F3EFE7]">
             &ldquo;{q}&rdquo;
           </p>
-          <p className="text-overline mt-7 text-[#D9772B]">— {qSig}</p>
         </div>
       </section>
 

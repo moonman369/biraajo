@@ -1,3 +1,5 @@
+export const WTWE_COVER = "/api/media/biraajo/gallery/f220f4b1229841e4803951df9162370c.mp4";
+
 export const CHAPTERS = [
   {
     number: "03",
@@ -6,7 +8,7 @@ export const CHAPTERS = [
     status: "Now booking",
     active: true,
     description: "The current chapter — eight courses built entirely from necessity, scarcity and upcycled memory.",
-    image: "https://customer-assets-gfyr7b9c.emergentagent.net/job_5694519e-f9bb-446a-a36e-fdf292c1f3e4/artifacts/eofl6aqm_when.jpg",
+    image: WTWE_COVER,
     href: "/supper-club/when-there-wasnt-enough",
     ctaLabel: "Book a seat",
   },

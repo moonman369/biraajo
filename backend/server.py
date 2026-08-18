@@ -864,6 +864,73 @@ async def _run_migrations() -> None:
         await db.migrations.update_one({"id": "wtwe_closer_cta_fix_v1"}, {"$set": {"id": "wtwe_closer_cta_fix_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: wtwe_closer_cta_fix_v1")
 
+    # One-time: swap the WTWE hero poster (Abhāv Ke Bhāv cover) from the static
+    # poster image to the user's new cover video, uploaded to object storage.
+    if not await db.migrations.find_one({"id": "wtwe_hero_video_cover_v1"}):
+        new_cover = "/api/media/biraajo/gallery/cd7d617db6534131b7f07fa2eecd0b18.mp4"
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc or "wtwe" not in doc.get("data", {}):
+                continue
+            data = doc["data"]
+            data["wtwe"].setdefault("hero", {})["image"] = new_cover
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        await db.migrations.update_one({"id": "wtwe_hero_video_cover_v1"}, {"$set": {"id": "wtwe_hero_video_cover_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: wtwe_hero_video_cover_v1")
+
+    # One-time: the wtwe_hero_video_cover_v1 upload had a demuxer-incompatible
+    # bitstream (Chrome rejected it) — re-encoded to browser-safe H.264/AAC and
+    # swapping the reference here.
+    if not await db.migrations.find_one({"id": "wtwe_hero_video_cover_fix_v1"}):
+        new_cover = "/api/media/biraajo/gallery/f220f4b1229841e4803951df9162370c.mp4"
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc or "wtwe" not in doc.get("data", {}):
+                continue
+            data = doc["data"]
+            data["wtwe"].setdefault("hero", {})["image"] = new_cover
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        await db.migrations.update_one({"id": "wtwe_hero_video_cover_fix_v1"}, {"$set": {"id": "wtwe_hero_video_cover_fix_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: wtwe_hero_video_cover_fix_v1")
+
+    # One-time: content-tone cleanup — remove "— Vidip Shah" signature lines under
+    # chef's-note quotes (humbler, unsigned), fix a false "every chapter has a
+    # soundscape" claim (only Barsaat has one), and rewrite the "Not X, but Y" /
+    # "isn't...it's" AI-sounding rhetorical pattern used across several WTWE
+    # sections + the About page into more direct, minimal phrasing. Also replaces
+    # the invented "Four questions, at every course" listicle on the WTWE page
+    # with a single grounded reflective line.
+    if not await db.migrations.find_one({"id": "content_tone_cleanup_v1"}):
+        defaults = get_default_content()
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc:
+                continue
+            data = doc["data"]
+            if "landing" in data:
+                data["landing"].setdefault("about", {}).setdefault("meaning", {})["body_3"] = \
+                    defaults["landing"]["about"]["meaning"]["body_3"]
+            if "naani_ghar" in data:
+                data["naani_ghar"].setdefault("chef_note", {}).pop("signature", None)
+            if "wtwe" in data:
+                wtwe = data["wtwe"]
+                wtwe.setdefault("hero", {})["body"] = defaults["wtwe"]["hero"]["body"]
+                wtwe.setdefault("chef_note", {})["quote"] = defaults["wtwe"]["chef_note"]["quote"]
+                wtwe["chef_note"].pop("signature", None)
+                wtwe.setdefault("story", {}).update({
+                    "title": defaults["wtwe"]["story"]["title"],
+                    "title_italic": defaults["wtwe"]["story"]["title_italic"],
+                    "paragraphs": defaults["wtwe"]["story"]["paragraphs"],
+                })
+                wtwe.setdefault("idea", {}).update({
+                    "title": defaults["wtwe"]["idea"]["title"],
+                    "title_italic": defaults["wtwe"]["idea"]["title_italic"],
+                })
+                wtwe["questions"] = defaults["wtwe"]["questions"]
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        await db.migrations.update_one({"id": "content_tone_cleanup_v1"}, {"$set": {"id": "content_tone_cleanup_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: content_tone_cleanup_v1")
+
     # One-time: Barsaat has concluded — explicitly close bookings on all its events
     # (not just date-hidden), so a stale/direct link can no longer be booked.
     if not await db.migrations.find_one({"id": "barsaat_close_bookings_v1"}):

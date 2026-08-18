@@ -57,7 +57,7 @@ DEFAULT_CONTENT = {
                 "title_italic": "take a seat.",
                 "body_1": "The name <em>Biraajo</em> comes from a Sanskrit word used to invite someone to take a seat.",
                 "body_2": "It's a simple gesture, but an important one.",
-                "body_3": "More than anything, this is an ongoing project. Not a restaurant that has found its final form. A table that's still being set — by someone who thinks the process of setting it is as interesting as the meal itself. That's what this is about.",
+                "body_3": "This is an ongoing project — a table that's still being set, one supper at a time. The process matters as much as the meal.",
                 "pull_quote": "A little old Calcutta. A little experimentation. And always a place for one more person.",
                 "primary_cta_label": "Pull up a chair",
                 "primary_cta_href": "#events",
@@ -172,7 +172,6 @@ DEFAULT_CONTENT = {
             "visible": True,
             "eyebrow": "A note from the chef",
             "quote": "Naani Ghar was never about copying her recipes. It was about remembering how they made me feel, and finding a way to make you feel that too — in a language the two of us built together, one home-cooked, one entirely new.",
-            "signature": "Vidip Shah",
         },
         "approach": {
             "visible": True,
@@ -307,9 +306,9 @@ DEFAULT_CONTENT = {
             "title_italic": "When there wasn't enough",
             "concept": "A supper built from scarcity — and the ingenuity it demanded.",
             "body": "Eight courses that each grew out of a moment of scarcity — a lean season, a traveller's limited stores, "
-                     "a way of using up what was left, a private thought stolen from a busy day. Not just a meal, but a "
-                     "conversation about how — and why — we eat what we eat.",
-            "image": "https://customer-assets-gfyr7b9c.emergentagent.net/job_5694519e-f9bb-446a-a36e-fdf292c1f3e4/artifacts/eofl6aqm_when.jpg",
+                     "a way of using up what was left, a private thought stolen from a busy day. A conversation, plated, "
+                     "about how and why we eat what we eat.",
+            "image": "/api/media/biraajo/gallery/f220f4b1229841e4803951df9162370c.mp4",
         },
         "dates_block": {
             "eyebrow": "Reserve your seat",
@@ -321,10 +320,8 @@ DEFAULT_CONTENT = {
         },
         "chef_note": {
             "eyebrow": "A note from the chef",
-            "quote": "This isn't a menu about hardship. It's a conversation between what was absent and what people "
-                      "created in response to it — and a reminder of how much intelligence lived in kitchens that "
-                      "never wrote anything down.",
-            "signature": "Vidip Shah",
+            "quote": "This menu is a conversation between what was absent and what people created in response to it "
+                      "— a reminder of how much intelligence lived in kitchens that never wrote anything down.",
         },
         "concept_statement": {
             "visible": True,
@@ -337,34 +334,26 @@ DEFAULT_CONTENT = {
         "story": {
             "visible": True,
             "eyebrow": "Story & inspiration",
-            "title": "Not a lost recipe.",
-            "title_italic": "A living question.",
+            "title": "Passed down,",
+            "title_italic": "never written.",
             "paragraphs": [
-                "Abhāv Ke Bhāv isn't a collection of lost recipes, or a re-enactment of hardship. It's an attempt to "
-                "start a conversation about culinary knowledge itself — knowledge that rarely lived in books. It lived "
-                "in kitchens, in memory, in gestures passed from one generation to the next, shaped by family, "
-                "geography, community and circumstance. As those generations disappear, so do fragments of what they knew.",
+                "Abhāv Ke Bhāv is an attempt to start a conversation about culinary knowledge itself — knowledge "
+                "that rarely lived in books. It lived in kitchens, in memory, in gestures passed from one "
+                "generation to the next, shaped by family, geography, community and circumstance. As those "
+                "generations disappear, so do fragments of what they knew.",
                 "The techniques on this menu are the proof of that ingenuity — fermentation and preservation to stretch "
                 "a season, and the use of stems, flowers, heads, offal and leftovers to make sure nothing given was wasted.",
             ],
         },
         "questions": {
             "visible": True,
-            "eyebrow": "What we're asking",
-            "title": "Four questions,",
-            "title_italic": "at every course.",
-            "intro": "Each dish is approached not simply as food, but as a piece of a much larger story.",
-            "items": [
-                "What have we forgotten?",
-                "Why did people cook this way?",
-                "What happens when the circumstances that created a food disappear?",
-                "What can we learn from the ingenuity that remains?",
-            ],
+            "eyebrow": "The question underneath",
+            "statement": "What happens to a dish once the memory behind it disappears?",
         },
         "idea": {
             "eyebrow": "The idea",
-            "title": "Not just dinner.",
-            "title_italic": "A history, plated.",
+            "title": "A history,",
+            "title_italic": "plated.",
             "intro": "The menu draws from different regions, communities and micro-cuisines shaped by adaptation and "
                       "circumstance — not to claim one definitive version of these foods, but to open a space for "
                       "memory, interpretation and conversation.",

@@ -7,21 +7,9 @@ import Footer from "@/components/Footer";
 import EventRegistrationModal from "@/components/EventRegistrationModal";
 import { api } from "@/lib/api";
 import { useSiteContent, read } from "@/lib/siteContent";
+import { isVideoUrl } from "@/lib/media";
 
 const IDEA_ICONS = { history: History, recycle: Recycle, message: MessageCircle };
-
-function formatDate(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "long", year: "numeric" });
-}
-
-function sessionLabel(title) {
-  if (/lunch/i.test(title)) return "Lunch";
-  if (/dinner/i.test(title)) return "Dinner";
-  return "";
-}
 
 export default function WhenThereWasntEnough() {
   const { content } = useSiteContent();
@@ -48,7 +36,7 @@ export default function WhenThereWasntEnough() {
 
   const onReserve = () => {
     if (!settings.registrations_open) return;
-    if (!selectedEvent) return;
+    if (!events.length) return;
     setOpen(true);
   };
 
@@ -63,7 +51,7 @@ export default function WhenThereWasntEnough() {
   const heroConcept = read(content, "wtwe.hero.concept",
     "A supper built from scarcity — and the ingenuity it demanded.");
   const heroBody = read(content, "wtwe.hero.body",
-    "Eight courses that each grew out of a moment of scarcity. Not just a meal, but a conversation about how — and why — we eat what we eat.");
+    "Eight courses that each grew out of a moment of scarcity — a lean season, a traveller's limited stores, a way of using up what was left, a private thought stolen from a busy day. A conversation, plated, about how and why we eat what we eat.");
 
   const datesEyebrow = read(content, "wtwe.dates_block.eyebrow", "Reserve your seat");
   const datesTitle = read(content, "wtwe.dates_block.title", "Five tables.");
@@ -76,11 +64,10 @@ export default function WhenThereWasntEnough() {
   const q = read(content, "wtwe.chef_note.quote",
     "Every dish here started as an answer to a problem — not enough of something, too much of something else, a memory that refused to be wasted.");
   const qEyebrow = read(content, "wtwe.chef_note.eyebrow", "A note from the chef");
-  const qSig = read(content, "wtwe.chef_note.signature", "Vidip Shah");
 
   const ideaEyebrow = read(content, "wtwe.idea.eyebrow", "The idea");
-  const ideaTitle = read(content, "wtwe.idea.title", "Not just dinner.");
-  const ideaTitleIt = read(content, "wtwe.idea.title_italic", "A history, plated.");
+  const ideaTitle = read(content, "wtwe.idea.title", "A history,");
+  const ideaTitleIt = read(content, "wtwe.idea.title_italic", "plated.");
   const ideaIntro = read(content, "wtwe.idea.intro",
     "Each course carries its own story of necessity — scarcity, improvisation, memory.");
   const ideaItems = (() => {
@@ -101,21 +88,16 @@ export default function WhenThereWasntEnough() {
   const csBody = read(content, "wtwe.concept_statement.body", "");
 
   const storyEyebrow = read(content, "wtwe.story.eyebrow", "Story & inspiration");
-  const storyTitle = read(content, "wtwe.story.title", "Not a lost recipe.");
-  const storyTitleIt = read(content, "wtwe.story.title_italic", "A living question.");
+  const storyTitle = read(content, "wtwe.story.title", "Passed down,");
+  const storyTitleIt = read(content, "wtwe.story.title_italic", "never written.");
   const storyParagraphs = (() => {
     const p = read(content, "wtwe.story.paragraphs", []);
     return Array.isArray(p) ? p : [];
   })();
 
-  const qsEyebrow = read(content, "wtwe.questions.eyebrow", "What we're asking");
-  const qsTitle = read(content, "wtwe.questions.title", "Four questions,");
-  const qsTitleIt = read(content, "wtwe.questions.title_italic", "at every course.");
-  const qsIntro = read(content, "wtwe.questions.intro", "");
-  const qsItems = (() => {
-    const it = read(content, "wtwe.questions.items", []);
-    return Array.isArray(it) ? it : [];
-  })();
+  const qsEyebrow = read(content, "wtwe.questions.eyebrow", "The question underneath");
+  const qsStatement = read(content, "wtwe.questions.statement",
+    "What happens to a dish once the memory behind it disappears?");
 
   return (
     <div className="bg-[#0A0504] text-[#F3EFE7] min-h-screen film-grain" data-testid="page-wtwe">
@@ -146,12 +128,26 @@ export default function WhenThereWasntEnough() {
         >
           <div className="relative" style={{ boxShadow: "0 50px 120px -30px rgba(0,0,0,0.7)" }}>
             {heroImg && (
-              <img
-                src={heroImg}
-                alt={`${heroTitle} — ${heroTitleIt}`}
-                className="w-full h-auto"
-                data-testid="wtwe-poster-image"
-              />
+              isVideoUrl(heroImg) ? (
+                <video
+                  src={heroImg}
+                  className="w-full h-auto"
+                  data-testid="wtwe-poster-image"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  onCanPlay={(e) => { try { e.currentTarget.play(); } catch { /* ignore */ } }}
+                />
+              ) : (
+                <img
+                  src={heroImg}
+                  alt={`${heroTitle} — ${heroTitleIt}`}
+                  className="w-full h-auto"
+                  data-testid="wtwe-poster-image"
+                />
+              )
             )}
           </div>
         </motion.div>
@@ -160,10 +156,10 @@ export default function WhenThereWasntEnough() {
           <p className="text-[#B5A79E] text-lg leading-relaxed">{heroBody}</p>
 
           <div className="mt-9 flex flex-wrap gap-4 justify-center">
-            <a href="#dates" data-testid="wtwe-jump-dates"
+            <button onClick={onReserve} data-testid="wtwe-jump-dates"
               className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
               Book a seat <ArrowRight size={14} className="ml-2" />
-            </a>
+            </button>
             <Link to="/menus/when-there-wasnt-enough" data-testid="wtwe-view-menu"
               className="inline-flex items-center justify-center px-8 py-4 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
               See the menu
@@ -218,49 +214,19 @@ export default function WhenThereWasntEnough() {
             </div>
           </div>
 
-          {events.length === 0 ? (
+          {events.length === 0 && (
             <p className="text-[#B5A79E]">Dates will be published shortly.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#2D1D1A] border border-[#2D1D1A]" data-testid="wtwe-dates-grid">
-              {events.map((e, i) => {
-                const left = Math.max(0, e.seats_total - (e.seats_booked || 0));
-                const soldOut = left === 0;
-                const isSelected = e.id === selectedId;
-                return (
-                  <button
-                    key={e.id}
-                    onClick={() => !soldOut && setSelectedId(e.id)}
-                    disabled={soldOut}
-                    data-testid={`wtwe-date-${i}`}
-                    className={`text-left bg-[#0A0504] p-8 sm:p-10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
-                      ${isSelected ? "ring-2 ring-[#D9772B] -ring-offset-1" : "hover:bg-[#140A09]"}`}
-                  >
-                    <p className="text-overline">{sessionLabel(e.title) || "Table"}</p>
-                    <p className="font-display text-3xl mt-4 leading-tight">{formatDate(e.date)}</p>
-                    <p className="text-[#B5A79E] mt-3 text-sm">{e.time}</p>
-                    <div className="mt-6 flex items-center justify-between pt-5 border-t border-[#2D1D1A]">
-                      <p className="text-[11px] tracking-[0.18em] uppercase text-[#B5A79E]">
-                        {soldOut ? "Sold out" : `${left} of ${e.seats_total} left`}
-                      </p>
-                      <span className={`text-[10px] tracking-[0.22em] uppercase px-2.5 py-1 border ${isSelected ? "border-[#D9772B] text-[#D9772B]" : "border-[#2D1D1A] text-[#B5A79E]"}`}>
-                        {isSelected ? "Selected" : "Choose"}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
           )}
 
-          <div className="mt-12 flex flex-wrap items-center gap-4 justify-between">
+          <div className="mt-4 flex flex-wrap items-center gap-4 justify-between">
             <p className="text-[#B5A79E] text-sm">
-              {selectedEvent
-                ? <>Selected: <span className="text-[#F3EFE7]">{formatDate(selectedEvent.date)}</span></>
-                : "Select a date above to reserve."}
+              {events.length > 0
+                ? "Pick your date on the next step."
+                : "Check back soon for open dates."}
             </p>
             <button
               onClick={onReserve}
-              disabled={!selectedEvent || !settings.registrations_open}
+              disabled={!events.length || !settings.registrations_open}
               data-testid="wtwe-reserve-main-cta"
               className="inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -293,33 +259,14 @@ export default function WhenThereWasntEnough() {
         </section>
       )}
 
-      {/* THE QUESTIONS */}
-      {qsItems.length > 0 && (
+      {/* THE QUESTION UNDERNEATH */}
+      {qsStatement && (
         <section className="py-24 sm:py-32 border-t border-[#2D1D1A] bg-[#140A09]" data-testid="wtwe-questions">
-          <div className="max-w-4xl mx-auto px-6 sm:px-8 lg:px-12">
-            <div className="text-center mb-14">
-              <p className="text-overline">{qsEyebrow}</p>
-              <h2 className="font-display text-4xl sm:text-5xl mt-6 leading-[1.05] tracking-tight">
-                {qsTitle} <span className="italic text-[#D9772B]">{qsTitleIt}</span>
-              </h2>
-              {qsIntro && <p className="mt-6 text-[#B5A79E] leading-relaxed max-w-xl mx-auto">{qsIntro}</p>}
-            </div>
-            <div className="divide-y divide-[#2D1D1A] border-y border-[#2D1D1A]">
-              {qsItems.map((q, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -12 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: i * 0.08 }}
-                  className="flex items-baseline gap-6 py-7"
-                  data-testid={`wtwe-question-${i}`}
-                >
-                  <span className="text-overline text-[#D9772B] shrink-0">{String(i + 1).padStart(2, "0")}</span>
-                  <p className="font-display italic text-xl sm:text-2xl leading-snug">{q}</p>
-                </motion.div>
-              ))}
-            </div>
+          <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
+            <p className="text-overline">{qsEyebrow}</p>
+            <p className="font-display italic text-2xl sm:text-3xl mt-7 leading-[1.35] text-[#F3EFE7]" data-testid="wtwe-question-statement">
+              {qsStatement}
+            </p>
           </div>
         </section>
       )}
@@ -329,7 +276,6 @@ export default function WhenThereWasntEnough() {
         <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
           <p className="text-overline">{qEyebrow}</p>
           <p className="font-display italic text-2xl sm:text-3xl mt-7 leading-[1.35] text-[#F3EFE7]">&ldquo;{q}&rdquo;</p>
-          <p className="text-overline mt-7 text-[#D9772B]">— {qSig}</p>
         </div>
       </section>
 
@@ -384,17 +330,17 @@ export default function WhenThereWasntEnough() {
             {closerTitle} <span className="italic text-[#D9772B]">{closerTitleIt}</span>
           </p>
           <p className="mt-6 text-[#B5A79E] leading-relaxed">{closerBody}</p>
-          <a href="#dates" data-testid="wtwe-closer-cta"
+          <button onClick={onReserve} data-testid="wtwe-closer-cta"
             className="mt-10 inline-flex items-center justify-center px-8 py-4 bg-[#5A1A1F] text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#D9772B] hover:text-[#0A0504] transition-all duration-500">
             {closerCta} <ArrowRight size={14} className="ml-2" />
-          </a>
+          </button>
         </div>
       </section>
 
       <Footer />
 
-      {open && selectedEvent && (
-        <EventRegistrationModal event={selectedEvent} onClose={() => setOpen(false)} onSuccess={() => setOpen(false)} />
+      {open && events.length > 0 && (
+        <EventRegistrationModal events={events} onClose={() => setOpen(false)} onSuccess={() => setOpen(false)} />
       )}
     </div>
   );

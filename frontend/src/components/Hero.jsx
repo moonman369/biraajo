@@ -30,7 +30,7 @@ export default function Hero() {
       window.location.hash = "#newsletter";
       return;
     }
-    navigate("/supper-club/when-there-wasnt-enough#dates");
+    navigate("/supper-club/when-there-wasnt-enough");
   };
 
   const h = content?.landing?.hero;

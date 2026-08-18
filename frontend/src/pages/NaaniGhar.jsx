@@ -66,7 +66,6 @@ export default function NaaniGhar() {
             <p className="font-display italic text-2xl sm:text-3xl mt-7 leading-[1.35] text-[#F3EFE7]">
               &ldquo;{read(content, "naani_ghar.chef_note.quote", "")}&rdquo;
             </p>
-            <p className="text-overline mt-7 text-[#D9772B]">— {read(content, "naani_ghar.chef_note.signature", "Vidip Shah")}</p>
           </div>
         </section>
       )}

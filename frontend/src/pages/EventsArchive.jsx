@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CHAPTERS } from "@/lib/chapters";
+import { isVideoUrl } from "@/lib/media";
 
 export default function EventsArchive() {
   return (
@@ -23,7 +24,7 @@ export default function EventsArchive() {
               <span className="italic text-[#D9772B]">A series of chapters.</span>
             </h1>
             <p className="mt-8 text-[#B5A79E] text-lg leading-relaxed max-w-2xl">
-              Biraajo doesn't repeat a menu. Each supper is its own concept — its own story, season and soundscape.
+              Biraajo doesn't repeat a menu. Each supper is its own concept — its own story and season.
               Here's how the work has evolved, from the first home to where the table sits today.
             </p>
           </motion.div>
@@ -47,7 +48,20 @@ export default function EventsArchive() {
                   data-testid={`archive-chapter-${c.number}`}
                 >
                   <div className="md:col-span-5 relative aspect-[4/3] md:aspect-auto overflow-hidden img-zoom">
-                    <img src={c.image} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
+                    {isVideoUrl(c.image) ? (
+                      <video
+                        src={c.image}
+                        className="w-full h-full object-cover"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        onCanPlay={(e) => { try { e.currentTarget.play(); } catch { /* ignore */ } }}
+                      />
+                    ) : (
+                      <img src={c.image} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/50 to-transparent md:hidden" />
                   </div>
                   <div className="md:col-span-7 p-8 sm:p-12 flex flex-col justify-center">

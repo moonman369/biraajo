@@ -1,0 +1,32 @@
+{
+  "summary": "Frontend-only content/copy audit across Naani Ghar, Barsaat, WTWE, Homepage Events section, /events archive, and About paragraph. All 4 user-requested copy changes verified live and rendering correctly. No old AI-cliché phrasing remains on the pages/sections in scope.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verifications_performed": {
+    "naani_ghar_chef_note": "PASS — data-testid=naani-chef-note renders the quote without any '— Vidip Shah' signature.",
+    "barsaat_chef_note": "PASS — data-testid=barsaat-chef-note has no signature line.",
+    "barsaat_sensory_title": "PASS — data-testid=barsaat-sensory now reads 'Sight, sound, smell.' / 'In that order.' (old 'Not just dinner. A monsoon, indoors.' is gone).",
+    "wtwe_chef_note": "PASS — data-testid=wtwe-chef-note shows 'This menu is a conversation between what was absent...' with no signature.",
+    "wtwe_questions_replacement": "PASS — data-testid=wtwe-questions contains eyebrow 'The question underneath' and data-testid=wtwe-question-statement reading 'What happens to a dish once the memory behind it disappears?'. Old 4-item numbered listicle and phrase 'Four questions' are gone.",
+    "wtwe_story_title": "PASS — data-testid=wtwe-story now reads 'Passed down,' / 'never written.' Old 'Not a lost recipe. A living question.' removed.",
+    "wtwe_idea_title": "PASS — data-testid=wtwe-idea reads 'A history,' / 'plated.' Old 'Not just dinner. A history, plated.' removed.",
+    "wtwe_hero_body": "PASS — phrase 'Not just a meal, but' no longer appears in WTWE page body.",
+    "homepage_events_section": "PASS — data-testid=events-section description reads '...its own story and season.' with no 'soundscape' mention. Note: the word 'soundscape' still appears legitimately inside the Barsaat chapter-02 card description (data-testid=homepage-chapter-card-02), which is factually correct per the user's requirement (only Barsaat actually has a soundscape).",
+    "events_archive_intro": "PASS — /events archive intro paragraph reads 'Biraajo doesn\\u2019t repeat a menu. Each supper is its own concept — its own story and season...' with no misleading 'soundscape' claim. The word 'soundscape' remains only inside archive-chapter-02 (Barsaat) description, which is correct.",
+    "about_ongoing_project": "PASS — Homepage About block contains 'This is an ongoing project — a table that\\u2019s still being set, one supper at a time. The process matters as much as the meal.' Old phrase 'Not a restaurant that has found its final form' is absent from both / and /about-the-chef."
+  },
+  "regression_smoke": "Not exercised interactively this round (per instructions — this is a copy-only audit and iterations 34-36 already covered booking/gallery/video). All pages loaded without console errors during navigation.",
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (not tested)", "frontend": "100% (11/11 copy checks pass)"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All copy changes from this iteration verified. Remaining 'soundscape' occurrences are intentional and correct (only on the Barsaat chapter cards on homepage + /events archive). Preview URL: https://premium-chef-demo.preview.emergentagent.com. Video playback is not testable in Playwright's Chromium (H.264/AAC codec limitation) — this is environmental, not a bug."
+}
