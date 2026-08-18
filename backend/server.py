@@ -768,6 +768,25 @@ async def _run_migrations() -> None:
         await db.migrations.update_one({"id": "wtwe_hero_concept_v1"}, {"$set": {"id": "wtwe_hero_concept_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: wtwe_hero_concept_v1")
 
+    # One-time: build out the full Abhav Ke Bhav concept story (concept statement, story &
+    # inspiration, the 4 questions, updated chef's note + idea intro).
+    if not await db.migrations.find_one({"id": "wtwe_concept_story_v1"}):
+        default_wtwe = get_default_content().get("wtwe", {})
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc or "wtwe" not in doc.get("data", {}):
+                continue
+            data = doc["data"]
+            wtwe = data["wtwe"]
+            wtwe["concept_statement"] = default_wtwe.get("concept_statement", {})
+            wtwe["story"] = default_wtwe.get("story", {})
+            wtwe["questions"] = default_wtwe.get("questions", {})
+            wtwe.setdefault("chef_note", {})["quote"] = default_wtwe.get("chef_note", {}).get("quote", "")
+            wtwe.setdefault("idea", {})["intro"] = default_wtwe.get("idea", {}).get("intro", "")
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        await db.migrations.update_one({"id": "wtwe_concept_story_v1"}, {"$set": {"id": "wtwe_concept_story_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: wtwe_concept_story_v1")
+
     # One-time: restore/enrich the Naani Ghar & Barsaat concept pages with their story,
     # heritage and soundscape copy (menus/photos untouched — not invented, already correct).
     if not await db.migrations.find_one({"id": "concept_pages_restore_v1"}):
@@ -790,6 +809,20 @@ async def _run_migrations() -> None:
             await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
         await db.migrations.update_one({"id": "concept_pages_restore_v1"}, {"$set": {"id": "concept_pages_restore_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: concept_pages_restore_v1")
+
+    # One-time: correct 4 Barsaat menu items against the real printed menu card
+    # (Khicchu note, Corn Chaat pairing, Sev Ussal pork belly, and the actual final course).
+    if not await db.migrations.find_one({"id": "barsaat_menu_correction_v1"}):
+        new_items = get_default_content().get("barsaat", {}).get("menu", {}).get("items", [])
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc or "barsaat" not in doc.get("data", {}):
+                continue
+            data = doc["data"]
+            data["barsaat"].setdefault("menu", {})["items"] = new_items
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        await db.migrations.update_one({"id": "barsaat_menu_correction_v1"}, {"$set": {"id": "barsaat_menu_correction_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: barsaat_menu_correction_v1")
 
 
 # ---------- Startup ----------

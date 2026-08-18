@@ -274,16 +274,16 @@ DEFAULT_CONTENT = {
             "title_italic": "a monsoon told in plates.",
             "intro": "An immersive experience. Each course is served with both a non-vegetarian and a vegetarian variant — please indicate your preference at booking.",
             "items": [
-                {"course": "Welcome", "dish": "Khicchu", "note": "A traditional Gujrati monsoon snack made with steamed rice flour, paired with smoked aamada gremolata and curry leaf podi."},
+                {"course": "Welcome", "dish": "Khicchu", "note": "A traditional Gujrati monsoon snack made with steamed rice flour, paired with curry leaf podi."},
                 {"course": "Small plate", "dish": "Fries from Gujrat", "note": "Crispy fried purple yam and sweet potato, served with fermented hot sauce and star fruit ketchup."},
-                {"course": "Small plate", "dish": "Corn Chaat", "note": "Indori makai ka kees enriched with butter and cheese. Served with chanachur and pea shoot salad."},
+                {"course": "Small plate", "dish": "Corn Chaat", "note": "Indori makai ka kees enriched with butter and cheese, served with Kela chips & Aamada Gremolata."},
                 {"course": "Plate", "dish": "Panko Fried Bombay Duck", "note": "Super crispy fried bombay duck, paired with black garlic jam and aam kasundi.", "alt_dish": "Dakor Na Gota", "alt_note": "Super crispy lentil fritters paired with black garlic jam and pudina ki chutney."},
                 {"course": "Starter", "dish": "Thepla Tacos", "note": "Crisp, cheesy thepla tacos filled with roasted mutton in a cocoa birria sauce, paired with a refreshing kachumber.", "alt_dish": "Thepla Tacos · Vegetarian", "alt_note": "Crisp, cheesy thepla tacos filled with roasted jackfruit in a cocoa birria sauce, paired with a refreshing kachumber."},
                 {"course": "Main", "dish": "Dal Bhaat", "note": "Gujrati mango fajeto paired with kamini rice and Goan prawn rechado.", "alt_dish": "Dal Bhaat · Vegetarian", "alt_note": "Gujrati mango fajeto paired with kamini rice and Goan mushroom rechado."},
-                {"course": "Main", "dish": "Sev Ussal", "note": "A Maharashtrian classic similar to ghugni, enriched with pork fat and crispy bacon, served with loads of toppings.", "alt_dish": "Sev Ussal · Vegetarian", "alt_note": "A Maharashtrian classic similar to ghugni, enriched with a cholar dal miso, served with loads of toppings."},
+                {"course": "Main", "dish": "Sev Ussal", "note": "A Maharashtrian classic similar to ghugni, enriched with pork belly and crispy bacon, served with loads of toppings.", "alt_dish": "Sev Ussal · Vegetarian", "alt_note": "A Maharashtrian classic similar to ghugni, enriched with a cholar dal miso, served with loads of toppings."},
                 {"course": "Palate cleanser", "dish": "Fermented Jamun Sorbet", "note": "Lacto-fermented jamuns turned into a sorbet."},
                 {"course": "Chai", "dish": "Masala Chai", "note": "Authentic Gujrati adrak wali masala chai."},
-                {"course": "Dessert", "dish": "Caramelised Malai Toast", "note": "Caramelised milk bread topped with whipped malai."},
+                {"course": "Dessert", "dish": "Chini Ka Parantha", "note": "Crispy & crunchy parantha topped with house butter."},
             ],
         },
         "notes": [
@@ -321,16 +321,53 @@ DEFAULT_CONTENT = {
         },
         "chef_note": {
             "eyebrow": "A note from the chef",
-            "quote": "Every dish here started as an answer to a problem — not enough of something, too much of "
-                      "something else, a memory that refused to be wasted. That's the food history nobody prints on menus.",
+            "quote": "This isn't a menu about hardship. It's a conversation between what was absent and what people "
+                      "created in response to it — and a reminder of how much intelligence lived in kitchens that "
+                      "never wrote anything down.",
             "signature": "Vidip Shah",
+        },
+        "concept_statement": {
+            "visible": True,
+            "eyebrow": "The concept",
+            "quote": "Scarcity has often been one of the greatest catalysts for culinary intelligence.",
+            "body": "Across cultures and communities, the absence of resources, ingredients, seasons, money — even the "
+                     "ability to waste — forced people to see food differently. What was once necessity became "
+                     "technique. What was overlooked became valuable. What looked like a limitation became an invention.",
+        },
+        "story": {
+            "visible": True,
+            "eyebrow": "Story & inspiration",
+            "title": "Not a lost recipe.",
+            "title_italic": "A living question.",
+            "paragraphs": [
+                "Abhav Ke Bhav isn't a collection of lost recipes, or a re-enactment of hardship. It's an attempt to "
+                "start a conversation about culinary knowledge itself — knowledge that rarely lived in books. It lived "
+                "in kitchens, in memory, in gestures passed from one generation to the next, shaped by family, "
+                "geography, community and circumstance. As those generations disappear, so do fragments of what they knew.",
+                "The techniques on this menu are the proof of that ingenuity — fermentation and preservation to stretch "
+                "a season, and the use of stems, flowers, heads, offal and leftovers to make sure nothing given was wasted.",
+            ],
+        },
+        "questions": {
+            "visible": True,
+            "eyebrow": "What we're asking",
+            "title": "Four questions,",
+            "title_italic": "at every course.",
+            "intro": "Each dish is approached not simply as food, but as a piece of a much larger story.",
+            "items": [
+                "What have we forgotten?",
+                "Why did people cook this way?",
+                "What happens when the circumstances that created a food disappear?",
+                "What can we learn from the ingenuity that remains?",
+            ],
         },
         "idea": {
             "eyebrow": "The idea",
             "title": "Not just dinner.",
             "title_italic": "A history, plated.",
-            "intro": "Each course carries its own story of necessity — scarcity, improvisation, memory. Together they "
-                      "trace how eating habits are quietly shaped by what we don't have, as much as by what we do.",
+            "intro": "The menu draws from different regions, communities and micro-cuisines shaped by adaptation and "
+                      "circumstance — not to claim one definitive version of these foods, but to open a space for "
+                      "memory, interpretation and conversation.",
             "items": [
                 {"icon": "history", "eyebrow": "Born of scarcity", "title": "When there wasn't enough",
                  "body": "Dishes shaped by lean seasons and hard years — turning limited ingredients into something worth sitting down for."},

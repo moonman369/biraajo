@@ -1,0 +1,16 @@
+{
+  "summary": "Frontend regression + content verification for Biraajo (iteration 33). Verified (a) /menus/barsaat text corrections: Khicchu note now uses 'curry leaf podi' (no 'smoked aamada gremolata'); Corn Chaat now paired with 'Kela chips & Aamada Gremolata' (no 'chanachur'); Sev Ussal uses 'pork belly' (no 'pork fat'); LAST course is 'Chini Ka Parantha' (Caramelised Malai Toast removed). All 6 unchanged courses (Fries from Gujrat, Panko Fried Bombay Duck, Thepla Tacos, Dal Bhaat, Fermented Jamun Sorbet, Masala Chai) remain intact. (b) /supper-club/when-there-wasnt-enough NEW sections all render correctly: data-testid=page-wtwe, wtwe-concept-statement (contains 'Scarcity has often been one of the greatest catalysts for culinary intelligence'), wtwe-story with non-empty wtwe-story-p-0 (401 chars) and wtwe-story-p-1 (209 chars), wtwe-questions with all 4 numbered questions matching exactly (What have we forgotten? / Why did people cook this way? / What happens when the circumstances that created a food disappear? / What can we learn from the ingenuity that remains?). Chef's note quote now contains 'conversation between what was absent and what people created' and Idea intro mentions 'regions, communities and micro-cuisines'. Section vertical order verified by scrollY: Hero -> Concept(1372) -> Dates/Reserve(~2000) -> Story(2879) -> Questions(3436) -> ChefNote/Idea/Closer, matching the requested order. (c) /supper-club/naani-ghar unchanged and loads with expected dishes (Cucumber Ashgourd Soda, Dahi Bhalla, Katla Yam). (d) Admin CMS /admin/edit login works with reachbiraajo@gmail.com/Biraajo@2026, dashboard loads without errors, all tabs visible (Overview/Traffic/Events/Registrations/Off-site Sales/Menu/Newsletter/Messages/Gallery/Edit Website).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {"backend": "not_tested", "frontend": "100%"},
+  "test_credentials": "reachbiraajo@gmail.com / Biraajo@2026 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Booking flow on WTWE was NOT re-run (already covered in iteration_30/31 and no code changes to dates/reserve section per request). All new content assertions passed. No regressions detected. If future re-test needed, note that WTWE page structure now has: Hero -> Concept -> Dates+Reserve -> Story -> Questions -> ChefNote -> Idea -> Closer. Barsaat menu has 10 courses with the 4 corrections applied.",
+  "rca of the issue": "N/A - all changes verified working as intended"
+}

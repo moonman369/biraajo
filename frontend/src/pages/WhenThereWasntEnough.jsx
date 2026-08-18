@@ -95,6 +95,28 @@ export default function WhenThereWasntEnough() {
     "We hold a small house. We cook one menu, built from necessity. If that calls to you, the door is open.");
   const closerCta = read(content, "wtwe.closer.cta_label", "Reserve now");
 
+  const csEyebrow = read(content, "wtwe.concept_statement.eyebrow", "The concept");
+  const csQuote = read(content, "wtwe.concept_statement.quote",
+    "Scarcity has often been one of the greatest catalysts for culinary intelligence.");
+  const csBody = read(content, "wtwe.concept_statement.body", "");
+
+  const storyEyebrow = read(content, "wtwe.story.eyebrow", "Story & inspiration");
+  const storyTitle = read(content, "wtwe.story.title", "Not a lost recipe.");
+  const storyTitleIt = read(content, "wtwe.story.title_italic", "A living question.");
+  const storyParagraphs = (() => {
+    const p = read(content, "wtwe.story.paragraphs", []);
+    return Array.isArray(p) ? p : [];
+  })();
+
+  const qsEyebrow = read(content, "wtwe.questions.eyebrow", "What we're asking");
+  const qsTitle = read(content, "wtwe.questions.title", "Four questions,");
+  const qsTitleIt = read(content, "wtwe.questions.title_italic", "at every course.");
+  const qsIntro = read(content, "wtwe.questions.intro", "");
+  const qsItems = (() => {
+    const it = read(content, "wtwe.questions.items", []);
+    return Array.isArray(it) ? it : [];
+  })();
+
   return (
     <div className="bg-[#0A0504] text-[#F3EFE7] min-h-screen film-grain" data-testid="page-wtwe">
       <Navbar />
@@ -149,6 +171,19 @@ export default function WhenThereWasntEnough() {
           </div>
         </div>
       </section>
+
+      {/* CONCEPT STATEMENT */}
+      {csQuote && (
+        <section className="py-20 sm:py-28 border-t border-[#2D1D1A]" data-testid="wtwe-concept-statement">
+          <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
+            <p className="text-overline">{csEyebrow}</p>
+            <p className="font-display text-3xl sm:text-4xl mt-7 leading-[1.25] tracking-tight">
+              &ldquo;<span className="italic text-[#D9772B]">{csQuote}</span>&rdquo;
+            </p>
+            {csBody && <p className="mt-7 text-[#B5A79E] leading-relaxed max-w-2xl mx-auto">{csBody}</p>}
+          </div>
+        </section>
+      )}
 
       {/* DATES + RESERVE */}
       <section id="dates" className="py-20 sm:py-28 border-t border-[#2D1D1A] bg-[#140A09]" data-testid="wtwe-dates-section">
@@ -234,6 +269,60 @@ export default function WhenThereWasntEnough() {
           </div>
         </div>
       </section>
+
+      {/* STORY & INSPIRATION */}
+      {storyParagraphs.length > 0 && (
+        <section className="py-24 sm:py-32 border-t border-[#2D1D1A]" data-testid="wtwe-story">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+              <div className="lg:col-span-5">
+                <p className="text-overline">{storyEyebrow}</p>
+                <h2 className="font-display text-4xl sm:text-5xl mt-6 leading-[1.05] tracking-tight">
+                  {storyTitle}
+                  <br />
+                  <span className="italic text-[#D9772B]">{storyTitleIt}</span>
+                </h2>
+              </div>
+              <div className="lg:col-span-7 lg:pt-3 space-y-6">
+                {storyParagraphs.map((p, i) => (
+                  <p key={i} className="text-[#B5A79E] text-lg leading-relaxed" data-testid={`wtwe-story-p-${i}`}>{p}</p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* THE QUESTIONS */}
+      {qsItems.length > 0 && (
+        <section className="py-24 sm:py-32 border-t border-[#2D1D1A] bg-[#140A09]" data-testid="wtwe-questions">
+          <div className="max-w-4xl mx-auto px-6 sm:px-8 lg:px-12">
+            <div className="text-center mb-14">
+              <p className="text-overline">{qsEyebrow}</p>
+              <h2 className="font-display text-4xl sm:text-5xl mt-6 leading-[1.05] tracking-tight">
+                {qsTitle} <span className="italic text-[#D9772B]">{qsTitleIt}</span>
+              </h2>
+              {qsIntro && <p className="mt-6 text-[#B5A79E] leading-relaxed max-w-xl mx-auto">{qsIntro}</p>}
+            </div>
+            <div className="divide-y divide-[#2D1D1A] border-y border-[#2D1D1A]">
+              {qsItems.map((q, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -12 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.08 }}
+                  className="flex items-baseline gap-6 py-7"
+                  data-testid={`wtwe-question-${i}`}
+                >
+                  <span className="text-overline text-[#D9772B] shrink-0">{String(i + 1).padStart(2, "0")}</span>
+                  <p className="font-display italic text-xl sm:text-2xl leading-snug">{q}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CHEF'S NOTE */}
       <section className="py-20 sm:py-28 border-t border-[#2D1D1A] bg-[#140A09]" data-testid="wtwe-chef-note">
