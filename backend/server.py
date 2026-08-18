@@ -705,6 +705,24 @@ async def _run_migrations() -> None:
         await db.migrations.update_one({"id": "wtwe_menu_notes_v1"}, {"$set": {"id": "wtwe_menu_notes_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: wtwe_menu_notes_v1")
 
+    # One-time: rename "When There Wasn't Enough" series title to "Abhaav ke bhaav" (Hindi),
+    # with the English phrase demoted to the hero/menu tagline.
+    if not await db.migrations.find_one({"id": "wtwe_rename_v1"}):
+        default_wtwe = get_default_content().get("wtwe", {})
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc or "wtwe" not in doc.get("data", {}):
+                continue
+            data = doc["data"]
+            wtwe = data["wtwe"]
+            wtwe.setdefault("hero", {})["title"] = default_wtwe.get("hero", {}).get("title", "")
+            wtwe["hero"]["title_italic"] = default_wtwe.get("hero", {}).get("title_italic", "")
+            wtwe.setdefault("menu", {})["title"] = default_wtwe.get("menu", {}).get("title", "")
+            wtwe["menu"]["title_italic"] = default_wtwe.get("menu", {}).get("title_italic", "")
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        await db.migrations.update_one({"id": "wtwe_rename_v1"}, {"$set": {"id": "wtwe_rename_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: wtwe_rename_v1")
+
 
 # ---------- Startup ----------
 @app.on_event("startup")

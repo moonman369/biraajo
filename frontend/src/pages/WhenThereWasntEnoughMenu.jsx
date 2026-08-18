@@ -59,7 +59,7 @@ export default function WhenThereWasntEnoughMenu() {
             {hasMenu && menuTitle ? (
               <>{menuTitle}{menuTitleItalic && <> <span className="italic text-[#D9772B]">{menuTitleItalic}</span></>}</>
             ) : (
-              <>When There Wasn&apos;t Enough. <span className="italic text-[#D9772B]">The menu.</span></>
+              <>अभाव के भाव <span className="italic text-[#D9772B]">When there wasn&apos;t enough.</span></>
             )}
           </h1>
           <p className="mt-4 text-[#B5A79E] text-sm tracking-[0.16em] uppercase">Now booking · Five dates</p>

@@ -58,8 +58,8 @@ export default function WhenThereWasntEnough() {
 
   const heroImg = read(content, "wtwe.hero.image", "");
   const heroEyebrow = read(content, "wtwe.hero.eyebrow", "An immersive supper");
-  const heroTitle = read(content, "wtwe.hero.title", "When There Wasn't Enough.");
-  const heroTitleIt = read(content, "wtwe.hero.title_italic", "A menu built from necessity.");
+  const heroTitle = read(content, "wtwe.hero.title", "अभाव के भाव");
+  const heroTitleIt = read(content, "wtwe.hero.title_italic", "When there wasn't enough.");
   const heroBody = read(content, "wtwe.hero.body",
     "Eight courses that each grew out of a moment of scarcity. Not just a meal, but a conversation about how — and why — we eat what we eat.");
 

@@ -268,8 +268,8 @@ DEFAULT_CONTENT = {
         "visible": True,
         "hero": {
             "eyebrow": "An immersive supper",
-            "title": "When There Wasn't Enough.",
-            "title_italic": "A menu built from necessity.",
+            "title": "अभाव के भाव",
+            "title_italic": "When there wasn't enough.",
             "body": "Eight courses that each grew out of a moment of scarcity — a lean season, a traveller's limited stores, "
                      "a way of using up what was left, a private thought stolen from a busy day. Not just a meal, but a "
                      "conversation about how — and why — we eat what we eat.",
@@ -314,8 +314,8 @@ DEFAULT_CONTENT = {
         "menu": {
             "visible": True,
             "eyebrow": "The Menu",
-            "title": "Eight courses,",
-            "title_italic": "a history of not enough.",
+            "title": "अभाव के भाव",
+            "title_italic": "When there wasn't enough.",
             "intro": "Each course carries its own story of necessity — a scarce season, ingredients a traveller could "
                       "carry, a way of upcycling leftovers, or a private moment stolen from a busy day. Please indicate "
                       "your preference at booking.",

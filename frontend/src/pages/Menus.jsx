@@ -114,7 +114,7 @@ export default function Menus() {
                 <div className="absolute bottom-0 left-0 right-0 p-7 sm:p-9">
                   <p className="text-overline">Next series</p>
                   <h2 className="font-display text-3xl sm:text-4xl mt-3 leading-tight">
-                    When There Wasn&apos;t Enough.
+                    अभाव के भाव <span className="italic text-[#D9772B]">When there wasn&apos;t enough.</span>
                   </h2>
                   <p className="mt-3 text-[#B5A79E] text-sm leading-relaxed">
                     Eight courses built from necessity. Veg & non-veg, same price. Five dates.

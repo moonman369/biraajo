@@ -137,7 +137,7 @@ export default function Suppers() {
               <div>
                 <p className="text-overline">Next series</p>
                 <h2 className="font-display text-4xl mt-3 leading-tight">
-                  When There Wasn&apos;t Enough.
+                  अभाव के भाव <span className="italic text-[#D9772B]">When there wasn&apos;t enough.</span>
                 </h2>
                 <p className="mt-4 text-[#B5A79E] leading-relaxed">
                   Eight courses built from necessity — scarce seasons, upcycled leftovers, a traveller's rations.
