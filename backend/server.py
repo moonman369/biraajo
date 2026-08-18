@@ -931,6 +931,117 @@ async def _run_migrations() -> None:
         await db.migrations.update_one({"id": "content_tone_cleanup_v1"}, {"$set": {"id": "content_tone_cleanup_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: content_tone_cleanup_v1")
 
+    # One-time: remove the em-dash/en-dash "aside" sentence pattern (a well-known
+    # AI-writing tell) from stored site copy, replacing each with a period, comma
+    # or colon that fits the sentence — while preserving the admin's actual
+    # wording (some of these fields were customised via the CMS and differ from
+    # site_defaults.py, so we patch the live text in place rather than pushing
+    # generic defaults over it).
+    if not await db.migrations.find_one({"id": "dash_cleanup_v1"}):
+        defaults = get_default_content()
+
+        def _set(container, key, value):
+            if key in container:
+                container[key] = value
+
+        for doc_id in ("published", "draft"):
+            doc = await db.site_content.find_one({"id": doc_id})
+            if not doc:
+                continue
+            data = doc["data"]
+
+            if "landing" in data:
+                landing = data["landing"]
+                about = landing.setdefault("about", {})
+                chapters = about.get("chapters", [])
+                if len(chapters) > 0:
+                    _set(chapters[0], "body",
+                         "Twenty-two years old. Trained in Switzerland, raised on a Gujrati grandmother's kitchen. "
+                         "With an undying curiosity about ingredients. Biraajo is where those threads come undone "
+                         "and are tied back together, with every supper a slightly different knot.")
+                meaning = about.setdefault("meaning", {})
+                meaning["eyebrow"] = defaults["landing"]["about"]["meaning"]["eyebrow"]
+                meaning["body_3"] = defaults["landing"]["about"]["meaning"]["body_3"]
+                landing.setdefault("newsletter", {})["body"] = defaults["landing"]["newsletter"]["body"]
+
+            if "about_the_chef" in data:
+                atc = data["about_the_chef"]
+                atc.setdefault("hero", {})["body"] = (
+                    "I cook the way I travel: there is no itinerary. I can't say that I started cooking at a "
+                    "certain age, it was more like I realised that I cook. Cooking has always been a way to "
+                    "express myself, be it a simple Bread-Butter-Chini that's devoured in seconds while the "
+                    "family slept. Or a complex grilled lamb shank in a chocolate sauce that my friends tear "
+                    "apart in no time.")
+                ch1 = atc.setdefault("chapter_1", {})
+                if "body_2" in ch1:
+                    ch1["body_2"] = (
+                        "On a deeper level as I started living alone, I realised that in Indian families food "
+                        "isn't just fuel. It's a language: mothers don't always express their support through "
+                        "actions. Neither can fathers do so through words. Sometimes it's your favourite dish "
+                        "appearing on the table, or the sudden smell of mangoes that would fill the house after "
+                        "an argument. I now try to create art applying that very logic, just that you can eat it.")
+                atc.setdefault("chapter_2", {})["eyebrow"] = defaults["about_the_chef"]["chapter_2"]["eyebrow"]
+                today = atc.setdefault("today", {})
+                if "body_1" in today:
+                    today["body_1"] = (
+                        "Biraajo lives inside a restored family apartment in South Calcutta. The easier choice "
+                        "would have been a commercial kitchen. We chose the trickier one: a place with its own memory.")
+                if "body_2" in today:
+                    today["body_2"] = (
+                        "The furniture is old. The walls are old. The stories are older still. Onto this stage, "
+                        "every few weeks, Vidip plates whatever interests him at the moment: bombil from the "
+                        "Konkan, lamb from a long-forgotten dak bungalow recipe, a not-so-traditional Srikhand. "
+                        "Strangers become diners; diners become friends.")
+
+            if "naani_ghar" in data:
+                ng = data["naani_ghar"]
+                ng.setdefault("hero", {})["body"] = defaults["naani_ghar"]["hero"]["body"]
+                ng.setdefault("chef_note", {})["quote"] = defaults["naani_ghar"]["chef_note"]["quote"]
+                ng.setdefault("approach", {})["intro"] = defaults["naani_ghar"]["approach"]["intro"]
+                items = ng.get("approach", {}).get("items", [])
+                default_items = defaults["naani_ghar"]["approach"]["items"]
+                for i, it in enumerate(items):
+                    if i < len(default_items):
+                        it["body"] = default_items[i]["body"]
+                menu_items = ng.get("menu", {}).get("items", [])
+                default_menu_items = defaults["naani_ghar"]["menu"]["items"]
+                for i, it in enumerate(menu_items):
+                    if i < len(default_menu_items):
+                        it["note"] = default_menu_items[i]["note"]
+
+            if "barsaat" in data:
+                bar = data["barsaat"]
+                bar.setdefault("hero", {})["body"] = defaults["barsaat"]["hero"]["body"]
+                bar.setdefault("rajneesh", {})["note"] = defaults["barsaat"]["rajneesh"]["note"]
+                if "title" in bar.get("reels", {}):
+                    bar["reels"]["title"] = bar["reels"]["title"].rstrip(" —–-")
+                bar.setdefault("menu", {})["intro"] = defaults["barsaat"]["menu"]["intro"]
+                notes = bar.get("notes", [])
+                default_notes = defaults["barsaat"]["notes"]
+                for i, n in enumerate(notes):
+                    if i < len(default_notes):
+                        n["body"] = default_notes[i]["body"]
+
+            if "wtwe" in data:
+                wt = data["wtwe"]
+                wt.setdefault("hero", {})["concept"] = defaults["wtwe"]["hero"]["concept"]
+                wt.setdefault("hero", {})["body"] = defaults["wtwe"]["hero"]["body"]
+                wt.setdefault("dates_block", {})["schedule_note"] = defaults["wtwe"]["dates_block"]["schedule_note"]
+                wt.setdefault("chef_note", {})["quote"] = defaults["wtwe"]["chef_note"]["quote"]
+                wt.setdefault("concept_statement", {})["body"] = defaults["wtwe"]["concept_statement"]["body"]
+                wt.setdefault("story", {})["paragraphs"] = defaults["wtwe"]["story"]["paragraphs"]
+                wt.setdefault("idea", {})["intro"] = defaults["wtwe"]["idea"]["intro"]
+                menu_items = wt.get("menu", {}).get("items", [])
+                default_menu_items = defaults["wtwe"]["menu"]["items"]
+                for i, it in enumerate(menu_items):
+                    if i < len(default_menu_items):
+                        it["note"] = default_menu_items[i]["note"]
+
+            await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
+        await db.migrations.update_one({"id": "dash_cleanup_v1"}, {"$set": {"id": "dash_cleanup_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: dash_cleanup_v1")
+
+
     # One-time: Barsaat has concluded — explicitly close bookings on all its events
     # (not just date-hidden), so a stale/direct link can no longer be booked.
     if not await db.migrations.find_one({"id": "barsaat_close_bookings_v1"}):

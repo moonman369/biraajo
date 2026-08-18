@@ -83,7 +83,7 @@ export default function About() {
           data-testid="why-biraajo"
         >
           <div className="lg:col-span-5">
-            <p className="text-overline">{read(content, "landing.about.meaning.eyebrow", "04 — The meaning of Biraajo")}</p>
+            <p className="text-overline">{read(content, "landing.about.meaning.eyebrow", "04 · The meaning of Biraajo")}</p>
             <h3 className="font-display text-5xl sm:text-6xl mt-6 text-[#F3EFE7] leading-[1.02] tracking-tight">
               {read(content, "landing.about.meaning.title", "An invitation to ")}
               <span className="italic text-[#D9772B]">{read(content, "landing.about.meaning.title_italic", "take a seat.")}</span>

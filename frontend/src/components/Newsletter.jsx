@@ -44,7 +44,7 @@ export default function Newsletter() {
             {read(content, "landing.newsletter.title", "Hear when the next supper is")}
           </h2>
           <p className="mt-6 text-[#B5A79E] max-w-xl mx-auto leading-relaxed">
-            {read(content, "landing.newsletter.body", "We send one short email a month — only when a new supper opens. No spam, no noise.")}
+            {read(content, "landing.newsletter.body", "We send one short email a month, only when a new supper opens. No spam, no noise.")}
           </p>
 
           <form

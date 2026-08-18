@@ -18,7 +18,7 @@ const DEFAULT_SENSES = [
 ];
 const SENSE_ICONS = { cloud: CloudRain, music: Music2, sparkles: Sparkles };
 
-const DEFAULT_RAJNEESH_NOTE = "The soundscape is a full collaboration with visual and sound artist Rajneesh — a continuous, roughly three-hour composition that runs underneath the entire menu, never repeating, always shifting with the room. It opens with rain falling on a tin roof, drifts through a train-station announcement that dissolves into house music, and keeps changing tempo as the evening moves — rising and falling with the spice, intensity and potency of each course.";
+const DEFAULT_RAJNEESH_NOTE = "The soundscape is a full collaboration with visual and sound artist Rajneesh: a continuous, roughly three-hour composition that runs underneath the entire menu, never repeating, always shifting with the room. It opens with rain falling on a tin roof, drifts through a train-station announcement that dissolves into house music, and keeps changing tempo as the evening moves, rising and falling with the spice, intensity and potency of each course.";
 const DEFAULT_RAJNEESH_BULLETS = [
   "Rain on a tin roof, easing into the first course",
   "A train announcement that dissolves into house music",
@@ -134,7 +134,7 @@ export default function Barsaat() {
               </h1>
               <p className="mt-8 text-[#B5A79E] text-lg leading-relaxed max-w-xl">
                 {read(content, "barsaat.hero.body",
-                  "Barsaat draws from the micro-regional food of Gujarat and Rajasthan — my own family's culinary roots — reinterpreted through a contemporary lens, with Bengali influence woven into almost every dish. Ten courses, plated entirely from what the monsoon gives.")}
+                  "Barsaat draws from the micro-regional food of Gujarat and Rajasthan, my own family's culinary roots, reinterpreted through a contemporary lens, with Bengali influence woven into almost every dish. Ten courses, plated entirely from what the monsoon gives.")}
               </p>
 
               <div className="mt-10 flex flex-wrap gap-4">

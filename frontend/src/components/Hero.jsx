@@ -21,12 +21,12 @@ export default function Hero() {
 
   const onReserveClick = () => {
     if (!registrationsOpen) {
-      toast.info("Reservations are currently closed — join the list to be notified.");
+      toast.info("Reservations are currently closed. Join the list to be notified.");
       window.location.hash = "#newsletter";
       return;
     }
     if (!hasUpcoming) {
-      toast.info("No supper open for reservations right now — join the list to be notified.");
+      toast.info("No supper open for reservations right now. Join the list to be notified.");
       window.location.hash = "#newsletter";
       return;
     }

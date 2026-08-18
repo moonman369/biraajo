@@ -24,7 +24,7 @@ export default function MenuSection() {
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-20">
-          <p className="text-overline">04 — The Menu</p>
+          <p className="text-overline">04 · The Menu</p>
           <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 text-[#F3EFE7] leading-[1.02] tracking-tight">
             A <span className="italic text-[#D9772B]">tasting card</span>,
             <br />

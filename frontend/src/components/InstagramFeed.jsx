@@ -20,7 +20,7 @@ export default function InstagramFeed() {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-end mb-12">
           <div className="lg:col-span-7">
-            <p className="text-overline">06 — Follow Along</p>
+            <p className="text-overline">06 · Follow Along</p>
             <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 text-[#F3EFE7] leading-[1.02] tracking-tight">
               Live from{" "}
               <span className="italic text-[#D9772B]">the kitchen.</span>

@@ -49,27 +49,27 @@ export default function WhenThereWasntEnough() {
   const heroTitle = read(content, "wtwe.hero.title", "Abhāv Ke Bhāv");
   const heroTitleIt = read(content, "wtwe.hero.title_italic", "When there wasn't enough");
   const heroConcept = read(content, "wtwe.hero.concept",
-    "A supper built from scarcity — and the ingenuity it demanded.");
+    "A supper built from scarcity, and the ingenuity it demanded.");
   const heroBody = read(content, "wtwe.hero.body",
-    "Eight courses that each grew out of a moment of scarcity — a lean season, a traveller's limited stores, a way of using up what was left, a private thought stolen from a busy day. A conversation, plated, about how and why we eat what we eat.");
+    "Eight courses that each grew out of a moment of scarcity: a lean season, a traveller's limited stores, a way of using up what was left, a private thought stolen from a busy day. A conversation, plated, about how and why we eat what we eat.");
 
   const datesEyebrow = read(content, "wtwe.dates_block.eyebrow", "Reserve your seat");
   const datesTitle = read(content, "wtwe.dates_block.title", "Five tables.");
   const datesTitleIt = read(content, "wtwe.dates_block.title_italic", "Eight seats each.");
   const scheduleNote = read(content, "wtwe.dates_block.schedule_note",
-    "Lunches run 1:00 PM – 3:30 PM. Dinners run 7:00 PM – 10:00 PM.");
+    "Lunches run 1:00 PM to 3:30 PM. Dinners run 7:00 PM to 10:00 PM.");
   const priceFootnote = read(content, "wtwe.dates_block.price_footnote",
     "Same price for vegetarian and non-vegetarian. All-inclusive.");
 
   const q = read(content, "wtwe.chef_note.quote",
-    "Every dish here started as an answer to a problem — not enough of something, too much of something else, a memory that refused to be wasted.");
+    "Every dish here started as an answer to a problem: not enough of something, too much of something else, a memory that refused to be wasted.");
   const qEyebrow = read(content, "wtwe.chef_note.eyebrow", "A note from the chef");
 
   const ideaEyebrow = read(content, "wtwe.idea.eyebrow", "The idea");
   const ideaTitle = read(content, "wtwe.idea.title", "A history,");
   const ideaTitleIt = read(content, "wtwe.idea.title_italic", "plated.");
   const ideaIntro = read(content, "wtwe.idea.intro",
-    "Each course carries its own story of necessity — scarcity, improvisation, memory.");
+    "Each course carries its own story of necessity: scarcity, improvisation, memory.");
   const ideaItems = (() => {
     const items = read(content, "wtwe.idea.items", []);
     return Array.isArray(items) && items.length ? items : [];
@@ -143,7 +143,7 @@ export default function WhenThereWasntEnough() {
               ) : (
                 <img
                   src={heroImg}
-                  alt={`${heroTitle} — ${heroTitleIt}`}
+                  alt={`${heroTitle}, ${heroTitleIt}`}
                   className="w-full h-auto"
                   data-testid="wtwe-poster-image"
                 />

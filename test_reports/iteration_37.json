@@ -1,0 +1,20 @@
+{
+  "summary": "Frontend-only audit for em-dash (\u2014) and en-dash (\u2013) removal across guest-facing pages. All 11 target pages (/, /about-the-chef, /supper-club/naani-ghar, /supper-club/barsaat, /supper-club/when-there-wasnt-enough, /events, /menus, /menus/naani-ghar, /menus/barsaat, /menus/when-there-wasnt-enough, /suppers) rendered ZERO em-dash and ZERO en-dash characters in document.body.innerText. Numbered section eyebrows on homepage confirmed using middot ('\u00b7') e.g. '03 \u00b7 THE CHAPTERS', '04 \u00b7 THE MEANING OF BIRAAJO', '05 \u00b7 GALLERY', '06 \u00b7 FOLLOW ALONG'. Spot-checked rewritten copy on About the Chef (hero, chapter_1 body_2, today body_1/body_2) and WTWE (chef's note, story, idea, concept) - sentences read naturally, no double punctuation, no orphaned commas, no missing words. Compound-word hyphens preserved correctly (Twenty-two, cucumber-ashgourd, koji-cured, long-forgotten, all-inclusive, non-vegetarian).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Homepage numbered eyebrows observed: 03/04/05/06 only. '02 \u00b7 Experiences' and '04 \u00b7 The Menu' listed in review request were not visibly found on the live homepage - either these sections are gated by admin CMS content or the numbering shifted. Not flagged as a bug since the intent (middot replacing em-dash) is fully honored wherever numbered eyebrows appear."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 37 verified pure dash/punctuation cleanup. Zero em/en dashes across all 11 guest-facing pages. Middot ('\u00b7') is the replacement pattern used for numbered eyebrows. Admin (AdminDashboard.jsx, EditWebsite.jsx) intentionally left with dashes per E1's scope note - do not flag. Booking flow, video covers, gallery tagging previously verified iterations 34-36 - no functional regressions expected in this iteration."
+}

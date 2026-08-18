@@ -17,7 +17,7 @@ export default function Experiences() {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-16 lg:mb-24">
           <div className="lg:col-span-7">
-            <p className="text-overline">{read(content, "landing.experiences.eyebrow", "02 — Experiences")}</p>
+            <p className="text-overline">{read(content, "landing.experiences.eyebrow", "02 · Experiences")}</p>
             <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 text-[#F3EFE7] leading-[1.02] tracking-tight">
               {read(content, "landing.experiences.title", "Two ways to ")}{" "}
               <span className="italic text-[#D9772B]">{read(content, "landing.experiences.title_italic", "sit down.")}</span>

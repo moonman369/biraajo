@@ -32,7 +32,7 @@ export default function AboutTheChef() {
               <span className="italic text-[#D9772B]">{read(content, "about_the_chef.hero.title_italic", "still becoming.")}</span>
             </h1>
             <p className="mt-8 text-[#B5A79E] text-lg leading-relaxed max-w-xl">
-              {read(content, "about_the_chef.hero.body", "He cooks the way he travels — without a fixed itinerary.")}
+              {read(content, "about_the_chef.hero.body", "He cooks the way he travels, without a fixed itinerary.")}
             </p>
           </motion.div>
 

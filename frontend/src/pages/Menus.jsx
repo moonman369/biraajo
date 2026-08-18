@@ -22,7 +22,7 @@ export default function Menus() {
             <span className="italic text-[#D9772B]">next courses.</span>
           </h1>
           <p className="mt-6 text-[#B5A79E] max-w-2xl leading-relaxed">
-            Every Biraajo series carries its own menu — written for the season, the city, the room. Choose a chapter to read the courses.
+            Every Biraajo series carries its own menu, written for the season, the city, the room. Choose a chapter to read the courses.
           </p>
         </div>
       </section>

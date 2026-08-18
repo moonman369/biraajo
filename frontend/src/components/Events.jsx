@@ -34,7 +34,7 @@ export default function Events() {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-end mb-14">
           <div className="lg:col-span-8">
-            <p className="text-overline">03 — The Chapters</p>
+            <p className="text-overline">03 · The Chapters</p>
             <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 text-[#F3EFE7] leading-[1.02] tracking-tight">
               Reserve a{" "}
               <span className="italic text-[#D9772B]">seat at the table.</span>
@@ -42,7 +42,7 @@ export default function Events() {
           </div>
           <div className="lg:col-span-4">
             <p className="text-[#B5A79E] leading-relaxed">
-              Biraajo doesn't repeat a menu. Each chapter is its own concept — its own story and season.
+              Biraajo doesn't repeat a menu. Each chapter is its own concept, with its own story and season.
             </p>
             <Link
               to="/events"

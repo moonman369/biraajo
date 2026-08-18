@@ -31,7 +31,7 @@ export default function Suppers() {
       return;
     }
     if (!event) {
-      toast.info("No seats are open right now — check back soon.");
+      toast.info("No seats are open right now. Check back soon.");
       return;
     }
     setOpen(true);
@@ -53,7 +53,7 @@ export default function Suppers() {
             <span className="italic text-[#D9772B]">next tables.</span>
           </h1>
           <p className="mt-6 text-[#B5A79E] max-w-2xl leading-relaxed">
-            Each series at Biraajo is a chapter — a new menu, a new mood, a fresh room set. Below are our chapters so far. View past menus, or reserve a seat at what&apos;s next.
+            Each series at Biraajo is a chapter: a new menu, a new mood, a fresh room set. Below are our chapters so far. View past menus, or reserve a seat at what&apos;s next.
           </p>
         </div>
       </section>
@@ -77,7 +77,7 @@ export default function Suppers() {
                   Naani Ghar. <span className="italic text-[#D9772B]">Biraajo Suppers tasting.</span>
                 </h2>
                 <p className="mt-4 text-[#B5A79E] leading-relaxed">
-                  Eight courses across summer 2026 — cucumber-ashgourd soda, dahi bhalla summer salad, koji-cured stews,
+                  Eight courses across summer 2026: cucumber-ashgourd soda, dahi bhalla summer salad, koji-cured stews,
                   coconut-chickoo tres leches. The series has officially ended, but the menu lives on.
                 </p>
               </div>
@@ -107,7 +107,7 @@ export default function Suppers() {
                   Barsaat. <span className="italic text-[#D9772B]">A supper with the rain.</span>
                 </h2>
                 <p className="mt-4 text-[#B5A79E] leading-relaxed">
-                  Our monsoon edition — ten courses written for the rain. Both vegetarian and non-vegetarian
+                  Our monsoon edition: ten courses written for the rain. Both vegetarian and non-vegetarian
                   variants are served. Eight seats only, first come, first served.
                 </p>
               </div>
@@ -138,7 +138,7 @@ export default function Suppers() {
               <div>
                 <p className="text-overline">Next series</p>
                 <p className="mt-4 text-[#B5A79E] leading-relaxed">
-                  Eight courses built from necessity — scarce seasons, upcycled leftovers, a traveller's rations.
+                  Eight courses built from necessity: scarce seasons, upcycled leftovers, a traveller's rations.
                   Same price for veg and non-veg. Eight seats only, five dates.
                 </p>
               </div>

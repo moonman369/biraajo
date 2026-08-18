@@ -24,7 +24,7 @@ export default function EventsArchive() {
               <span className="italic text-[#D9772B]">A series of chapters.</span>
             </h1>
             <p className="mt-8 text-[#B5A79E] text-lg leading-relaxed max-w-2xl">
-              Biraajo doesn't repeat a menu. Each supper is its own concept — its own story and season.
+              Biraajo doesn't repeat a menu. Each supper is its own concept, with its own story and season.
               Here's how the work has evolved, from the first home to where the table sits today.
             </p>
           </motion.div>

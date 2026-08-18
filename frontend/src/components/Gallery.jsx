@@ -30,7 +30,7 @@ export default function Gallery() {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         <div className="flex items-end justify-between mb-14 flex-wrap gap-6">
           <div>
-            <p className="text-overline">05 — Gallery</p>
+            <p className="text-overline">05 · Gallery</p>
             <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 text-[#F3EFE7] leading-[1.02] tracking-tight">
               Evenings,
               <br />
@@ -38,7 +38,7 @@ export default function Gallery() {
             </h2>
           </div>
           <p className="text-[#B5A79E] max-w-sm">
-            A scrapbook of suppers past — tap any image to look closer.
+            A scrapbook of suppers past. Tap any image to look closer.
           </p>
         </div>
 

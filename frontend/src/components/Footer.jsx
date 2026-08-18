@@ -6,7 +6,7 @@ export default function Footer() {
   const { content } = useSiteContent();
   if (content?.landing?.footer?.visible === false) return null;
 
-  const tagline = read(content, "landing.footer.tagline", "A project by Vidip Shah — a young chef cooking out of a restored family apartment in South Calcutta. Curious about more than one cuisine.");
+  const tagline = read(content, "landing.footer.tagline", "A project by Vidip Shah, a young chef cooking out of a restored family apartment in South Calcutta. Curious about more than one cuisine.");
   const copyright = read(content, "landing.footer.copyright", "Biraajo by Vidip Shah");
   const ig = read(content, "landing.contact.instagram", "@biraajo_");
   const igUrl = read(content, "landing.contact.instagram_url", `https://www.instagram.com/${ig.replace(/^@/, "")}/`);

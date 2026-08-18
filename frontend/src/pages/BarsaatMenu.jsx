@@ -39,7 +39,7 @@ export default function BarsaatMenu() {
       return;
     }
     if (!event) {
-      toast.info("No seats are open right now — check back soon.");
+      toast.info("No seats are open right now. Check back soon.");
       return;
     }
     setOpen(true);

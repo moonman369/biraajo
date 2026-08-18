@@ -62,7 +62,7 @@ export default function EventRegistrationModal({ event, events, onClose, onSucce
   const submitForm = async (e) => {
     e.preventDefault();
     if (!form.menu_preference) {
-      toast.error("Please pick a menu — Vegetarian or Non-Vegetarian.");
+      toast.error("Please pick a menu: Vegetarian or Non-Vegetarian.");
       return;
     }
     setSubmitting(true);
@@ -356,7 +356,7 @@ export default function EventRegistrationModal({ event, events, onClose, onSucce
                     </div>
                   </div>
                   <p className="text-[11px] text-[#B5A79E] mt-3 text-center">
-                    Or pay using UPI ID below — works with any UPI app.
+                    Or pay using the UPI ID below. Works with any UPI app.
                   </p>
 
                   <div className="mt-4 flex items-center justify-between gap-3 bg-[#140A09] border border-[#2D1D1A] px-4 py-3">
@@ -461,7 +461,7 @@ function Detail({ label, value }) {
   return (
     <div>
       <p className="text-overline">{label}</p>
-      <p className="font-display text-xl text-[#F3EFE7] mt-1">{value || "—"}</p>
+      <p className="font-display text-xl text-[#F3EFE7] mt-1">{value || "N/A"}</p>
     </div>
   );
 }

@@ -139,7 +139,7 @@ export default function BookingStatus() {
                 <div className="mt-8 border border-[#2D1D1A] bg-[#0A0504] p-6" data-testid="booking-pay-section">
                   <p className="text-overline text-[#D9772B]">Step 1 · Pay via UPI</p>
                   <p className="mt-2 text-[#B5A79E] text-sm">
-                    Send <strong className="text-[#F3EFE7]">₹{Number(booking.total_amount).toLocaleString("en-IN")}</strong> using any UPI app — scan the QR or use the UPI ID below.
+                    Send <strong className="text-[#F3EFE7]">₹{Number(booking.total_amount).toLocaleString("en-IN")}</strong> using any UPI app. Scan the QR or use the UPI ID below.
                   </p>
 
                   <div className="mt-5 flex justify-center">
@@ -169,7 +169,7 @@ export default function BookingStatus() {
                   <div className="mt-7 pt-6 border-t border-[#2D1D1A]">
                     <p className="text-overline text-[#D9772B]">Step 2 · Upload screenshot</p>
                     <p className="mt-2 text-[#B5A79E] text-sm">
-                      Once you&apos;ve paid, attach the screenshot — you&apos;ll be confirmed instantly.
+                      Once you&apos;ve paid, attach the screenshot and you&apos;ll be confirmed instantly.
                     </p>
                     <input ref={fileInputRef} type="file" accept="image/*"
                       onChange={onFileChange} className="hidden" data-testid="booking-file-input" />
@@ -205,7 +205,7 @@ function Detail({ label, value }) {
   return (
     <div>
       <p className="text-overline">{label}</p>
-      <p className="font-display text-lg text-[#F3EFE7] mt-1">{value || "—"}</p>
+      <p className="font-display text-lg text-[#F3EFE7] mt-1">{value || "N/A"}</p>
     </div>
   );
 }

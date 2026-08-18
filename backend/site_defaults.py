@@ -27,7 +27,7 @@ DEFAULT_CONTENT = {
                     "no": "01",
                     "eyebrow": "The chef",
                     "title": "Vidip Shah",
-                    "body": "Twenty-two years old. Trained in Switzerland, raised on a Bengali grandmother's kitchen, sharpened by Delhi restaurants. Biraajo is where those threads come undone and are tied back together — every supper a slightly different knot.",
+                    "body": "Twenty-two years old. Trained in Switzerland, raised on a Bengali grandmother's kitchen, sharpened by Delhi restaurants. Biraajo is where those threads come undone and are tied back together, with every supper a slightly different knot.",
                     "image": "/api/media/biraajo/media/7852840d19d12949.jpg",
                     "align": "left",
                 },
@@ -45,19 +45,19 @@ DEFAULT_CONTENT = {
                     "no": "03",
                     "eyebrow": "The cooking",
                     "title": "No fixed cuisine",
-                    "body": "Konkan bombil. Dak bungalow lamb. Saoji mushroom. A phirri that may or may not be entirely traditional. The point is the process — ingredient-first, story-first, ego-last.",
+                    "body": "Konkan bombil. Dak bungalow lamb. Saoji mushroom. A phirri that may or may not be entirely traditional. The point is the process: ingredient first, story first, ego last.",
                     "image": "/api/media/biraajo/media/99efd8f5a8c343ea.jpg",
                     "align": "left",
                 },
             ],
             "meaning": {
                 "visible": True,
-                "eyebrow": "04 — The meaning of Biraajo",
+                "eyebrow": "04 · The meaning of Biraajo",
                 "title": "An invitation to",
                 "title_italic": "take a seat.",
                 "body_1": "The name <em>Biraajo</em> comes from a Sanskrit word used to invite someone to take a seat.",
                 "body_2": "It's a simple gesture, but an important one.",
-                "body_3": "This is an ongoing project — a table that's still being set, one supper at a time. The process matters as much as the meal.",
+                "body_3": "This is an ongoing project. A table that's still being set, one supper at a time. The process matters as much as the meal.",
                 "pull_quote": "A little old Calcutta. A little experimentation. And always a place for one more person.",
                 "primary_cta_label": "Pull up a chair",
                 "primary_cta_href": "#events",
@@ -92,7 +92,7 @@ DEFAULT_CONTENT = {
             "visible": True,
             "eyebrow": "The list",
             "title": "Hear when the next supper is",
-            "body": "We send one short email a month — only when a new supper opens. No spam, no noise.",
+            "body": "We send one short email a month, only when a new supper opens. No spam, no noise.",
             "button_label": "Join the list",
         },
         "contact": {
@@ -119,23 +119,23 @@ DEFAULT_CONTENT = {
             "eyebrow": "A portrait · in his own words",
             "title": "Vidip Shah is twenty-two,",
             "title_italic": "still becoming.",
-            "body": "He cooks the way he travels — without a fixed itinerary. Trained in Switzerland, raised on his grandmother's Bengali kitchen, sharpened by stints in Delhi's restaurants. Biraajo is where those threads come undone and are tied back together, every supper a slightly different knot.",
+            "body": "He cooks the way he travels, without a fixed itinerary. Trained in Switzerland, raised on his grandmother's Bengali kitchen, sharpened by stints in Delhi's restaurants. Biraajo is where those threads come undone and are tied back together, every supper a slightly different knot.",
             "portrait": "/api/media/biraajo/media/7852840d19d12949.jpg",
         },
         "chapter_1": {
             "visible": True,
             "eyebrow": "Where it began",
             "title_html": "A kitchen at home, long before <em>a kitchen at work.</em>",
-            "body_1": "Vidip grew up in Calcutta, where afternoons spent at his grandmother's elbow were a kind of education no school could compete with. She didn't write things down. Her recipes lived in her hands — the precise pinch, the patient stir, the smell that told her when something was ready.",
+            "body_1": "Vidip grew up in Calcutta, where afternoons spent at his grandmother's elbow were a kind of education no school could compete with. She didn't write things down. Her recipes lived in her hands: the precise pinch, the patient stir, the smell that told her when something was ready.",
             "body_2": "By the time he was twelve, he was making the household breakfasts on weekends. By sixteen, he was the one his cousins called when they wanted something more interesting than what was on the table.",
             "image": "/api/media/biraajo/media/31cf3839eeb74061.jpg",
         },
         "chapter_2": {
             "visible": True,
-            "eyebrow": "Switzerland — the broader table",
+            "eyebrow": "Switzerland, the broader table",
             "title_html": "Culinary school was not about <em>technique.</em>",
-            "body_1": "It was about people. Classmates from Mexico, Russia, Turkey, Thailand — each carrying memories of home in their cooking. Vidip's worldview widened over those years not in the kitchen itself but in the dorm rooms, the late-night conversations over student-budget meals where someone was always teaching someone else a dish from home.",
-            "body_2": "He returned with no allegiance to a single cuisine. What he brought back instead was a way of working: ingredient-first, story-first, ego-last.",
+            "body_1": "It was about people. Classmates from Mexico, Russia, Turkey and Thailand, each carrying memories of home in their cooking. Vidip's worldview widened over those years not in the kitchen itself but in the dorm rooms, the late-night conversations over student-budget meals where someone was always teaching someone else a dish from home.",
+            "body_2": "He returned with no allegiance to a single cuisine. What he brought back instead was a way of working: ingredient first, story first, ego last.",
             "image": "/api/media/biraajo/media/99efd8f5a8c343ea.jpg",
         },
         "philosophy": {
@@ -150,8 +150,8 @@ DEFAULT_CONTENT = {
             "eyebrow": "Today",
             "title": "The table is set in",
             "title_italic": "old Calcutta.",
-            "body_1": "Biraajo lives inside a restored family apartment in South Calcutta. The easier choice would have been a commercial kitchen. Vidip chose the harder one — a place with its own memory.",
-            "body_2": "The furniture is old. The walls are old. The stories are older still. Onto this stage, every few weeks, Vidip plates whatever interests him at the moment — bombil from the Konkan, lamb from a long-forgotten dak bungalow recipe, a phirni that may or may not be entirely traditional. Strangers become diners; diners become friends.",
+            "body_1": "Biraajo lives inside a restored family apartment in South Calcutta. The easier choice would have been a commercial kitchen. Vidip chose the harder one: a place with its own memory.",
+            "body_2": "The furniture is old. The walls are old. The stories are older still. Onto this stage, every few weeks, Vidip plates whatever interests him at the moment: bombil from the Konkan, lamb from a long-forgotten dak bungalow recipe, a phirni that may or may not be entirely traditional. Strangers become diners; diners become friends.",
             "pull_quote": "\u201cI'm twenty-two. I haven't figured out the kind of cook I want to be. Biraajo is where I'm doing the figuring.\u201d",
             "primary_cta_label": "See the next supper",
             "secondary_cta_label": "Past suppers",
@@ -164,28 +164,28 @@ DEFAULT_CONTENT = {
             "eyebrow": "Biraajo Suppers · Our first series",
             "title": "Naani Ghar.",
             "title_italic": "Grandmother's house.",
-            "body": "Naani Ghar was Biraajo's first chapter — the moment of finally having a home of our own. It began with something personal: the memory of my grandmother's kitchen, and the dishes she made that never left me. Nothing here was simply reproduced — every recipe was taken apart and rebuilt through a contemporary European format, while the emotional identity of the original stayed intact.",
+            "body": "Naani Ghar was Biraajo's first chapter: the moment of finally having a home of our own. It began with something personal, the memory of my grandmother's kitchen, and the dishes she made that never left me. Nothing here was simply reproduced. Every recipe was taken apart and rebuilt through a contemporary European format, while the emotional identity of the original stayed intact.",
             "meta": "Series concluded · South Calcutta · 12 guests per evening",
             "image": "/api/media/biraajo/media/6a6d9d936ab71fa4.jpg",
         },
         "chef_note": {
             "visible": True,
             "eyebrow": "A note from the chef",
-            "quote": "Naani Ghar was never about copying her recipes. It was about remembering how they made me feel, and finding a way to make you feel that too — in a language the two of us built together, one home-cooked, one entirely new.",
+            "quote": "Naani Ghar was never about copying her recipes. It was about remembering how they made me feel, and finding a way to make you feel that too, in a language the two of us built together: one home-cooked, one entirely new.",
         },
         "approach": {
             "visible": True,
             "eyebrow": "The concept",
             "title": "Homecoming,",
             "title_italic": "reinterpreted.",
-            "intro": "Three ideas sat behind every plate on this menu — where it began, what it remembered, and what it became.",
+            "intro": "Three ideas sat behind every plate on this menu: where it began, what it remembered, and what it became.",
             "items": [
                 {"icon": "home", "eyebrow": "Where it began", "title": "A home, finally",
-                 "body": "Naani Ghar marked the first time Biraajo had a space of its own — a restored family apartment, not a restaurant. The setting mattered as much as the food."},
+                 "body": "Naani Ghar marked the first time Biraajo had a space of its own: a restored family apartment, not a restaurant. The setting mattered as much as the food."},
                 {"icon": "heart", "eyebrow": "The memory", "title": "Nani's kitchen, revisited",
-                 "body": "Every dish traces back to something she used to make — the flavours of childhood, remembered exactly as they tasted then."},
+                 "body": "Every dish traces back to something she used to make: the flavours of childhood, remembered exactly as they tasted then."},
                 {"icon": "sparkles", "eyebrow": "The transformation", "title": "Rebuilt, not reproduced",
-                 "body": "Nothing on the table was a straight copy. Each recipe was taken apart and reassembled through a contemporary European format — new techniques, new plating — while the emotional identity of the original stayed intact."},
+                 "body": "Nothing on the table was a straight copy. Each recipe was taken apart and reassembled through a contemporary European format, with new techniques and new plating, while the emotional identity of the original stayed intact."},
             ],
         },
         "menu": {
@@ -194,15 +194,15 @@ DEFAULT_CONTENT = {
             "title": "Eight courses,",
             "title_italic": "the Biraajo Suppers tasting.",
             "items": [
-                {"course": "Welcome", "dish": "Cucumber Ashgourd Soda", "note": "A cool, faintly bitter opener — cucumber, white pumpkin, lime."},
-                {"course": "First plate", "dish": "Dahi Bhalla Summer Salad", "note": "Soft urad dumplings, cool yoghurt, tamarind, mint — a summer remix of the classic."},
-                {"course": "First plate · alt", "dish": "Katla Yam Pla Duk Foo with Kachi Keri nu Kachumber", "note": "Bengali katla treated like Thai pla duk foo — crisp, fragrant, served with raw-mango kachumber."},
-                {"course": "Small plate", "dish": "Smoked Baba Ganoush / House Khakra", "note": "Charcoal-smoked aubergine, tahini, lemon — scooped with our house khakra."},
+                {"course": "Welcome", "dish": "Cucumber Ashgourd Soda", "note": "A cool, faintly bitter opener: cucumber, white pumpkin, lime."},
+                {"course": "First plate", "dish": "Dahi Bhalla Summer Salad", "note": "Soft urad dumplings, cool yoghurt, tamarind and mint: a summer remix of the classic."},
+                {"course": "First plate · alt", "dish": "Katla Yam Pla Duk Foo with Kachi Keri nu Kachumber", "note": "Bengali katla treated like Thai pla duk foo: crisp, fragrant, served with raw mango kachumber."},
+                {"course": "Small plate", "dish": "Smoked Baba Ganoush / House Khakra", "note": "Charcoal-smoked aubergine, tahini and lemon, scooped with our house khakra."},
                 {"course": "Small plate", "dish": "Tameta Na Bhajiya / Tsatziki & Hot Sauce", "note": "Gujarati tomato fritters, cool tsatziki, house hot sauce."},
                 {"course": "Main", "dish": "Shio Koji Fungi & Veggie Stew / Shokupan", "note": "Slow-cooked koji-cured mushrooms and seasonal vegetables, served with milk-bread shokupan."},
                 {"course": "Main · alt", "dish": "Koji Diye Mangsher Stew / Shokupan", "note": "Bengali mutton stew, koji-aged for depth, served with shokupan."},
-                {"course": "Palate cleanser", "dish": "Lacto Fermented Tametu", "note": "House lacto-fermented tomato — bright, tangy, alive."},
-                {"course": "Dessert", "dish": "Coconut & Chickoo Tres Leches", "note": "Coconut milk and chickoo soaked sponge — a Biraajo take on tres leches."},
+                {"course": "Palate cleanser", "dish": "Lacto Fermented Tametu", "note": "House lacto-fermented tomato: bright, tangy, alive."},
+                {"course": "Dessert", "dish": "Coconut & Chickoo Tres Leches", "note": "Coconut milk and chickoo soaked sponge, a Biraajo take on tres leches."},
                 {"course": "Mukhwas", "dish": "Variyali Sherbet / Mithu Paan", "note": "Fennel sherbet and a sweet paan to close the evening."},
             ],
         },
@@ -232,7 +232,7 @@ DEFAULT_CONTENT = {
             "eyebrow": "Second chapter · Concluded",
             "title": "Barsaat.",
             "title_italic": "A supper with the rain.",
-            "body": "Barsaat draws from the micro-regional food of Gujarat and Rajasthan — my own family's culinary roots — reinterpreted through a contemporary lens, with Bengali influence woven into almost every dish. Ten courses, plated entirely from what the monsoon gives — corn, yam, starfruit, hilsa. The kind of meal that asks you to slow down.",
+            "body": "Barsaat draws from the micro-regional food of Gujarat and Rajasthan, my own family's culinary roots, reinterpreted through a contemporary lens, with Bengali influence woven into almost every dish. Ten courses, plated entirely from what the monsoon gives: corn, yam, starfruit, hilsa. The kind of meal that asks you to slow down.",
             "image": "/api/media/biraajo/media/31cf3839eeb74061.jpg",
         },
         "rajneesh": {
@@ -241,7 +241,7 @@ DEFAULT_CONTENT = {
             "title": "The soundscape, by",
             "title_italic": "Rajneesh.",
             "credit_line": "Sound & visual artist · Rajneesh",
-            "note": "The soundscape is a full collaboration with visual and sound artist Rajneesh — a continuous, roughly three-hour composition that runs underneath the entire menu, never repeating, always shifting with the room. It opens with rain falling on a tin roof, drifts through a train-station announcement that dissolves into house music, and keeps changing tempo as the evening moves — rising and falling with the spice, intensity and potency of each course.",
+            "note": "The soundscape is a full collaboration with visual and sound artist Rajneesh: a continuous, roughly three-hour composition that runs underneath the entire menu, never repeating, always shifting with the room. It opens with rain falling on a tin roof, drifts through a train-station announcement that dissolves into house music, and keeps changing tempo as the evening moves, rising and falling with the spice, intensity and potency of each course.",
             "bullets": [
                 "Rain on a tin roof, easing into the first course",
                 "A train announcement that dissolves into house music",
@@ -271,7 +271,7 @@ DEFAULT_CONTENT = {
             "eyebrow": "The Menu",
             "title": "Ten courses,",
             "title_italic": "a monsoon told in plates.",
-            "intro": "An immersive experience. Each course is served with both a non-vegetarian and a vegetarian variant — please indicate your preference at booking.",
+            "intro": "An immersive experience. Each course is served with both a non-vegetarian and a vegetarian variant. Please indicate your preference at booking.",
             "items": [
                 {"course": "Welcome", "dish": "Khicchu", "note": "A traditional Gujrati monsoon snack made with steamed rice flour, paired with curry leaf podi."},
                 {"course": "Small plate", "dish": "Fries from Gujrat", "note": "Crispy fried purple yam and sweet potato, served with fermented hot sauce and star fruit ketchup."},
@@ -286,7 +286,7 @@ DEFAULT_CONTENT = {
             ],
         },
         "notes": [
-            {"head": "The weather, on a plate", "body": "Barsaat is built around the monsoon — its slow afternoons, its sudden squalls. Rain-soaked greens, river fish, jaggery, smoke. The menu drinks the season in."},
+            {"head": "The weather, on a plate", "body": "Barsaat is built around the monsoon: its slow afternoons, its sudden squalls. Rain-soaked greens, river fish, jaggery, smoke. The menu drinks the season in."},
             {"head": "Inside the restored apartment", "body": "Twelve seats, one long table. Lit candles. The windows stay open if the rain permits. The chef cooks where you sit."},
             {"head": "What has been confirmed so far", "body": "Hilsa, two ways. A monsoon dal that uses something foraged. A burnt-sugar pudding with kalo jam. The rest is decided week by week."},
         ],
@@ -304,8 +304,8 @@ DEFAULT_CONTENT = {
             "eyebrow": "An immersive supper",
             "title": "Abhāv Ke Bhāv",
             "title_italic": "When there wasn't enough",
-            "concept": "A supper built from scarcity — and the ingenuity it demanded.",
-            "body": "Eight courses that each grew out of a moment of scarcity — a lean season, a traveller's limited stores, "
+            "concept": "A supper built from scarcity, and the ingenuity it demanded.",
+            "body": "Eight courses that each grew out of a moment of scarcity: a lean season, a traveller's limited stores, "
                      "a way of using up what was left, a private thought stolen from a busy day. A conversation, plated, "
                      "about how and why we eat what we eat.",
             "image": "/api/media/biraajo/gallery/f220f4b1229841e4803951df9162370c.mp4",
@@ -314,21 +314,21 @@ DEFAULT_CONTENT = {
             "eyebrow": "Reserve your seat",
             "title": "Five tables.",
             "title_italic": "Eight seats each.",
-            "schedule_note": "Lunches run 1:00 PM – 3:30 PM. Dinners run 7:00 PM – 10:00 PM.",
+            "schedule_note": "Lunches run 1:00 PM to 3:30 PM. Dinners run 7:00 PM to 10:00 PM.",
             "price_eyebrow": "Per seat",
             "price_footnote": "Same price for vegetarian and non-vegetarian. All-inclusive.",
         },
         "chef_note": {
             "eyebrow": "A note from the chef",
-            "quote": "This menu is a conversation between what was absent and what people created in response to it "
-                      "— a reminder of how much intelligence lived in kitchens that never wrote anything down.",
+            "quote": "This menu is a conversation between what was absent and what people created in response to it, "
+                      "a reminder of how much intelligence lived in kitchens that never wrote anything down.",
         },
         "concept_statement": {
             "visible": True,
             "eyebrow": "The concept",
             "quote": "Scarcity has often been one of the greatest catalysts for culinary intelligence.",
-            "body": "Across cultures and communities, the absence of resources, ingredients, seasons, money — even the "
-                     "ability to waste — forced people to see food differently. What was once necessity became "
+            "body": "Across cultures and communities, the absence of resources, ingredients, seasons, money, even the "
+                     "ability to waste, forced people to see food differently. What was once necessity became "
                      "technique. What was overlooked became valuable. What looked like a limitation became an invention.",
         },
         "story": {
@@ -337,11 +337,11 @@ DEFAULT_CONTENT = {
             "title": "Passed down,",
             "title_italic": "never written.",
             "paragraphs": [
-                "Abhāv Ke Bhāv is an attempt to start a conversation about culinary knowledge itself — knowledge "
+                "Abhāv Ke Bhāv is an attempt to start a conversation about culinary knowledge itself: knowledge "
                 "that rarely lived in books. It lived in kitchens, in memory, in gestures passed from one "
                 "generation to the next, shaped by family, geography, community and circumstance. As those "
                 "generations disappear, so do fragments of what they knew.",
-                "The techniques on this menu are the proof of that ingenuity — fermentation and preservation to stretch "
+                "The techniques on this menu are the proof of that ingenuity: fermentation and preservation to stretch "
                 "a season, and the use of stems, flowers, heads, offal and leftovers to make sure nothing given was wasted.",
             ],
         },
@@ -355,11 +355,11 @@ DEFAULT_CONTENT = {
             "title": "A history,",
             "title_italic": "plated.",
             "intro": "The menu draws from different regions, communities and micro-cuisines shaped by adaptation and "
-                      "circumstance — not to claim one definitive version of these foods, but to open a space for "
+                      "circumstance. It doesn't claim one definitive version of these foods; it opens a space for "
                       "memory, interpretation and conversation.",
             "items": [
                 {"icon": "history", "eyebrow": "Born of scarcity", "title": "When there wasn't enough",
-                 "body": "Dishes shaped by lean seasons and hard years — turning limited ingredients into something worth sitting down for."},
+                 "body": "Dishes shaped by lean seasons and hard years, turning limited ingredients into something worth sitting down for."},
                 {"icon": "recycle", "eyebrow": "Nothing wasted", "title": "The upcycled table",
                  "body": "Leftovers, scraps and travellers' rations, reimagined with care instead of thrown away."},
                 {"icon": "message", "eyebrow": "A conversation, plated", "title": "Food as history",
@@ -378,7 +378,7 @@ DEFAULT_CONTENT = {
             "eyebrow": "The Menu",
             "title": "Abhāv Ke Bhāv",
             "title_italic": "When there wasn't enough",
-            "intro": "Each course carries its own story of necessity — a scarce season, ingredients a traveller could "
+            "intro": "Each course carries its own story of necessity: a scarce season, ingredients a traveller could "
                       "carry, a way of upcycling leftovers, or a private moment stolen from a busy day. Please indicate "
                       "your preference at booking.",
             "items": [
@@ -389,13 +389,13 @@ DEFAULT_CONTENT = {
                 {"course": "Small plate", "dish": "Potato / Green Chutney / Goat Cheese / Fermented Tomatoes",
                  "note": "A potato gnocchi with a story of rebellion."},
                 {"course": "Rice", "dish": "Rice Gruel / Chicken Pickle / Cultured Ghee",
-                 "note": "The humble rice gruel, inspired by a Ladakhi soup called dastukh, paired with aromatic chicken pickle — once used to stretch out scarce protein.",
+                 "note": "The humble rice gruel, inspired by a Ladakhi soup called dastukh, paired with aromatic chicken pickle, once used to stretch out scarce protein.",
                  "alt_dish": "Rice Gruel / Curry Leaf Podi / Cultured Ghee", "alt_note": ""},
                 {"course": "Dal", "dish": "Leftover Dal / Aata / Namak Gosht",
                  "note": "The real missi roti, served with namak gosht.",
                  "alt_dish": "Leftover Dal / Aata / Nadru Ka Salan", "alt_note": "The real missi roti, served with a lotus stem salan."},
                 {"course": "Main", "dish": "Hilsa Head / Karpurkanthi Rice / Fish XO",
-                 "note": "An umami-rich fried rice made with the head of the prized hilsa, its offal worked into the sauce — tossed in karpurkanthi rice.",
+                 "note": "An umami-rich fried rice made with the head of the prized hilsa, its offal worked into the sauce, tossed in karpurkanthi rice.",
                  "alt_dish": "Banana Stem / Fried Banana Flowers / Mushroom XO",
                  "alt_note": "The banana stem (thor) version concentrates the same umami through a local mushroom XO sauce, tossed in karpurkanthi rice."},
                 {"course": "Palate cleanser", "dish": "Grape / Lebu / Lonka", "note": "A refreshing grape ceviche."},
