@@ -21,7 +21,7 @@ export default function EventsArchive() {
             <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 leading-[1.02] tracking-tight">
               A series of chapters,
               <br />
-              <span className="italic text-[#D9772B]">never repeated.</span>
+              <span className="italic text-[#D9772B]">with a story behind every course.</span>
             </h1>
             <p className="mt-8 text-[#B5A79E] text-lg leading-relaxed max-w-2xl">
               Every chapter runs its own menu, until the next one begins. Here's how the work has evolved, from the first home to where the table sits today.
