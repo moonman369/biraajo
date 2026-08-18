@@ -42,7 +42,7 @@ export default function Events() {
           </div>
           <div className="lg:col-span-4">
             <p className="text-[#B5A79E] leading-relaxed">
-              Biraajo doesn't repeat a menu. Each chapter is its own concept, with its own story and season.
+              Every chapter runs its own menu, until the next one begins.
             </p>
             <Link
               to="/events"
@@ -55,7 +55,7 @@ export default function Events() {
         </div>
 
         <div
-          className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#2D1D1A] border border-[#2D1D1A]"
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-px bg-transparent md:bg-[#2D1D1A] md:border md:border-[#2D1D1A]"
           data-testid="homepage-chapters-grid"
         >
           {CHAPTERS.map((c, i) => (
@@ -65,7 +65,7 @@ export default function Events() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.7, delay: i * 0.1 }}
-              className="bg-[#0A0504] flex flex-col"
+              className="bg-[#0A0504] border border-[#2D1D1A] md:border-0 flex flex-col"
               data-testid={`homepage-chapter-card-${c.number}`}
             >
               <div className="img-zoom relative aspect-[4/3] overflow-hidden">

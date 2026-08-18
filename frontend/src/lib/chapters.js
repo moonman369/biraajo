@@ -10,6 +10,7 @@ export const CHAPTERS = [
     description: "The current chapter, eight courses built entirely from necessity, scarcity and upcycled memory.",
     image: WTWE_COVER,
     href: "/supper-club/when-there-wasnt-enough",
+    menuHref: "/menus/when-there-wasnt-enough",
     ctaLabel: "Book a seat",
   },
   {
@@ -21,6 +22,7 @@ export const CHAPTERS = [
     description: "A monsoon-season menu built from Gujarat and Rajasthan's micro-regional traditions, woven through with Bengali influence, and a live three-hour soundscape composed by Rajneesh.",
     image: "/api/media/biraajo/media/31cf3839eeb74061.jpg",
     href: "/supper-club/barsaat",
+    menuHref: "/menus/barsaat",
     ctaLabel: "Read the story",
   },
   {
@@ -32,6 +34,7 @@ export const CHAPTERS = [
     description: "Biraajo's first chapter, childhood memory and Nani's own recipes, rebuilt through a contemporary European format.",
     image: "/api/media/biraajo/media/6a6d9d936ab71fa4.jpg",
     href: "/supper-club/naani-ghar",
+    menuHref: "/menus/naani-ghar",
     ctaLabel: "Read the story",
   },
 ];

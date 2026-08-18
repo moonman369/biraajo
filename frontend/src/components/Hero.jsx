@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useSiteContent, read } from "@/lib/siteContent";
+import { CHAPTERS } from "@/lib/chapters";
 
 export default function Hero() {
   const { content } = useSiteContent();
@@ -42,6 +43,8 @@ export default function Hero() {
   let primaryLabel = read(content, "landing.hero.primary_cta_label", "Reserve a seat");
   if (!registrationsOpen) primaryLabel = "Reservations closed · Join list";
   else if (!hasUpcoming) primaryLabel = "Be first to know · Join list";
+
+  const activeChapter = CHAPTERS.find((c) => c.active) || CHAPTERS[0];
 
   return (
     <section id="top" className="relative min-h-screen w-full overflow-hidden" data-testid="hero-section">
@@ -101,13 +104,17 @@ export default function Hero() {
                 <Link to="/events" data-testid="hero-see-menu-button" className="inline-flex items-center justify-center px-7 py-4 border border-[#F3EFE7]/40 text-[#F3EFE7] tracking-[0.18em] uppercase text-[11px] hover:bg-[#F3EFE7] hover:text-[#0A0504] transition-all duration-500">
                   {read(content, "landing.hero.secondary_cta_label", "Check out events")}
                 </Link>
+                {activeChapter?.menuHref && (
+                  <Link to={activeChapter.menuHref} data-testid="hero-view-menu-button" className="inline-flex items-center justify-center px-7 py-4 text-[#B5A79E] tracking-[0.18em] uppercase text-[11px] hover:text-[#D9772B] transition-all duration-500">
+                    See the menu
+                  </Link>
+                )}
               </div>
             </div>
           </motion.div>
         </div>
 
         <motion.div className="pb-10 flex items-center gap-4 text-overline text-[#B5A79E]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 1.4 }}>
-          <span>scroll</span>
           <span className="w-12 h-px bg-[#B5A79E]" />
           <span className="italic font-display text-base text-[#F3EFE7] normal-case tracking-normal">
             a table set for stories

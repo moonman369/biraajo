@@ -19,13 +19,12 @@ export default function EventsArchive() {
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
             <p className="text-overline">Every chapter, so far</p>
             <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 leading-[1.02] tracking-tight">
-              Not one menu.
+              A series of chapters,
               <br />
-              <span className="italic text-[#D9772B]">A series of chapters.</span>
+              <span className="italic text-[#D9772B]">never repeated.</span>
             </h1>
             <p className="mt-8 text-[#B5A79E] text-lg leading-relaxed max-w-2xl">
-              Biraajo doesn't repeat a menu. Each supper is its own concept, with its own story and season.
-              Here's how the work has evolved, from the first home to where the table sits today.
+              Every chapter runs its own menu, until the next one begins. Here's how the work has evolved, from the first home to where the table sits today.
             </p>
           </motion.div>
         </div>
@@ -33,7 +32,7 @@ export default function EventsArchive() {
 
       <section className="pb-24 sm:pb-32">
         <div className="max-w-5xl mx-auto px-6 sm:px-8 lg:px-12">
-          <div className="border border-[#2D1D1A] divide-y divide-[#2D1D1A]" data-testid="archive-chapter-list">
+          <div className="border-0 md:border md:border-[#2D1D1A] space-y-6 md:space-y-0 md:divide-y md:divide-[#2D1D1A]" data-testid="archive-chapter-list">
             {CHAPTERS.map((c, i) => (
               <motion.div
                 key={c.name}
@@ -41,6 +40,7 @@ export default function EventsArchive() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.7, delay: i * 0.08 }}
+                className="border border-[#2D1D1A] md:border-0"
               >
                 <Link
                   to={c.href}
