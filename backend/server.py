@@ -526,12 +526,12 @@ _BARSAAT_DESC_LUNCH = ("A ten-course immersive Barsaat lunch inspired by Gujarat
     "Group discount available for parties of 4 or more.")
 _BARSAAT_IMG = "/api/media/biraajo/media/4d82c167b3dc090f.jpg"
 _BARSAAT_AUG_EVENTS = [
-    {"id": "barsaat-2026-08-02-lunch", "title": "Barsaat — Lunch Table (Aug 2)", "date": "2026-08-02",
-     "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _BARSAAT_DESC_LUNCH,
+    {"id": "barsaat-2026-08-02-lunch", "title": "Barsaat, Lunch Table (Aug 2)", "date": "2026-08-02",
+     "time": "13:00 to 15:30", "venue": "Biraajo House, South Calcutta", "description": _BARSAAT_DESC_LUNCH,
      "price": 2500.0, "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Barsaat",
      "seats_booked": 0, "is_published": True},
-    {"id": "barsaat-2026-08-09-dinner", "title": "Barsaat — Dinner (Aug 9)", "date": "2026-08-09",
-     "time": "19:00 — 22:00", "venue": "Biraajo House, South Calcutta", "description": _BARSAAT_DESC_DINNER,
+    {"id": "barsaat-2026-08-09-dinner", "title": "Barsaat, Dinner (Aug 9)", "date": "2026-08-09",
+     "time": "19:00 to 22:00", "venue": "Biraajo House, South Calcutta", "description": _BARSAAT_DESC_DINNER,
      "price": 2500.0, "seats_total": 8, "image_url": _BARSAAT_IMG, "tag": "Barsaat",
      "seats_booked": 0, "is_published": True},
 ]
@@ -540,30 +540,30 @@ _YAADEIN_DESC = ("Explores the relationship between food and politics and how th
                  "have impacted culture.")
 _YAADEIN_EVENTS = []
 
-_WTWE_DESC = ("A menu built from necessity — dishes born of scarce seasons, a traveller's limited stores, "
+_WTWE_DESC = ("A menu built from necessity: dishes born of scarce seasons, a traveller's limited stores, "
     "and the quiet art of upcycling leftovers. Each course opens a conversation about eating habits and "
     "food history. Eight seats only. Same price for veg and non-veg.")
 _WTWE_IMG = "https://customer-assets-gfyr7b9c.emergentagent.net/job_5694519e-f9bb-446a-a36e-fdf292c1f3e4/artifacts/eofl6aqm_when.jpg"
 _WTWE_NAME = "Abhāv Ke Bhāv"
 _WTWE_EVENTS = [
-    {"id": "wtwe-2026-08-23-lunch", "title": f"{_WTWE_NAME} — Lunch (Aug 23)", "date": "2026-08-23",
-     "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
+    {"id": "wtwe-2026-08-23-lunch", "title": f"{_WTWE_NAME}, Lunch (Aug 23)", "date": "2026-08-23",
+     "time": "13:00 to 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
      "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
      "tag": _WTWE_NAME, "seats_booked": 0, "is_published": True},
-    {"id": "wtwe-2026-08-30-dinner", "title": f"{_WTWE_NAME} — Dinner (Aug 30)", "date": "2026-08-30",
-     "time": "19:00 — 22:00", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
+    {"id": "wtwe-2026-08-30-dinner", "title": f"{_WTWE_NAME}, Dinner (Aug 30)", "date": "2026-08-30",
+     "time": "19:00 to 22:00", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
      "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
      "tag": _WTWE_NAME, "seats_booked": 0, "is_published": True},
-    {"id": "wtwe-2026-09-06-lunch", "title": f"{_WTWE_NAME} — Lunch (Sep 6)", "date": "2026-09-06",
-     "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
+    {"id": "wtwe-2026-09-06-lunch", "title": f"{_WTWE_NAME}, Lunch (Sep 6)", "date": "2026-09-06",
+     "time": "13:00 to 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
      "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
      "tag": _WTWE_NAME, "seats_booked": 0, "is_published": True},
-    {"id": "wtwe-2026-09-11-dinner", "title": f"{_WTWE_NAME} — Dinner (Sep 11)", "date": "2026-09-11",
-     "time": "19:00 — 22:00", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
+    {"id": "wtwe-2026-09-11-dinner", "title": f"{_WTWE_NAME}, Dinner (Sep 11)", "date": "2026-09-11",
+     "time": "19:00 to 22:00", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
      "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
      "tag": _WTWE_NAME, "seats_booked": 0, "is_published": True},
-    {"id": "wtwe-2026-09-13-lunch", "title": f"{_WTWE_NAME} — Lunch (Sep 13)", "date": "2026-09-13",
-     "time": "13:00 — 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
+    {"id": "wtwe-2026-09-13-lunch", "title": f"{_WTWE_NAME}, Lunch (Sep 13)", "date": "2026-09-13",
+     "time": "13:00 to 15:30", "venue": "Biraajo House, South Calcutta", "description": _WTWE_DESC,
      "price": 2800.0, "price_veg": 2800.0, "price_nonveg": 2800.0, "seats_total": 8, "image_url": _WTWE_IMG,
      "tag": _WTWE_NAME, "seats_booked": 0, "is_published": True},
 ]
@@ -756,6 +756,18 @@ async def _run_migrations() -> None:
             await db.site_content.update_one({"id": doc_id}, {"$set": {"data": data}})
         await db.migrations.update_one({"id": "wtwe_brand_fix_v1"}, {"$set": {"id": "wtwe_brand_fix_v1", "applied_at": _now_iso()}}, upsert=True)
         logger.info("Migration applied: wtwe_brand_fix_v1")
+
+    # One-time: remove em-dash/en-dash punctuation from event titles, time ranges
+    # and descriptions in the events collection (missed by the earlier
+    # dash_cleanup_v1 migration, which only touched site_content).
+    if not await db.migrations.find_one({"id": "dash_cleanup_events_v1"}):
+        for ev in (*_WTWE_EVENTS, *_BARSAAT_AUG_EVENTS):
+            await db.events.update_one({"id": ev["id"]}, {"$set": {
+                "title": ev["title"], "time": ev["time"], "description": ev["description"],
+            }})
+        await db.migrations.update_one({"id": "dash_cleanup_events_v1"}, {"$set": {"id": "dash_cleanup_events_v1", "applied_at": _now_iso()}}, upsert=True)
+        logger.info("Migration applied: dash_cleanup_events_v1")
+
 
     # One-time: add a short concept teaser line above the hero poster image.
     if not await db.migrations.find_one({"id": "wtwe_hero_concept_v1"}):

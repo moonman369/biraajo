@@ -9,6 +9,23 @@ const UPI_QR_URL = "/api/media/biraajo/media/a6dfec35dcbb1331.png";
 const CONTACT = "+91 93313 08405";
 const PAYEE_NAME = "Vidip Shah";
 
+function formatEventDate(iso) {
+  if (!iso) return "";
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  const month = d.toLocaleDateString("en-US", { month: "long" });
+  const weekday = d.toLocaleDateString("en-US", { weekday: "long" });
+  return `${month} ${d.getDate()}, ${weekday}`;
+}
+
+function sessionOf(e) {
+  if (e.id?.endsWith("-lunch")) return "Lunch";
+  if (e.id?.endsWith("-dinner")) return "Dinner";
+  const hour = parseInt(e.time || "", 10);
+  if (!Number.isNaN(hour)) return hour < 17 ? "Lunch" : "Dinner";
+  return null;
+}
+
 export default function EventRegistrationModal({ event, events, onClose, onSuccess, disclaimer = "" }) {
   const dateOptions = events && events.length ? events : event ? [event] : [];
   const firstAvailable = dateOptions.find((e) => (e.seats_total - (e.seats_booked || 0)) > 0) || dateOptions[0];
@@ -33,7 +50,11 @@ export default function EventRegistrationModal({ event, events, onClose, onSucce
   const [prices, setPrices] = useState({ veg: 2500, nonveg: 2800, discountPct: 20, discountMinGuests: 4 });
   const fileInputRef = useRef(null);
 
-  const activeEvent = dateOptions.find((e) => e.id === selectedEventId) || firstAvailable;
+  const sessionTypes = [...new Set(dateOptions.map(sessionOf).filter(Boolean))];
+  const [selectedSession, setSelectedSession] = useState(sessionOf(firstAvailable) || sessionTypes[0] || "");
+  const filteredDates = sessionTypes.length > 1 ? dateOptions.filter((e) => sessionOf(e) === selectedSession) : dateOptions;
+
+  const activeEvent = filteredDates.find((e) => e.id === selectedEventId) || filteredDates[0] || firstAvailable;
 
   useEffect(() => {
     if (!activeEvent) return;
@@ -240,15 +261,38 @@ export default function EventRegistrationModal({ event, events, onClose, onSucce
                     Book {prices.discountMinGuests}+ seats and get {prices.discountPct}% off.
                   </p>
                 </Field>
+                {sessionTypes.length > 1 && (
+                  <Field label="Lunch or Dinner" required>
+                    <div className="grid grid-cols-2 gap-3">
+                      {sessionTypes.map((s) => (
+                        <button key={s} type="button"
+                          onClick={() => {
+                            setSelectedSession(s);
+                            const nextDates = dateOptions.filter((e) => sessionOf(e) === s);
+                            const nextFirst = nextDates.find((e) => (e.seats_total - (e.seats_booked || 0)) > 0) || nextDates[0];
+                            if (nextFirst) setSelectedEventId(nextFirst.id);
+                          }}
+                          data-testid={`reg-session-${s.toLowerCase()}`}
+                          className={`text-left p-4 border transition-all duration-300 ${
+                            selectedSession === s
+                              ? "border-[#D9772B] bg-[#5A1A1F]/20 text-[#F3EFE7]"
+                              : "border-[#2D1D1A] text-[#B5A79E] hover:border-[#5A1A1F] hover:text-[#F3EFE7]"
+                          }`}>
+                          <span className="block font-display text-xl">{s}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </Field>
+                )}
                 <Field label="Preferred Event Date" required>
-                  {dateOptions.length > 1 ? (
+                  {filteredDates.length > 1 ? (
                     <select
                       required
                       value={selectedEventId}
                       onChange={(e) => {
                         const newId = e.target.value;
                         setSelectedEventId(newId);
-                        const newEvent = dateOptions.find((ev) => ev.id === newId);
+                        const newEvent = filteredDates.find((ev) => ev.id === newId);
                         if (newEvent) {
                           const newLeft = Math.max(1, newEvent.seats_total - (newEvent.seats_booked || 0));
                           setForm((f) => ({ ...f, guests: Math.min(Number(f.guests) || 1, newLeft) }));
@@ -257,18 +301,18 @@ export default function EventRegistrationModal({ event, events, onClose, onSucce
                       data-testid="reg-event-date-select"
                       className={inputCls}
                     >
-                      {dateOptions.map((e) => {
+                      {filteredDates.map((e) => {
                         const left = Math.max(0, e.seats_total - (e.seats_booked || 0));
                         const soldOut = left === 0;
                         return (
                           <option key={e.id} value={e.id} disabled={soldOut}>
-                            {e.date}{e.time ? ` · ${e.time}` : ""}{soldOut ? " · Sold out" : ` · ${left} left`}
+                            {formatEventDate(e.date)}{soldOut ? " · Sold out" : ` · ${left} left`}
                           </option>
                         );
                       })}
                     </select>
                   ) : (
-                    <input readOnly value={`${activeEvent.date}${activeEvent.time ? ` · ${activeEvent.time}` : ""}`}
+                    <input readOnly value={formatEventDate(activeEvent.date)}
                       data-testid="reg-event-date" className={`${inputCls} cursor-not-allowed opacity-80`} />
                   )}
                 </Field>
@@ -405,7 +449,7 @@ export default function EventRegistrationModal({ event, events, onClose, onSucce
               </h3>
               <p className="mt-3 text-[#B5A79E]">
                 Your seat for <span className="text-[#F3EFE7]">{activeEvent.title}</span> on{" "}
-                <span className="text-[#F3EFE7]">{activeEvent.date}</span> is locked. A confirmation email is on its way.
+                <span className="text-[#F3EFE7]">{formatEventDate(activeEvent.date)}</span> is locked. A confirmation email is on its way.
                 If anything changes, we&apos;ll reach you on WhatsApp.
               </p>
 

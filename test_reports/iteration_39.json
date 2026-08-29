@@ -1,0 +1,33 @@
+{
+  "summary": "Frontend-only verification of the new Lunch/Dinner session selector + human-readable date format in EventRegistrationModal. Tested WTWE supper-club page, WTWE menu page, single-event modal (homepage About), full end-to-end booking (form -> payment -> confirmed) on Sep 11 dinner, mobile 390px layout, and site-wide dash scan. All 6 requested scenarios PASSED. Test registrations were cleaned up via admin API (seats restored to 0).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/events", "issue": "Legacy event docs still contain em-dashes: 'Barsaat — Third/Second/First Table', 'Naani Ghar — Edition VI', time '19:15 — 22:00' (ids aa8def91..., 4d790a4f..., cdaf83ef..., e37cc057...). The dash_cleanup_events_v1 migration only patched _WTWE_EVENTS and _BARSAAT_AUG_EVENTS. Not visible on public pages tested (they are past events), but will show in admin dashboard / any past-events listing."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Homepage About single-event modal / Suppers", "issues": ["About.jsx uses list[0] from GET /events?upcoming=true which is returned newest-last-date-first, so the pre-selected single event is the FURTHEST date (Sep 13 lunch) instead of the nearest upcoming date (Aug 23). Cosmetic/UX, consider sorting ascending before picking."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Optional: extend dash cleanup migration to legacy Barsaat/Naani Ghar event docs (em-dash in title/time) so admin views are dash-free.",
+    "Optional: pick nearest upcoming date (ascending sort) for single-event modals on homepage About / Suppers."
+  ],
+  "critical_code_review_comments": [
+    "EventRegistrationModal.formatEventDate/sessionOf logic is correct; sessionOf falls back to parseInt(time) hour which works with the new 'HH:MM to HH:MM' format.",
+    "Session toggle is correctly gated on sessionTypes.length > 1 so single-event modals keep the read-only formatted date input."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "not tested (frontend-only request)", "frontend": "100%"},
+  "seed_data_creation": "Created 2 temp registrations (TEST QA Dinner, TEST QA Done) on wtwe-2026-09-11-dinner; both deleted via DELETE /api/registrations/{id}; seats_booked back to 0 for all WTWE events.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "test_credentials": "admin reachbiraajo@gmail.com / Biraajo@2026 (POST /api/auth/login returns access_token)",
+  "context_for_next_testing_agent": "Verified: session toggle appears before Preferred Event Date, Lunch default selected, lunch options = ['August 23, Sunday · 8 left','September 6, Sunday · 8 left','September 13, Sunday · 8 left'], dinner options = ['August 30, Sunday · 8 left','September 11, Friday · 8 left'], selection auto-resets to first dinner date and modal header/venue/time update ('Abhāv Ke Bhāv, Dinner (Aug 30)', '19:00 to 22:00'). POST /api/events/wtwe-2026-09-11-dinner/register fired with correct event_id; payment step and confirmed step both show 'September 11, Friday' (no ISO, no dashes). Same behaviour on /menus/when-there-wasnt-enough. Barsaat page 'RESERVE THIS DATE' button is disabled (no upcoming Barsaat events -> selectedEvent null) - appears intentional, not retested. Single-event modal validated via homepage 'about-join-table'.",
+  "rca_of_the_issue": "N/A - no defects found in the tested change."
+}
