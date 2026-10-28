@@ -14,7 +14,7 @@ Plan: [plan.md](plan.md) (v3). Branch: `emergent-exit`, created from `feature/su
 | B0 Baseline | Done | 2026-10-28 | this commit | build OK; 2 consecutive runs: 48/48 identical | Owner chose Part B before A2–A6 |
 | B1 Prune | Done | 2026-10-28 | this commit | build OK; diff vs baseline 0/48; data-testid 316 | |
 | B2 Strip Emergent (frontend) | Done | 2026-10-28 | this commit | grep empty; no emergent/posthog requests; diff 0/48 | Title/description are placeholders |
-| B3 CRA → Vite | Not started | | | | |
+| B3 CRA → Vite | Done* | 2026-10-28 | this commit | dev + build OK (Node 22 & 24); diff 0/48; flows same as original | *Upload/viewer re-check after A2 |
 | B4 Upgrade packages | Not started | | | | |
 | B5 Tailwind 4 | Not started | | | | |
 | B6 Vercel prep | Not started | | | | |
@@ -162,6 +162,41 @@ Awaiting the chef's final text: tab title and meta description (placeholders abo
 
 ---
 
+## B3. CRA → Vite
+
+Changes:
+- `public/index.html` → `frontend/index.html`, plus `<script type="module" src="/src/index.jsx">`. Removed the CRA-only template comments (`%PUBLIC_URL%`, manifest, `npm start`/`yarn start`). `public/` is empty and gone.
+- `src/App.js` → `App.jsx`, `src/index.js` → `index.jsx`. These are the only `.js` files with JSX. The `constants/testIds` matches were `<feature>-<element>` inside comments.
+- `vite.config.mjs`: `@vitejs/plugin-react`, alias `@` → `src`, dev port 3000 (`strictPort`), proxy `/api` → `http://localhost:8000`, preview port 3000. `build.chunkSizeWarningLimit: 700` because the app is one ~650 kB chunk, as under CRA, and splitting it would be a refactor. Rolldown's `pluginTimings` report is turned off. Without these two, Vite printed two notices CRA never showed.
+- `REACT_APP_BACKEND_URL` → `import.meta.env.VITE_API_URL ?? ""` in `src/lib/api.js` and `src/pages/AdminDashboard.jsx`. Added `frontend/.env.example` (`VITE_API_URL=`); it is tracked thanks to `!.env.example`.
+- `tailwind.config.js` content path `./public/index.html` → `./index.html`.
+- package.json: scripts `dev`/`build`/`preview`; `engines.node: "22.x"` (Vercel reads this); `packageManager` removed. Added `vite 8.3.5`, `@vitejs/plugin-react 6.1.2` (latest on 2026-10-28). Removed `react-scripts`, `@craco/craco`, `@babel/plugin-proposal-private-property-in-object`, `dotenv`, and the eslint packages (`eslint`, `@eslint/js`, `eslint-plugin-{import,jsx-a11y,react,react-hooks}`, `globals`); CRA was their only user and there is no eslint config file. Deleted `craco.config.js`. `browserslist` is kept (autoprefixer reads it).
+- `package-lock.json` regenerated with npm. A fresh `npm ci` works without `--legacy-peer-deps` and without the ajv workaround from B0/B1, which is no longer needed.
+- READMEs: `frontend/README.md` (was CRA boilerplate) and the frontend parts of the root `README.md` now describe npm + Vite. The backend parts of the root README are still the old text; A3 replaces it.
+- `tools/visual/flows.mjs`: Playwright smoke test of booking modal, both screenshot uploads, admin login and the admin screenshot viewer.
+
+Gate: **PASS, except the upload/viewer success path, which needs A2** (owner decision: frontend before backend storage).
+- `rm -rf node_modules && npm ci` → 133 packages. `npm run build` → `index-GnKdteyJ.js 649.55 kB (183.33 kB gz)`, `index-DFi4EFWy.css 34.41 kB (7.57 kB gz)`, no warnings. The same build on **Node 22.23.4** (`npx -p node@22`) produces byte-identical assets.
+- `npm run dev` → ready on :3000; `/` 200, `/menus/barsaat` 200 (SPA fallback), `/api/` through the proxy → `{"status":"ok"}`.
+- Screenshot diff, `dist/` served by `serve.mjs` → `node diff.mjs baseline-1 b3` → `48 compared, 0 differ`. Pixel-identical even though PostCSS changed: CRA used its own chain (postcss-preset-env); Vite uses `postcss.config.js` (tailwind + autoprefixer).
+- `node flows.mjs`, with identical output for the original CRA build, the Vite build and `npm run dev`:
+  ```
+  PASS     booking modal - register -> 200, payment step shown (₹2,500)
+  STORAGE  modal screenshot upload - request sent correctly, backend: 500 {"detail":"Storage not configured"}
+  STORAGE  booking page screenshot upload - request sent correctly, backend: 500 {"detail":"Storage not configured"}
+  PASS     admin login - landed on /admin
+  STORAGE  admin screenshot viewer - GET with Bearer token sent; backend 500, UI shows 'Screenshot not available'
+  PASS     no page errors
+  ```
+  The upload and viewer requests go to the right endpoint, with the Bearer token for the viewer, and errors are handled. The success path cannot be shown until A2 gives the backend storage. **Re-run `node flows.mjs` after A2; all lines must be PASS.**
+- `data-testid` 316 (unchanged). `grep -ri emergent frontend` (excluding node_modules/dist) is empty.
+
+Lost by design: CRA linted during the build (the 2 `exhaustive-deps` warnings). Vite does not lint. Adding an eslint setup would be new tooling, so not done.
+
+`npm audit`: 5 high, all in versions B4 upgrades anyway (`axios` < 1.20, `react-router` ≤ 7.17, its `turbo-stream`, `postcss` ≤ 8.5.22).
+
+---
+
 ## Cutover list (needs real data / Cloudinary / live site)
 
 Found during code scans. Each item is handled in plan Section 6.
@@ -174,6 +209,7 @@ Found during code scans. Each item is handled in plan Section 6.
 - Cloudinary folder mode / `asset_folder` (C3).
 
 ## Open questions
+- B3/B4: re-run `tools/visual/flows.mjs` once A2 gives the backend storage; the upload and admin-viewer checks must turn from STORAGE to PASS.
 - Final tab title and meta description from the chef (B2 placeholders in `frontend/public/index.html`).
 1. **A1 tests (deferred, not blocking).** How should the 27 non-storage failures be handled? Options:
    - (a) Update group 2 to the current code values. Mark groups 3 and 4 with pytest markers (`prod_data`, `needs_external`) that are deselected by default and run at cutover against a restored copy. Then rerun the gate. *(recommended)*

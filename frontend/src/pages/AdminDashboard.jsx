@@ -18,7 +18,7 @@ const TABS = [
   { id: "gallery", label: "Gallery" },
 ];
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_API_URL ?? "";
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState("overview");
