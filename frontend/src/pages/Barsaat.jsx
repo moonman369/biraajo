@@ -152,9 +152,9 @@ export default function Barsaat() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.2 }} className="lg:col-span-5">
-              <div className="img-zoom relative aspect-[4/5] w-full overflow-hidden">
+              <div className="img-zoom relative aspect-4/5 w-full overflow-hidden">
                 {heroImg && <img src={heroImg} alt="Barsaat" className="w-full h-full object-cover" />}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/55 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t/srgb from-[#0A0504]/55 to-transparent" />
               </div>
             </motion.div>
           </div>
@@ -328,7 +328,7 @@ export default function Barsaat() {
             </h2>
             <div className={`grid gap-6 sm:gap-8 ${reelsItems.length >= 3 ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : reelsItems.length === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"}`}>
               {reelsItems.filter((r) => r && r.url).map((r, i) => (
-                <div key={`${r.url}-${i}`} className="relative aspect-[9/16] sm:aspect-video w-full overflow-hidden bg-[#0A0504] border border-[#2D1D1A]" data-testid={`barsaat-reel-${i}`}>
+                <div key={`${r.url}-${i}`} className="relative aspect-9/16 sm:aspect-video w-full overflow-hidden bg-[#0A0504] border border-[#2D1D1A]" data-testid={`barsaat-reel-${i}`}>
                   <video
                     src={r.url}
                     poster={r.poster || undefined}

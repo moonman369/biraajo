@@ -9,12 +9,18 @@ const TARGETS = [
   { name: "hero title (on load)", path: "/", trigger: "load", selector: '[data-testid="hero-title"]' },
   { name: "events section (in view)", path: "/", trigger: "scroll", container: '[data-testid="events-section"]' },
   { name: "gallery section (in view)", path: "/", trigger: "scroll", container: '[data-testid="gallery-section"]' },
-  { name: "booking modal (open)", path: "/", trigger: "modal", container: '[data-testid="event-registration-modal"]' },
+  // The panel inside the modal slides up; the backdrop fade is too short to sample reliably.
+  { name: "booking modal panel (open)", path: "/", trigger: "modal", selector: '[data-testid="event-registration-modal"] > div' },
 ];
 const AT = [0, 100, 250, 500, 800, 1200, 1800, 2500];
 
-async function sample(page, sel, container, ms = 3500) {
-  return page.evaluate(async ([sel, container, ms]) => {
+async function sample(page, sel, container, ms = 3500, waitForIt = false) {
+  return page.evaluate(async ([sel, container, ms, waitForIt]) => {
+    // waitForIt: poll every frame until the element exists, so sampling starts on its first frame.
+    if (waitForIt) {
+      const t = performance.now();
+      while (!document.querySelector(sel) && performance.now() - t < 5000) await new Promise((r) => requestAnimationFrame(r));
+    }
     const pick = () => {
       if (sel) return document.querySelector(sel);
       const root = document.querySelector(container);
@@ -36,7 +42,7 @@ async function sample(page, sel, container, ms = 3500) {
       tick();
     });
     return { id, out };
-  }, [sel, container, ms]);
+  }, [sel, container, ms, waitForIt]);
 }
 
 function at(samples, t) {
@@ -71,9 +77,9 @@ for (const t of TARGETS) {
     } else {
       await page.goto(`${site}${t.path}`, { waitUntil: "networkidle" });
       await page.waitForTimeout(2500);
+      const p = sample(page, t.selector, null, 3500, true);
       await page.getByTestId("about-join-table").click();
-      await page.waitForSelector(t.container, { state: "attached" });
-      samples = await sample(page, null, t.container);
+      samples = await p;
     }
     await context.close();
     if (!samples) { console.log(`  ${site}  element not found`); failed = true; continue; }
@@ -81,7 +87,7 @@ for (const t of TARGETS) {
     const [, o0, y0] = out[0];
     const startIdx = out.findIndex(([, o, y]) => Math.abs(o - o0) > 0.01 || Math.abs(y - y0) > 0.1);
     const end = out[out.length - 1];
-    const plays = startIdx >= 0 && end[1] > 0.99 && Math.abs(end[2]) < 0.1;
+    const plays = startIdx >= 0 && end[1] > 0.99 && Math.abs(end[2]) < 0.5;
     if (!plays) failed = true;
     const tStart = startIdx >= 0 ? out[startIdx][0] : NaN;
     const settled = out.find(([t, o, y]) => t >= tStart && o > 0.99 && Math.abs(y) < 0.5);

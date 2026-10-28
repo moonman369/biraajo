@@ -37,9 +37,9 @@ export default function AboutTheChef() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }} className="lg:col-span-5">
-            <div className="img-zoom relative aspect-[4/5] w-full overflow-hidden">
+            <div className="img-zoom relative aspect-4/5 w-full overflow-hidden">
               <img src={portrait} alt="Chef Vidip Shah" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/60 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t/srgb from-[#0A0504]/60 to-transparent" />
             </div>
           </motion.div>
         </div>
@@ -126,9 +126,9 @@ function Chapter({ eyebrow, titleHtml, bodies, image, reverse }) {
     >
       <div className={`max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center ${reverse ? "lg:[direction:rtl]" : ""}`}>
         <div className="lg:col-span-6 [direction:ltr]">
-          <div className="img-zoom relative aspect-[4/5] w-full overflow-hidden">
+          <div className="img-zoom relative aspect-4/5 w-full overflow-hidden">
             <img src={image} alt={eyebrow} className="w-full h-full object-cover" loading="lazy" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/50 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t/srgb from-[#0A0504]/50 to-transparent" />
           </div>
         </div>
         <div className="lg:col-span-6 [direction:ltr]">

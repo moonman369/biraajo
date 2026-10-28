@@ -41,9 +41,9 @@ export default function Experiences() {
               data-testid={`experience-card-${i}`}
               className="group relative bg-[#0A0504] p-8 sm:p-10 lg:p-12 hover-lift overflow-hidden"
             >
-              <div className="img-zoom relative aspect-[4/3] mb-8 overflow-hidden">
+              <div className="img-zoom relative aspect-4/3 mb-8 overflow-hidden">
                 <img src={it.image} alt={it.title} className="w-full h-full object-cover" loading="lazy" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/60 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t/srgb from-[#0A0504]/60 to-transparent" />
                 <span className="absolute top-4 left-4 text-overline text-[#F3EFE7]">{it.tag}</span>
               </div>
               <h3 className="font-display text-3xl text-[#F3EFE7] tracking-tight">{it.title}</h3>

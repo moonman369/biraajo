@@ -712,7 +712,7 @@ export default function EditWebsite() {
 
       {/* ─── Auth expired modal — keeps in-memory edits, just need to re-login ─── */}
       {authExpired && (
-        <div className="fixed inset-0 z-50 bg-[#0A0504]/90 backdrop-blur-sm flex items-center justify-center p-6" data-testid="auth-expired-modal">
+        <div className="fixed inset-0 z-50 bg-[#0A0504]/90 backdrop-blur-xs flex items-center justify-center p-6" data-testid="auth-expired-modal">
           <form onSubmit={reLogin} className="bg-[#140A09] border border-[#D9772B]/60 w-full max-w-md p-7">
             <p className="text-overline text-[#D9772B]">Session expired</p>
             <h2 className="font-display text-2xl mt-2 leading-tight">Re-login to save your work</h2>
@@ -727,7 +727,7 @@ export default function EditWebsite() {
               onChange={(e) => setReLoginEmail(e.target.value)}
               placeholder="Email"
               data-testid="relogin-email"
-              className="mt-5 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-none"
+              className="mt-5 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-hidden"
             />
             <input
               type="password"
@@ -736,7 +736,7 @@ export default function EditWebsite() {
               onChange={(e) => setReLoginPwd(e.target.value)}
               placeholder="Password"
               data-testid="relogin-password"
-              className="mt-3 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-none"
+              className="mt-3 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-hidden"
             />
             <button type="submit" data-testid="relogin-submit"
               className="mt-5 w-full px-5 py-3 bg-[#D9772B] text-[#0A0504] text-[11px] tracking-[0.22em] uppercase hover:bg-[#F3EFE7]">
@@ -748,7 +748,7 @@ export default function EditWebsite() {
 
       {/* ─── Version history modal ─── */}
       {historyOpen && (
-        <div className="fixed inset-0 z-50 bg-[#0A0504]/85 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6" data-testid="history-modal">
+        <div className="fixed inset-0 z-50 bg-[#0A0504]/85 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-6" data-testid="history-modal">
           <div className="bg-[#140A09] border border-[#2D1D1A] w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b border-[#2D1D1A]">
               <div>
@@ -956,7 +956,7 @@ function ListEditor({ listMeta, value, onChange }) {
 }
 
 function Field({ field, value, onChange }) {
-  const cls = "w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2 text-sm text-[#F3EFE7] focus:border-[#5A1A1F] outline-none";
+  const cls = "w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2 text-sm text-[#F3EFE7] focus:border-[#5A1A1F] outline-hidden";
   return (
     <label className="block">
       <span className="block text-[10px] tracking-[0.18em] uppercase text-[#B5A79E] mb-1">{field.label}</span>

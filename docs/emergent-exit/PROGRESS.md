@@ -16,7 +16,7 @@ Plan: [plan.md](plan.md) (v3). Branch: `emergent-exit`, created from `feature/su
 | B2 Strip Emergent (frontend) | Done | 2026-10-28 | this commit | grep empty; no emergent/posthog requests; diff 0/48 | Title/description are placeholders |
 | B3 CRA → Vite | Done* | 2026-10-28 | this commit | dev + build OK (Node 22 & 24); diff 0/48; flows same as original | *Upload/viewer re-check after A2 |
 | B4 Upgrade packages | Done | 2026-10-28 | B4.1–B4.7 | 6 groups diff 0/48; lucide 45/48 icon-only (accepted by owner); flows same; animations play | |
-| B5 Tailwind 4 | Not started | | | | |
+| B5 Tailwind 4 | Done | 2026-10-28 | this commit | all 48 classified: 31 identical, 17 colour rounding (max Δ 1–3/255); flows + animations same | 5 v4 behaviour changes fixed in CSS; 1 codemod copy bug fixed |
 | B6 Vercel prep | Not started | | | | |
 
 ---
@@ -229,6 +229,33 @@ Notes:
 
 ---
 
+## B5. Tailwind 4
+
+Changes:
+- `npx @tailwindcss/upgrade@4.3.3` (official tool) on a clean tree. It moved `tailwind.config.js` into `@theme` in `src/index.css`, added the v3 border-colour compatibility block, and renamed classes in 18 files: `outline-none`→`outline-hidden` (24), `bg-gradient-to-*`→`bg-linear-to-*` (12), `backdrop-blur-sm`→`backdrop-blur-xs` (6), `shadow`→`shadow-sm` (1), `leading-[1.25]`→`leading-tight`, arbitrary shorthands (`aspect-[4/5]`→`aspect-4/5`, `z-[90]`→`z-90`, `[column-fill:_balance]`→`[column-fill:balance]`).
+- Switched from the tool's PostCSS setup to **`@tailwindcss/vite`** (plan): `vite.config.mjs` plugin, deleted `postcss.config.js`, removed `@tailwindcss/postcss`, `postcss`, `autoprefixer` (vendor prefixes now come from Tailwind 4 / Lightning CSS). Exact pins: `tailwindcss 4.3.3`, `@tailwindcss/vite 4.3.3`. Removed the `browserslist` field, which only autoprefixer read.
+- The first v4 build differed on **48/48** screenshots, many with a different page height. Each cause was found by comparing computed styles element by element between the B4 and B5 builds, then fixed with the smallest override that gives the v3 result:
+  1. **Border colours lost** (all explicit `border-[#…]`): the project's unlayered `* { border-color: hsl(var(--border)) }` now beats layered utilities (in v3 it lost on specificity). Moved into `@layer base`.
+  2. **Line-heights**: v4's `leading-*` beats a responsive text size (`text-3xl sm:text-4xl leading-tight` gave 45px instead of 40px), and named sizes switched to ratios, which changes what nested arbitrary-size text inherits. Fixed in `index.css`: the v3 absolute line-heights in `@theme` (`--text-xs--line-height: 1rem` … `--text-4xl--line-height: 2.5rem`), plus unlayered `bp:text-*` line-height rules per breakpoint that restore v3 precedence. That's safe because the project has no responsive `leading-*` classes (checked).
+  3. **Gradient midtones**: v4 interpolates in oklab. Added `/srgb` to the 12 `bg-linear-to-*` classes.
+  4. **Archive separators vanished** (`/events` at md+): in v3 the parent's `md:divide-y` beat the item's `md:border-0`; in v4 `divide-*` uses `:where()` and loses. Added `md:not-first:border-t` to that item (`EventsArchive.jsx`), which reproduces v3's top border on items 2…n exactly.
+  5. **Placeholder colour**: v4 Preflight uses 50% of the text colour. Restored gray-400 in `@layer base` (upgrade-guide snippet).
+- **Bug in the upgrade tool, fixed:** it rewrote the Barsaat copy "Light, **shadow** and a few quiet objects do the rest." to "Light, **shadow-sm** and …" (it read the word as the v3 `shadow` utility). Restored. A review of every tool edit outside class attributes found no other text change.
+- Not visible in screenshots, but v4 behaviour changes, restored with the upgrade-guide snippets: pointer cursor on buttons (`button:not(:disabled), [role=button]:not(:disabled)`) and `@custom-variant hover (&:hover)` so `hover:` works on all devices as in v3.
+- `tools/visual/diff.mjs` now prints the max per-channel delta of each differing PNG. `tools/visual/anim.mjs` samples the booking-modal panel from its first frame.
+
+Gate: **PASS** (compared against `b4-lucide`, the accepted state after B4)
+- `npm run build`: no warnings. CSS 48.38 kB (9.45 kB gz), JS 747.92 kB (214.26 kB gz).
+- Screenshot diff: **31/48 identical; 17/48 differ only by colour rounding**, max per-channel delta 1 (4 PNGs), 2 (9), 3 (4), no size change. Classified as **antialiasing/colour rounding**: v4 writes translucent colours as `oklab(… / a)` (image overlays, badges) and gray-400 as oklch (placeholders). Not visible. Differing PNGs: about-the-chef ×2, admin_edit ×2, admin_tab_gallery ×2, admin_tab_offsite ×2, events-390, home ×2, menus ×2, supper-club_barsaat ×2, supper-club_naani-ghar ×2.
+- `node flows.mjs`: same as before (PASS booking modal, admin login, no page errors; STORAGE for the 3 upload/viewer checks).
+- `node anim.mjs` (B4 build vs B5 build): all 4 play; settle times events 611/608 ms, modal panel 332/321 ms, hero 626/678 ms, gallery 938/716 ms (gallery and hero vary run to run).
+- Dev server (`vite --port 3002`) computes the same styles as the build (`/events`: separators `0px,1px,1px`, h1 line-height 72px).
+- `data-testid` 316; `npm audit`: 0 vulnerabilities.
+
+**Browser support changes with Tailwind 4** (not visible in Chromium screenshots): v4 needs Safari 16.4+, Chrome 111+, Firefox 128+ (it uses `@property`, `color-mix()`, cascade layers). On older browsers, iPhones on iOS < 16.4 in particular, styling breaks badly. Tailwind 3.4 supported those. If guests on old iPhones matter, the fallback is to revert B5 (Tailwind 3.4.17 via PostCSS); everything else stays.
+
+---
+
 ## Cutover list (needs real data / Cloudinary / live site)
 
 Found during code scans. Each item is handled in plan Section 6.
@@ -241,6 +268,7 @@ Found during code scans. Each item is handled in plan Section 6.
 - Cloudinary folder mode / `asset_folder` (C3).
 
 ## Open questions
+- Tailwind 4 drops support for Safari < 16.4 (iOS < 16.4). Acceptable for the guests, or revert B5 to Tailwind 3.4.17?
 - Backend tests (A1) and Part A phases A2–A6 are still open; Part B was started first at the owner's request.
 - B3/B4: re-run `tools/visual/flows.mjs` once A2 gives the backend storage; the upload and admin-viewer checks must turn from STORAGE to PASS.
 - Final tab title and meta description from the chef (B2 placeholders in `frontend/public/index.html`).

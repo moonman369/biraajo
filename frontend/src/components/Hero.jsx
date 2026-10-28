@@ -61,7 +61,7 @@ export default function Hero() {
           onError={() => setVideoReady(false)}
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${videoReady ? "opacity-100" : "opacity-0"}`}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0A0504]/55 via-[#0A0504]/40 to-[#0A0504]" />
+        <div className="absolute inset-0 bg-linear-to-b/srgb from-[#0A0504]/55 via-[#0A0504]/40 to-[#0A0504]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(10,5,4,0.9))]" />
       </div>
 

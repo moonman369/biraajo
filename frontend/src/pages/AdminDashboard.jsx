@@ -201,7 +201,7 @@ function Overview() {
                 type="number" min="0" value={prices.price_veg}
                 onChange={(e) => setPrices((p) => ({ ...p, price_veg: e.target.value }))}
                 data-testid="price-veg-input"
-                className="mt-2 w-44 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] font-display text-2xl focus:border-[#5A1A1F] outline-none"
+                className="mt-2 w-44 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] font-display text-2xl focus:border-[#5A1A1F] outline-hidden"
               />
             </label>
             <label className="block">
@@ -210,7 +210,7 @@ function Overview() {
                 type="number" min="0" value={prices.price_nonveg}
                 onChange={(e) => setPrices((p) => ({ ...p, price_nonveg: e.target.value }))}
                 data-testid="price-nonveg-input"
-                className="mt-2 w-44 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] font-display text-2xl focus:border-[#5A1A1F] outline-none"
+                className="mt-2 w-44 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] font-display text-2xl focus:border-[#5A1A1F] outline-hidden"
               />
             </label>
             <label className="block">
@@ -219,7 +219,7 @@ function Overview() {
                 type="number" min="0" max="100" value={prices.group_discount_pct}
                 onChange={(e) => setPrices((p) => ({ ...p, group_discount_pct: e.target.value }))}
                 data-testid="group-discount-input"
-                className="mt-2 w-44 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] font-display text-2xl focus:border-[#5A1A1F] outline-none"
+                className="mt-2 w-44 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] font-display text-2xl focus:border-[#5A1A1F] outline-hidden"
               />
             </label>
             <button
@@ -613,7 +613,7 @@ function EventForm({ event, onCancel, onSave }) {
         <span className="text-overline block mb-2">Description</span>
         <textarea
           rows={4} value={f.description} onChange={h("description")} required
-          className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+          className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-hidden"
         />
       </div>
       <div className="sm:col-span-2 flex gap-3">
@@ -630,7 +630,7 @@ function Inp({ label, ...props }) {
       <span className="text-overline block mb-2">{label}</span>
       <input
         {...props}
-        className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+        className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-hidden"
       />
     </label>
   );
@@ -950,7 +950,7 @@ function Registrations() {
       )}
 
       {moving && (
-        <div className="fixed inset-0 z-[100] bg-[#0A0504]/90 backdrop-blur-sm flex items-center justify-center p-6"
+        <div className="fixed inset-0 z-100 bg-[#0A0504]/90 backdrop-blur-xs flex items-center justify-center p-6"
           onClick={() => !moveBusy && setMoving(null)} data-testid="move-booking-modal">
           <div className="max-w-md w-full bg-[#140A09] border border-[#2D1D1A] p-8" onClick={(e) => e.stopPropagation()}>
             <p className="text-overline text-[#D9772B]">Move booking</p>
@@ -963,7 +963,7 @@ function Registrations() {
               <select
                 value={moveTarget} onChange={(e) => setMoveTarget(e.target.value)}
                 data-testid="move-target-select"
-                className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-sm text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+                className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-sm text-[#F3EFE7] focus:border-[#5A1A1F] outline-hidden"
               >
                 <option value="">Select a date…</option>
                 {events.filter((e) => e.id !== moving.event_id).map((e) => (
@@ -988,7 +988,7 @@ function Registrations() {
       )}
 
       {viewing && (
-        <div className="fixed inset-0 z-[100] bg-[#0A0504]/95 backdrop-blur-md flex items-center justify-center p-6"
+        <div className="fixed inset-0 z-100 bg-[#0A0504]/95 backdrop-blur-md flex items-center justify-center p-6"
           onClick={closeViewer} data-testid="screenshot-viewer">
           <div className="max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
@@ -1095,7 +1095,7 @@ function OffsiteSales() {
               value={form.event_id}
               onChange={(e) => setForm({ ...form, event_id: e.target.value })}
               data-testid="offsite-event"
-              className="mt-2 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-none"
+              className="mt-2 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-hidden"
             >
               <option value="">— pick a date —</option>
               {events.map((e) => {
@@ -1116,7 +1116,7 @@ function OffsiteSales() {
               value={form.menu_preference}
               onChange={(e) => setForm({ ...form, menu_preference: e.target.value })}
               data-testid="offsite-pref"
-              className="mt-2 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-none"
+              className="mt-2 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-hidden"
             >
               <option value="Vegetarian">Vegetarian</option>
               <option value="Non-Vegetarian">Non-Vegetarian</option>
@@ -1198,7 +1198,7 @@ function Inp12({ col, label, value, onChange, testid, type = "text", placeholder
         placeholder={placeholder}
         required={required}
         min={min}
-        className="mt-2 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-none"
+        className="mt-2 w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2.5 text-[#F3EFE7] focus:border-[#D9772B] outline-hidden"
       />
     </div>
   );
@@ -1343,11 +1343,11 @@ function GalleryAdmin() {
         <input
           required value={url} onChange={(e) => setUrl(e.target.value)} placeholder="…or paste an image / video URL"
           data-testid="gallery-url-input"
-          className="sm:col-span-5 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+          className="sm:col-span-5 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-hidden"
         />
         <input
           value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Caption (optional)"
-          className="sm:col-span-3 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+          className="sm:col-span-3 bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-hidden"
         />
         <button type="submit" data-testid="gallery-add-button" className="sm:col-span-2 px-4 py-3 bg-[#5A1A1F] hover:bg-[#D9772B] hover:text-[#0A0504] text-[11px] tracking-[0.22em] uppercase">Add</button>
       </form>
@@ -1358,7 +1358,7 @@ function GalleryAdmin() {
           value={eventTag}
           onChange={(e) => setEventTag(e.target.value)}
           data-testid="gallery-tag-select"
-          className="bg-[#0A0504] border border-[#2D1D1A] px-3 py-2 text-sm text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+          className="bg-[#0A0504] border border-[#2D1D1A] px-3 py-2 text-sm text-[#F3EFE7] focus:border-[#5A1A1F] outline-hidden"
         >
           <option value="">No chapter</option>
           {CHAPTER_NAMES.map((n) => (
@@ -1411,7 +1411,7 @@ function GalleryAdmin() {
               value={i.event_tag || ""}
               onChange={(e) => retag(i.id, e.target.value)}
               data-testid={`gallery-retag-${i.id}`}
-              className="absolute top-2 left-2 max-w-[70%] bg-[#0A0504]/90 border border-[#2D1D1A] text-[9px] text-[#F3EFE7] px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity outline-none"
+              className="absolute top-2 left-2 max-w-[70%] bg-[#0A0504]/90 border border-[#2D1D1A] text-[9px] text-[#F3EFE7] px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity outline-hidden"
             >
               <option value="">No chapter</option>
               {CHAPTER_NAMES.map((n) => (
@@ -1609,7 +1609,7 @@ function Input12({ col, label, value, onChange, testid }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         data-testid={testid}
-        className="w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2 text-sm text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+        className="w-full bg-[#0A0504] border border-[#2D1D1A] px-3 py-2 text-sm text-[#F3EFE7] focus:border-[#5A1A1F] outline-hidden"
       />
     </label>
   );

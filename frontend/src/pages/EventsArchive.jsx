@@ -40,14 +40,14 @@ export default function EventsArchive() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.7, delay: i * 0.08 }}
-                className="border border-[#2D1D1A] md:border-0"
+                className="border border-[#2D1D1A] md:border-0 md:not-first:border-t"
               >
                 <Link
                   to={c.href}
                   className="group grid grid-cols-1 md:grid-cols-12 bg-[#0A0504] hover:bg-[#140A09] transition-colors duration-500"
                   data-testid={`archive-chapter-${c.number}`}
                 >
-                  <div className="md:col-span-5 relative aspect-[4/3] md:aspect-auto overflow-hidden img-zoom">
+                  <div className="md:col-span-5 relative aspect-4/3 md:aspect-auto overflow-hidden img-zoom">
                     {isVideoUrl(c.image) ? (
                       <video
                         src={c.image}
@@ -62,7 +62,7 @@ export default function EventsArchive() {
                     ) : (
                       <img src={c.image} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/50 to-transparent md:hidden" />
+                    <div className="absolute inset-0 bg-linear-to-t/srgb from-[#0A0504]/50 to-transparent md:hidden" />
                   </div>
                   <div className="md:col-span-7 p-8 sm:p-12 flex flex-col justify-center">
                     <div className="flex items-center gap-4 flex-wrap">

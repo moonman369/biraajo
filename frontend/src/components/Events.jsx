@@ -68,7 +68,7 @@ export default function Events() {
               className="bg-[#0A0504] border border-[#2D1D1A] md:border-0 flex flex-col"
               data-testid={`homepage-chapter-card-${c.number}`}
             >
-              <div className="img-zoom relative aspect-[4/3] overflow-hidden">
+              <div className="img-zoom relative aspect-4/3 overflow-hidden">
                 {isVideoUrl(c.image) ? (
                   <video
                     src={c.image}
@@ -83,9 +83,9 @@ export default function Events() {
                 ) : (
                   <img src={c.image} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/70 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t/srgb from-[#0A0504]/70 to-transparent" />
                 <span
-                  className={`absolute top-4 left-4 text-[10px] tracking-[0.22em] uppercase px-2.5 py-1 border backdrop-blur-sm bg-[#0A0504]/70 ${
+                  className={`absolute top-4 left-4 text-[10px] tracking-[0.22em] uppercase px-2.5 py-1 border backdrop-blur-xs bg-[#0A0504]/70 ${
                     c.active ? "border-[#D9772B] text-[#D9772B]" : "border-[#2D1D1A] text-[#F3EFE7]"
                   }`}
                   data-testid={`homepage-chapter-status-${c.number}`}

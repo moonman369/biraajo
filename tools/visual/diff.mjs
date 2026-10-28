@@ -35,8 +35,13 @@ for (const n of names) {
   const diff = new PNG({ width: pa.width, height: pa.height });
   const px = pixelmatch(pa.data, pb.data, diff.data, pa.width, pa.height, { threshold: Number(thr ?? 0) });
   if (px > 0) {
+    // Largest per-channel change: 1-3 is colour rounding, anything bigger needs a look.
+    let maxDelta = 0;
+    for (let i = 0; i < pa.data.length; i += 4) {
+      for (let c = 0; c < 3; c++) maxDelta = Math.max(maxDelta, Math.abs(pa.data[i + c] - pb.data[i + c]));
+    }
     fs.writeFileSync(path.join(outDir, n), PNG.sync.write(diff));
-    console.log(`DIFF     ${n} ${px} px (${((px / (pa.width * pa.height)) * 100).toFixed(3)}%)`);
+    console.log(`DIFF     ${n} ${px} px (${((px / (pa.width * pa.height)) * 100).toFixed(3)}%), max channel delta ${maxDelta}`);
     differing++;
   } else {
     console.log(`same     ${n}`);
