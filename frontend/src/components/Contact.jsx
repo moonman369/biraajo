@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Instagram, Mail, MessageCircle } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
+import Instagram from "@/components/icons/Instagram";
 import { toast } from "sonner";
 import { api, formatApiError } from "@/lib/api";
 import { useSiteContent, read } from "@/lib/siteContent";

@@ -15,7 +15,7 @@ Plan: [plan.md](plan.md) (v3). Branch: `emergent-exit`, created from `feature/su
 | B1 Prune | Done | 2026-10-28 | this commit | build OK; diff vs baseline 0/48; data-testid 316 | |
 | B2 Strip Emergent (frontend) | Done | 2026-10-28 | this commit | grep empty; no emergent/posthog requests; diff 0/48 | Title/description are placeholders |
 | B3 CRA → Vite | Done* | 2026-10-28 | this commit | dev + build OK (Node 22 & 24); diff 0/48; flows same as original | *Upload/viewer re-check after A2 |
-| B4 Upgrade packages | **Paused: lucide decision** | 2026-10-28 | B4.1–B4.6 | 6 of 7 groups: diff 0/48, flows same, animations play | lucide-react 1.x redraws 11 icons |
+| B4 Upgrade packages | Done | 2026-10-28 | B4.1–B4.7 | 6 groups diff 0/48; lucide 45/48 icon-only (accepted by owner); flows same; animations play | |
 | B5 Tailwind 4 | Not started | | | | |
 | B6 Vercel prep | Not started | | | | |
 
@@ -209,7 +209,7 @@ Versions re-checked with `npm view` on 2026-10-28. Some are newer than the plan'
 | B4.4 | sonner 2.0.3 → **2.0.8** | 204.15 kB | 0/48 | same; toast renders |
 | B4.5 | @tanstack/react-query 5.56.2 → **5.105.0** | 204.79 kB | 0/48 | same |
 | B4.6 | framer-motion 11.18.0 → **14.7.1** (plan: 14.6.0) | 212.98 kB | 0/48 | same |
-| — | lucide-react 0.516.0 → 1.63.0 (plan: 1.61.0) | — | **45/48 differ** | same | 
+| B4.7 | lucide-react 0.516.0 → **1.63.0** (plan: 1.61.0) + local Instagram icon | 214.27 kB | 45/48, icons only (accepted) | same |
 
 Notes:
 - With axios 1.21 the single bundle passed 700 kB, so `chunkSizeWarningLimit` went from 700 to 800 (still one chunk, as under CRA). Total growth from the upgrades: 183 → 213 kB gz.
@@ -217,14 +217,15 @@ Notes:
 - Animations, `tools/visual/anim.mjs` (samples opacity/translateY per frame, aligned to when motion starts), framer 11 build vs framer 14 build: hero title, events cards, gallery tiles and the booking modal all play and settle at opacity 1 / y 0. Events settle in 641 ms vs 632 ms. The gallery shows the same shape on both builds (a short stall while images decode). The hero curve over the overlapping range matches. No timing change I can measure.
 - No console errors on any route in any group (`_problems.txt` empty in every capture).
 
-**lucide-react: not committed, waiting for the owner.**
+**lucide-react (B4.7).** Owner decision 2026-10-28: **accept the new icon designs.**
 - As the plan expected, `Instagram` is gone. A local `src/components/icons/Instagram.jsx` built with lucide's own `createLucideIcon` and the old shapes renders **byte-identical SVG** to 0.516's `Instagram`.
 - But 1.x also **redrew 11 more icons** the site uses. Comparing the rendered SVG markup of all 41 used icons between 0.516 and 1.63:
   - public site: `Menu` (hamburger: bars at y=5/12/19 instead of 6/12/18), `MessageCircle` (WhatsApp link in footer/contact: new bubble shape), `Heart`, `Play` (rounded triangle), `Sparkles`, `Calendar`, `Music2`
   - admin: `Edit3`, `Trash2`, `MessageSquare`, `Home`
   - 9 other names (`BarChart3`, `Loader2`, `Edit2`, ...) are now aliases but render as before.
 - Result: 45 of 48 screenshots differ by 20–493 px, all of it in those icons. Diff images: `../biraajo-visual/diff-baseline-1-vs-b4-lucide/`. The full change (package bump + Instagram component + 3 imports) is saved as `../biraajo-visual/b4-lucide.patch`.
-- Options: (a) accept the new icon designs (small visible change); (b) upgrade, but keep the old shapes for those 11 icons as local `createLucideIcon` copies like Instagram (pixel-identical, 12 small local icons to maintain); (c) stay on lucide-react 0.516.0.
+- Options were: (a) accept the new designs, (b) keep the old shapes as local icons, (c) stay on 0.516. The owner chose (a). The committed diff is the same as the trial: 45/48 differ by the same pixel counts, and a reviewed diff image (`admin_tab_overview-1440`) shows only the Calendar, MessageSquare and Edit3 icons changed.
+- **Expected difference from now on:** captures after B4.7 differ from `baseline-1` in these icons. From B5 on, `b4-lucide` is the comparison baseline, so any other difference stands out.
 
 ---
 
@@ -240,7 +241,6 @@ Found during code scans. Each item is handled in plan Section 6.
 - Cloudinary folder mode / `asset_folder` (C3).
 
 ## Open questions
-- **B4 lucide-react (blocking B4/B5):** accept the 11 redrawn icons, keep the old shapes as local icons, or stay on 0.516? See B4.
 - Backend tests (A1) and Part A phases A2–A6 are still open; Part B was started first at the owner's request.
 - B3/B4: re-run `tools/visual/flows.mjs` once A2 gives the backend storage; the upload and admin-viewer checks must turn from STORAGE to PASS.
 - Final tab title and meta description from the chef (B2 placeholders in `frontend/public/index.html`).
