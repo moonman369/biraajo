@@ -44,6 +44,8 @@ function placeholderPng(w = 1200, h = 800) {
   return PNG.sync.write(png);
 }
 const PLACEHOLDER = placeholderPng();
+// Every non-app host the pages try to reach, written to _hosts.txt (B2 gate: no emergent/posthog).
+const externalHosts = new Map();
 
 async function routeNetwork(context) {
   const site = new URL(SITE_URL);
@@ -61,6 +63,7 @@ async function routeNetwork(context) {
       return route.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true}' });
     }
     if (sameOrigin || url.protocol === "data:" || url.protocol === "blob:") return route.continue();
+    externalHosts.set(url.hostname, (externalHosts.get(url.hostname) || 0) + 1);
     if (FONT_HOSTS.includes(url.hostname)) return route.continue();
     if (req.resourceType() === "image" || IMAGE_EXT.test(url.pathname)) {
       return route.fulfill({ status: 200, contentType: "image/png", body: PLACEHOLDER });
@@ -226,6 +229,8 @@ async function main() {
   } finally {
     await browser.close();
   }
+  fs.writeFileSync(path.join(outDir, "_hosts.txt"),
+    [...externalHosts].sort().map(([h, n]) => `${h} ${n}`).join("\n") + "\n");
   fs.writeFileSync(path.join(outDir, "_problems.txt"), problems.join("\n") + (problems.length ? "\n" : ""));
   console.log(`${count} screenshots in ${outDir}`);
   console.log(problems.length ? `${problems.length} console/page problems (see _problems.txt)` : "no console/page problems");

@@ -5,7 +5,6 @@
   "dependencies": {
     "@tanstack/react-query": "5.56.2",
     "axios": "1.8.4",
-    "cra-template": "1.2.0",
     "framer-motion": "11.18.0",
     "lucide-react": "0.516.0",
     "react": "19.0.0",
@@ -34,7 +33,6 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "7.21.11",
     "@craco/craco": "7.1.0",
-    "@emergentbase/visual-edits": "https://assets.emergent.sh/npm/emergentbase-visual-edits-1.0.8.tgz",
     "@eslint/js": "9.23.0",
     "autoprefixer": "10.4.20",
     "dotenv": "16.4.5",

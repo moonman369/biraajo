@@ -13,7 +13,7 @@ Plan: [plan.md](plan.md) (v3). Branch: `emergent-exit`, created from `feature/su
 | A6 Hand-off | Not started | | | | |
 | B0 Baseline | Done | 2026-10-28 | this commit | build OK; 2 consecutive runs: 48/48 identical | Owner chose Part B before A2–A6 |
 | B1 Prune | Done | 2026-10-28 | this commit | build OK; diff vs baseline 0/48; data-testid 316 | |
-| B2 Strip Emergent (frontend) | Not started | | | | |
+| B2 Strip Emergent (frontend) | Done | 2026-10-28 | this commit | grep empty; no emergent/posthog requests; diff 0/48 | Title/description are placeholders |
 | B3 CRA → Vite | Not started | | | | |
 | B4 Upgrade packages | Not started | | | | |
 | B5 Tailwind 4 | Not started | | | | |
@@ -143,6 +143,25 @@ The `ajv` workaround from B0 has to be reapplied after every `npm install/uninst
 
 ---
 
+## B2. Strip Emergent from the frontend
+
+Changes:
+- `public/index.html`: removed the DataCloneError shim, the `assets.emergent.sh/scripts/emergent-main.js` script and the whole PostHog snippet (including the `phc_...` project key). Title `Emergent | Fullstack App` → **`Biraajo by Vidip Shah`**. Description `A product of emergent.sh` → **`Biraajo by Vidip Shah. A personal chef supper club in Calcutta.`** Nothing else changed (the Inter font link and the CRA comments stay).
+- `craco.config.js`: removed the health-check wiring (`ENABLE_HEALTH_CHECK`, webpack plugin, devServer middleware) and the `@emergentbase/visual-edits` wrapper. The eslint, `@` alias and watchOptions settings are unchanged.
+- Deleted `plugins/health-check/`. Uninstalled `@emergentbase/visual-edits` and `cra-template`.
+- `src/constants/testIds/auth.js`: comment no longer names the Emergent lint rule (it was the last `emergent` string in `frontend/`).
+- `tools/visual/capture.mjs` now writes `_hosts.txt`: every non-app host a run tried to reach.
+
+Gate: **PASS**
+- `grep -rniI "emergent\|posthog" frontend --exclude-dir=node_modules --exclude-dir=build` → no output. The built `build/` has no match either; the original build had one, in `index.html`.
+- Network log (`b2/_hosts.txt`), all 48 page loads: `fonts.googleapis.com`, `fonts.gstatic.com`, `images.unsplash.com`. The Unsplash URLs come from the seeded gallery data in the dummy DB, not from code. No emergent or posthog host.
+- `craco build`: same 2 warnings; `main.e4ee6194.js` is still byte-identical.
+- `node diff.mjs baseline-1 b2` → `48 compared, 0 differ`. The tab title isn't part of a screenshot.
+
+Awaiting the chef's final text: tab title and meta description (placeholders above).
+
+---
+
 ## Cutover list (needs real data / Cloudinary / live site)
 
 Found during code scans. Each item is handled in plan Section 6.
@@ -155,6 +174,7 @@ Found during code scans. Each item is handled in plan Section 6.
 - Cloudinary folder mode / `asset_folder` (C3).
 
 ## Open questions
+- Final tab title and meta description from the chef (B2 placeholders in `frontend/public/index.html`).
 1. **A1 tests (deferred, not blocking).** How should the 27 non-storage failures be handled? Options:
    - (a) Update group 2 to the current code values. Mark groups 3 and 4 with pytest markers (`prod_data`, `needs_external`) that are deselected by default and run at cutover against a restored copy. Then rerun the gate. *(recommended)*
    - (b) Delete the one-off iteration snapshot tests (`test_barsaat_iter14`, `test_iter15`, `test_iter27`, `test_iter29`) and fix the rest as in (a).
