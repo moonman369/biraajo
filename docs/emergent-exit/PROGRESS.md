@@ -12,7 +12,7 @@ Plan: [plan.md](plan.md) (v3). Branch: `emergent-exit`, created from `feature/su
 | A5 Dockerize | Not started | | | | |
 | A6 Hand-off | Not started | | | | |
 | B0 Baseline | Done | 2026-10-28 | this commit | build OK; 2 consecutive runs: 48/48 identical | Owner chose Part B before A2–A6 |
-| B1 Prune | Not started | | | | |
+| B1 Prune | Done | 2026-10-28 | this commit | build OK; diff vs baseline 0/48; data-testid 316 | |
 | B2 Strip Emergent (frontend) | Not started | | | | |
 | B3 CRA → Vite | Not started | | | | |
 | B4 Upgrade packages | Not started | | | | |
@@ -118,6 +118,28 @@ Recorded counts for later phases:
 - `data-testid`: **316** occurrences in **29** files under `src/` (0 inside `components/ui/`).
 - Routes (src/App.js): `/`, `/events`, `/about-the-chef`, `/supper-club/naani-ghar`, `/supper-club/barsaat`, `/supper-club/when-there-wasnt-enough`, `/booking/:id`, `/suppers`, `/menus`, `/menus/naani-ghar`, `/menus/barsaat`, `/menus/when-there-wasnt-enough`, `/admin/login`, `/admin/edit`, `/admin`, plus `*` → `/`.
 - Import trace from `src/index.js`: 34 of 87 files reachable. Packages used: `@tanstack/react-query axios framer-motion lucide-react react react-dom react-router-dom sonner`.
+
+---
+
+## B1. Prune dead code and dependencies
+
+Changes:
+- Deleted `src/components/ui/` (46 files), `src/hooks/use-toast.js`, `src/lib/utils.js` (shadcn `cn()` helper; only `ui/` imported it, and it was the only user of `clsx`/`tailwind-merge`), `components.json` (shadcn CLI config).
+- `constants/testIds/home.js`: removed the unused `emergentLink` entry. Nothing imports `constants/testIds/` at all.
+- Removed 47 dependencies: all 27 `@radix-ui/*`, `@hookform/resolvers`, `class-variance-authority`, `clsx`, `cmdk`, `date-fns`, `dayjs`, `embla-carousel-react`, `input-otp`, `lodash`, `next-themes`, `react-day-picker`, `react-hook-form`, `react-resizable-panels`, `recharts`, `swr`, `tailwind-merge`, `vaul`, `zod`, `@types/lodash`, `tailwindcss-animate`.
+- `tailwindcss-animate`: removed together with its `plugins` entry in `tailwind.config.js`. Generating the CSS with and without it differs only in `@keyframes enter/exit`, `.running`/`.paused`, and `animation-duration` on `.duration-300/500/700`. No element that uses those duration classes has a CSS animation; the only animated elements are `animate-pulse` and two `animate-spin`, and none carries a `duration-*` class. So nothing visible depended on it.
+- Kept for now (CRA/CRACO still loads them; B2/B3 remove them): `react-scripts`, `@craco/craco`, `dotenv`, `@babel/plugin-proposal-private-property-in-object`, the eslint packages, `cra-template` and `@emergentbase/visual-edits` (B2).
+- Kept versions: all 8 runtime packages and `tailwindcss` resolve to the same versions in the lockfile as before.
+
+Gate: **PASS**
+- `craco build` → same 2 warnings as B0. `main.e4ee6194.js` is **byte-identical** to B0 (same hash, 186.17 kB gz). CSS 13.3 kB → 7.75 kB gz (rules for classes only `ui/` used).
+- `node diff.mjs baseline-1 b1` → `48 compared, 0 differ`.
+- `data-testid`: 316 in 29 files (unchanged).
+- Fresh trace: 34 of 39 files reachable, same 8 packages.
+
+Not deleted, decision for the owner (dead code outside the plan's list): `components/Experiences.jsx`, `components/MenuSection.jsx`, `constants/testIds/` (auth.js, home.js, index.js). None are imported. They hold `data-testid`s, so deleting them would change the recorded count.
+
+The `ajv` workaround from B0 has to be reapplied after every `npm install/uninstall` until B3.
 
 ---
 
