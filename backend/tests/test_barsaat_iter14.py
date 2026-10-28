@@ -4,7 +4,7 @@ import re
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://premium-chef-demo.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000").rstrip("/")
 API = f"{BASE_URL}/api"
 
 NEW_KEYS = ["i2tx6jvh", "a7qweymb", "ana7ash1", "xe0xmfhh", "u3sgtdb0"]
@@ -103,7 +103,7 @@ def test_barsaat_menu_10_courses_4_veg_variants(site_content):
 def test_admin_login_works():
     r = requests.post(
         f"{API}/auth/login",
-        json={"email": "reachbiraajo@gmail.com", "password": "Biraajo@2026"},
+        json={"email": os.environ["ADMIN_EMAIL"], "password": os.environ["ADMIN_PASSWORD"]},
         timeout=30,
     )
     assert r.status_code == 200, r.text

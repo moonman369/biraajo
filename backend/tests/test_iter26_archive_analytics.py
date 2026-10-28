@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 BASE_URL = os.environ["REACT_APP_BACKEND_URL"].rstrip("/")
 API = f"{BASE_URL}/api"
-ADMIN = {"email": "reachbiraajo@gmail.com", "password": "Biraajo@2026"}
+ADMIN = {"email": os.environ["ADMIN_EMAIL"], "password": os.environ["ADMIN_PASSWORD"]}
 
 
 @pytest.fixture(scope="module")

@@ -6,8 +6,8 @@ import pytest
 import requests
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL").rstrip("/")
-ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "reachbiraajo@gmail.com")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Biraajo@2026")
+ADMIN_EMAIL = os.environ["ADMIN_EMAIL"]
+ADMIN_PASSWORD = os.environ["ADMIN_PASSWORD"]
 
 WTWE_IDS = [
     "wtwe-2026-08-23-lunch",
