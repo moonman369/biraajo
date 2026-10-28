@@ -24,8 +24,9 @@ export default defineConfig({
     port: 3000,
   },
   build: {
-    // One bundle, same as CRA produced (~650 kB, 183 kB gzip). Splitting it would be a refactor.
-    chunkSizeWarningLimit: 700,
+    // One bundle, as under CRA (~650 kB with the original deps, ~720 kB after the B4 upgrades).
+    // Splitting it would be a refactor.
+    chunkSizeWarningLimit: 800,
     rolldownOptions: {
       checks: { pluginTimings: false },
     },
