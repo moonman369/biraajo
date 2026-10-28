@@ -5,7 +5,7 @@ Plan: [plan.md](plan.md) (v3). Branch: `emergent-exit`, created from `feature/su
 | Phase | Status | Date | Commit | Gate evidence | Notes |
 |---|---|---|---|---|---|
 | A0 Scaffolding | Done | 2026-10-28 | this commit | See A0 below | |
-| A1 Local run, unchanged | **Gate FAILED, stopped** | 2026-10-28 | uncommitted | 95 pass / 47 fail / 3 skip; 27 failures are not storage. See A1 below | Needs a decision |
+| A1 Local run, unchanged | Gate failed, **deferred by owner** | 2026-10-28 | this commit | 95 pass / 47 fail / 3 skip; 27 failures are not storage. See A1 below | Tests to be fixed later |
 | A2 Storage | Not started | | | | |
 | A3 Strip Emergent (backend) | Not started | | | | |
 | A4 Upgrade backend | Not started | | | | |
@@ -49,10 +49,10 @@ Environment notes (Windows dev machine):
 
 ## A1. Run locally, unchanged
 
-Changes (uncommitted, waiting for the gate):
+Changes:
 - venv (Python 3.12.4) with only the packages `server.py` imports, at the exact pins from `requirements.txt` (fastapi 0.110.1, motor 3.3.1, pymongo 4.5.0, bcrypt 4.1.3, ...). `emergentintegrations` and the litellm wheel were not installed; nothing imports them.
 - `backend/tests/conftest.py`: loads `backend/.env`, aborts unless `DB_NAME` ends with `_dev`/`_test`, defaults `REACT_APP_BACKEND_URL` to `http://localhost:8000`.
-- Tests: Emergent preview URL defaults replaced with `http://localhost:8000`; the `/app/frontend/.env` readers removed (iter27, iter28, iter29); the hardcoded admin `reachbiraajo@gmail.com` / `Biraajo@2026` replaced with `ADMIN_EMAIL`/`ADMIN_PASSWORD` from `.env` (7 files).
+- Tests: Emergent preview URL defaults replaced with `http://localhost:8000`; the `/app/frontend/.env` readers removed (iter27, iter28, iter29); the hardcoded admin email and password replaced with `ADMIN_EMAIL`/`ADMIN_PASSWORD` from `.env` (7 files).
 
 Evidence:
 - Boot on an empty `biraajo_dev`: `GET /api/` → `{"status":"ok","name":"Biraajo API"}`. Admin seeded, **all 24 migrations applied** (`content_grammar_v1` … `barsaat_close_bookings_v1`).
@@ -74,7 +74,7 @@ Side notes:
 - Each request takes ~2 s because Windows tries `::1` first for `localhost` while uvicorn listens on 127.0.0.1. Not a bug; it only makes the suite slow.
 - Tests mutate the dev DB (registrations, settings) and do not always clean up.
 
-Decision needed (see Open questions).
+Decision (owner, 2026-10-28): proceed to Part B now; fix the tests later, once the new codebase is in place. Part A phases A2–A6 are not started yet. Part B runs against the original backend (Emergent storage not configured, so `/api/media` returns 500; B0 mocks `/api/media/**` anyway).
 
 ---
 
@@ -90,7 +90,7 @@ Found during code scans. Each item is handled in plan Section 6.
 - Cloudinary folder mode / `asset_folder` (C3).
 
 ## Open questions
-1. **A1 gate (blocking).** How should the 27 non-storage failures be handled? Options:
+1. **A1 tests (deferred, not blocking).** How should the 27 non-storage failures be handled? Options:
    - (a) Update group 2 to the current code values. Mark groups 3 and 4 with pytest markers (`prod_data`, `needs_external`) that are deselected by default and run at cutover against a restored copy. Then rerun the gate. *(recommended)*
    - (b) Delete the one-off iteration snapshot tests (`test_barsaat_iter14`, `test_iter15`, `test_iter27`, `test_iter29`) and fix the rest as in (a).
    - (c) Accept them as known failures and change the gate wording.
