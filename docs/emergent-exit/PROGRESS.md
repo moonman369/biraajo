@@ -17,7 +17,7 @@ Plan: [plan.md](plan.md) (v3). Branch: `emergent-exit`, created from `feature/su
 | B3 CRA → Vite | Done* | 2026-10-28 | this commit | dev + build OK (Node 22 & 24); diff 0/48; flows same as original | *Upload/viewer re-check after A2 |
 | B4 Upgrade packages | Done | 2026-10-28 | B4.1–B4.7 | 6 groups diff 0/48; lucide 45/48 icon-only (accepted by owner); flows same; animations play | |
 | B5 Tailwind 4 | Done | 2026-10-28 | this commit | all 48 classified: 31 identical, 17 colour rounding (max Δ 1–3/255); flows + animations same | 5 v4 behaviour changes fixed in CSS; 1 codemod copy bug fixed |
-| B6 Vercel prep | Not started | | | | |
+| B6 Vercel prep | Done | 2026-10-28 | this commit | deep links 200 + correct page after reload | Real deploy at cutover (C5) |
 
 ---
 
@@ -253,6 +253,27 @@ Gate: **PASS** (compared against `b4-lucide`, the accepted state after B4)
 - `data-testid` 316; `npm audit`: 0 vulnerabilities.
 
 **Browser support changes with Tailwind 4** (not visible in Chromium screenshots): v4 needs Safari 16.4+, Chrome 111+, Firefox 128+ (it uses `@property`, `color-mix()`, cascade layers). On older browsers, iPhones on iOS < 16.4 in particular, styling breaks badly. Tailwind 3.4 supported those. If guests on old iPhones matter, the fallback is to revert B5 (Tailwind 3.4.17 via PostCSS); everything else stays.
+
+---
+
+## B6. Vercel preparation
+
+Changes:
+- `frontend/vercel.json`: `rewrites: [{ source: "/(.*)", destination: "/index.html" }]`. Vercel serves existing files (`/assets/*`) before applying rewrites, so only non-file paths fall back to the SPA.
+- `frontend/README.md`: "Deploy on Vercel" section: root `frontend`, Vite preset, `npm run build` → `dist`, Node from `engines` (22.x), `VITE_API_URL=https://api.<domain>` (build-time), uploads go straight to the API domain, `CORS_ORIGINS` must list the Vercel and custom domains.
+
+Gate: **PASS** (local; the real Vercel deploy is cutover step C5)
+- `npm run build` output served by `tools/visual/serve.mjs` (SPA fallback, same rule as `vercel.json`). Each URL loaded directly, then reloaded:
+  ```
+  PASS  /booking/<fixture id> -> HTTP 200/200 after reload, page-booking-status visible
+  PASS  /menus/barsaat -> HTTP 200/200 after reload, stays on /menus/barsaat
+  PASS  /admin (logged in) -> HTTP 200/200 after reload, admin-dashboard visible
+  PASS  /admin (no token) -> HTTP 200/200 after reload, redirected to /admin/login
+  PASS  /assets/index-*.js served as text/javascript (not rewritten)
+  ```
+  Tab title on every page: "Biraajo by Vidip Shah" (placeholder).
+
+Part B is complete. Still open before go-live: Part A (A2 storage, A3–A6), the deferred backend tests, the upload/viewer success path (`flows.mjs` after A2), the chef's title/description text, and the Tailwind 4 browser-support question.
 
 ---
 
