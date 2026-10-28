@@ -11,7 +11,13 @@ Plan: [plan.md](plan.md) (v3). Branch: `emergent-exit`, created from `feature/su
 | A4 Upgrade backend | Not started | | | | |
 | A5 Dockerize | Not started | | | | |
 | A6 Hand-off | Not started | | | | |
-| B0–B6 Frontend | Not started | | | | After Part A is green |
+| B0 Baseline | Done | 2026-10-28 | this commit | build OK; 2 consecutive runs: 48/48 identical | Owner chose Part B before A2–A6 |
+| B1 Prune | Not started | | | | |
+| B2 Strip Emergent (frontend) | Not started | | | | |
+| B3 CRA → Vite | Not started | | | | |
+| B4 Upgrade packages | Not started | | | | |
+| B5 Tailwind 4 | Not started | | | | |
+| B6 Vercel prep | Not started | | | | |
 
 ---
 
@@ -75,6 +81,43 @@ Side notes:
 - Tests mutate the dev DB (registrations, settings) and do not always clean up.
 
 Decision (owner, 2026-10-28): proceed to Part B now; fix the tests later, once the new codebase is in place. Part A phases A2–A6 are not started yet. Part B runs against the original backend (Emergent storage not configured, so `/api/media` returns 500; B0 mocks `/api/media/**` anyway).
+
+---
+
+## B0. Baseline (original frontend, against the local backend)
+
+Context: on 2026-10-28 the owner asked to go to Part B now and fix the backend tests later. The backend under the frontend is therefore the **original** `server.py` (A1 state), `biraajo_dev`, Emergent storage not configured. That makes no difference to B0 because every `/api/media/**` request is mocked.
+
+Tool: `tools/visual/` (Node, runs on Windows). Output lives outside git in `../biraajo-visual/` (override with `VISUAL_OUT`).
+```
+cd tools/visual && npm install && npx playwright install chromium
+node db.mjs prepare                    # once: fixture event + booking via the API, then mongodump of biraajo_dev
+node serve.mjs <build-dir> 3000        # static server, SPA fallback, /api proxied to :8000
+node capture.mjs <label>               # restores the dump, captures 48 PNGs, exit 1 on console/page problems
+node diff.mjs <labelA> <labelB>        # pixelmatch, threshold 0, writes diff PNGs, exit 1 if anything differs
+```
+What it captures: 13 public routes + `/admin` + 9 admin tabs + `/admin/edit` = 24 per width, at 390 and 1440 → 48 PNGs. `/booking/:id` uses the fixture booking.
+
+How it is made repeatable (each fix was found by a failing run):
+- The DB is restored from the same dump before every run. Analytics beacons are answered locally, so a run writes nothing.
+- `Date` is frozen at 2026-10-28 12:00 IST through an init script. **Not** `page.clock.setFixedTime`: that stalled framer-motion and left the `/admin/login` card at opacity 0.
+- `/api/media/**` and every external image return one generated placeholder PNG. Videos get 404, so posters show. Emergent, PostHog and other third-party scripts are blocked; Google Fonts load normally.
+- The scroll walk waits for lazy images in view. Afterwards it scrolls straight to any element framer left at inline `opacity: 0`, because some `whileInView` reveals near the page bottom were missed.
+- Chromium flags fix text rasterization (`--font-render-hinting=none --disable-lcd-text --disable-font-subpixel-positioning --force-color-profile=srgb --disable-gpu --disable-partial-raster`).
+- A route is reloaded if a request to the app/API fails at network level. Windows once returned `ERR_NO_BUFFER_SPACE` for `/api/stats`.
+
+Environment fix (not committed): the committed `frontend/package-lock.json` hoists `ajv-keywords@5` next to `ajv@6`, so `craco build` failed with `Cannot find module 'ajv/dist/compile/codegen'`. Locally fixed with `npm install --no-save --legacy-peer-deps ajv@8`, which leaves package.json and the lockfile untouched. B3 replaces CRA, so this goes away.
+
+Gate: **PASS**
+- `REACT_APP_BACKEND_URL=http://localhost:8000 npx craco build` → `Compiled with warnings.` The only warnings are 2 existing `react-hooks/exhaustive-deps` ones (`AdminDashboard.jsx:1047`, `BookingStatus.jsx:34`); later phases are compared against these. `main.js` 186.17 kB gz, `main.css` 13.3 kB gz. A copy of the build is kept at `../biraajo-visual/build-original`.
+- Every route renders: 48 screenshots, no redirects, `_problems.txt` empty.
+- Two runs in a row: `node diff.mjs baseline-1 baseline-2` → `48 compared, 0 differ`.
+- Known noise: a third run (`baseline-3`) differed from `baseline-1` on 11 PNGs, all at 390px (admin pages + barsaat), 34–482 px each. Every differing pixel sits on single letters, mostly the small letter-spaced uppercase labels. Classified as **glyph antialiasing**: no layout, colour or position change. Later diffs that show only this pattern are classified the same way, and anything else counts as a real change.
+
+Recorded counts for later phases:
+- `data-testid`: **316** occurrences in **29** files under `src/` (0 inside `components/ui/`).
+- Routes (src/App.js): `/`, `/events`, `/about-the-chef`, `/supper-club/naani-ghar`, `/supper-club/barsaat`, `/supper-club/when-there-wasnt-enough`, `/booking/:id`, `/suppers`, `/menus`, `/menus/naani-ghar`, `/menus/barsaat`, `/menus/when-there-wasnt-enough`, `/admin/login`, `/admin/edit`, `/admin`, plus `*` → `/`.
+- Import trace from `src/index.js`: 34 of 87 files reachable. Packages used: `@tanstack/react-query axios framer-motion lucide-react react react-dom react-router-dom sonner`.
 
 ---
 
