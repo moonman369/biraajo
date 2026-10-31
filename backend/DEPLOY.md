@@ -53,6 +53,7 @@ are left out of `.env`, so the app's built-in default applies.
 | `ADMIN_PASSWORD` | yes | Admin password (bcrypt uses at most the first 72 bytes) |
 | `RESEND_API_KEY` | no | Resend API key; without it emails are skipped |
 | `GOOGLE_SHEETS_WEBHOOK_URL` | no | Google Apps Script webhook for the bookings sheet; without it the sheet sync is skipped |
+| `CLOUDINARY_URL` | for the Content Bank | `cloudinary://<api_key>:<api_secret>@<cloud_name>` (Cloudinary console → Settings → API Keys). Enables `/api/media/content-bank/...`; without it those URLs return 404 |
 | `EMERGENT_LLM_KEY` | no, temporary | Login for Emergent object storage, which still serves `/api/media/*` and payment screenshots until the Cloudinary switch (plan phase A2). Without it media and screenshot uploads fail. Remove after A2 |
 
 ### Variables
@@ -66,6 +67,7 @@ are left out of `.env`, so the app's built-in default applies.
 | `RESEND_FROM_EMAIL` | no | Sender, e.g. `Biraajo <hello@biraajo.in>` | `Biraajo <onboarding@resend.dev>` |
 | `RESEND_REPLY_TO` | no | Reply-to address | none |
 | `APP_NAME` | no | Prefix of the object-storage paths | `biraajo` |
+| `CONTENT_BANK_FOLDER` | no | Cloudinary Media Library folder served at `/api/media/content-bank/` | `biraajo/Biraajo Content Bank` |
 
 ## One-time VM setup
 
@@ -137,6 +139,21 @@ uploads sent to `http://` fail with 405. Check:
 curl -s https://api.<my-domain>/api/              # {"status":"ok","name":"Biraajo API"}
 curl -s -o /dev/null -w "%{http_code}\n" -X POST http://api.<my-domain>/api/auth/login   # 308
 ```
+
+## Content Bank (Cloudinary)
+
+Everything inside the Cloudinary folder `biraajo/Biraajo Content Bank` (subfolders included) is
+served at `/api/media/content-bank/<subfolders>/<display name>.<ext>`, for example
+`https://api.<my-domain>/api/media/content-bank/Naani%20Ghar/Testimonials/IMG_0274.mp4`.
+
+- The API answers with a redirect to Cloudinary's CDN (cached 5 minutes by browsers).
+- Videos are always delivered as H.264 MP4 (`.mp4` or the original extension both work), so iPhone
+  HEVC uploads play in every browser. The backend asks Cloudinary to prepare the MP4 as soon as it sees
+  a new video; it is usually ready within seconds.
+- New uploads appear within 30 seconds to 5 minutes; no deploy needed. Renaming or moving a file in the
+  Media Library changes its URL.
+- Free plan limits: 10 MB per image, 100 MB per video, 25 credits a month in total (storage, bandwidth,
+  conversions). Usage: Cloudinary console → Dashboard.
 
 ## Day to day
 

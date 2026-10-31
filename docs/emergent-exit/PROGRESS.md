@@ -6,7 +6,7 @@ Plan: [plan.md](plan.md) (v3). Branch: `emergent-exit`, created from `feature/su
 |---|---|---|---|---|---|
 | A0 Scaffolding | Done | 2026-10-28 | this commit | See A0 below | |
 | A1 Local run, unchanged | Gate failed, **deferred by owner** | 2026-10-28 | this commit | 95 pass / 47 fail / 3 skip; 27 failures are not storage. See A1 below | Tests to be fixed later |
-| A2 Storage | Not started | | | | |
+| A2 Storage | **Partly done**: Content Bank only (owner request) | 2026-10-31 | this commit | 15 unit tests; live Cloudinary: 6 videos served as H.264 MP4 | Old media still on Emergent |
 | A3 Strip Emergent (backend) | Not started | | | | |
 | A4 Upgrade backend | Not started | | | | |
 | A5 Dockerize | **Done early** (owner request, before A2–A4) | 2026-10-31 | this commit | image builds (amd64+arm64), compose healthy on dummy env, deploy script tested locally, actionlint 0 | Also CI/CD to the VM; see A5 below |
@@ -306,6 +306,32 @@ Verification (local, Docker Desktop 29.6.1):
 - Paths filter: matches 21 tracked files, all under `backend/` plus the workflow, none under `frontend/`. No frontend workflow exists. `ignoreCommand` simulated on past commits: frontend commits build, backend/docs-only commits skip.
 
 Not verifiable here: the real GHCR push, SSH to the VM, Atlas access, Nginx/Certbot. They happen on the first run on `main` (cutover C4).
+
+---
+
+## A2 (part). Cloudinary Content Bank (owner request 2026-10-31)
+
+Owner created the Media Library folder **`biraajo/Biraajo Content Bank`** and asked to serve its files at `/api/media`. This is not the planned A2 migration: the site's existing `/api/media/biraajo/...` files are untouched and still come from Emergent storage (owner chose "keep for now").
+
+Cloudinary account (read via the Admin API, credentials only in the ignored `backend/.env`): cloud `uulc5id4`, Free plan, **dynamic folders** (folder ≠ public_id). Folder content on 2026-10-31: `Naani Ghar/Testimonials/` with 6 iPhone videos `IMG_0228/0229/0231/0274/0276/0277.mov`, **HEVC** (`video/quicktime;codecs=hvc1`), 4.5–88.6 MB. The account holds 18 more assets outside this folder (9 images, 9 videos); they are not served.
+
+Owner decisions: URL mirrors the folder; videos converted to H.264 MP4; old media stays on Emergent for now.
+
+Changes:
+- `backend/content_bank.py` (new): cached index of the folder tree (Admin API `resources/by_asset_folder` + `folders/`, refreshed every 5 min, on a miss at most every 30 s; keeps the last good index if Cloudinary errors). Name = Media Library display name. Images → original file; videos → `video/upload/vc_h264/v<version>/<public_id>.mp4`. For each new video it sends one signed `video/explicit` call with `eager=vc_h264/mp4, eager_async=true`, so the MP4 is ready before the first visitor. Uses `httpx` (already a dependency), not the Cloudinary SDK. Disabled when `CLOUDINARY_URL` is missing or the dummy.
+- `server.py`: import + `GET /api/media/content-bank/{path:path}` registered **above** the existing `/media/{path:path}` route. 302 to Cloudinary with `Cache-Control: public, max-age=300`; 404 for unknown names or wrong extensions. Nothing else in the app changed.
+- `backend/tests/unit/test_content_bank.py`: 15 tests, no network (config, path parsing, index, extension rules, URLs, API signature vs Cloudinary's documented example, resolve, route via TestClient). CI runs them now (the test job picks up `tests/unit/`).
+- Deploy: Dockerfile copies `content_bank.py`; workflow writes `CLOUDINARY_URL` (secret) and `CONTENT_BANK_FOLDER` (optional variable) into the VM's `.env`; DEPLOY.md has a Content Bank section; `.env.example` documents `CONTENT_BANK_FOLDER`.
+- Fixed `backend/.env` locally (ignored file): the pasted line read `CLOUDINARY_URL=cCLOUDINARY_URL=cloudinary://…`.
+
+Verification:
+- `pytest tests/unit` → 15 passed. actionlint 0 errors.
+- Local server with the real account: `…/content-bank/Naani%20Ghar/Testimonials/IMG_0276.mp4` and `.mov` → 302 to the MP4; `.webm`, unknown name, missing subfolder → 404. Log: `Content bank: 6 assets indexed`.
+- All 6 MP4 renditions ready within ~10 s: `video/mp4;codecs=avc1`, sizes 0.97–11.7 MB (the 88.6 MB HEVC became 11.7 MB), `Range: bytes=1000-1999` → 206 on Cloudinary's CDN (iOS Safari needs ranges).
+- Docker image with the real `CLOUDINARY_URL`: healthy; redirect followed → 200 `video/mp4;codecs=avc1`, 11,671,925 bytes.
+- Cloudinary usage after the conversions: 0.74 of 25 credits.
+
+Not verified: playback on a real iPhone/Safari (on the cutover list already), and that the live frontend uses these URLs (nothing links to them yet; they can be pasted into the CMS).
 
 ---
 
