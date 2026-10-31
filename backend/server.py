@@ -24,10 +24,12 @@ from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request, UploadFile, File, Header, Query
-from fastapi.responses import StreamingResponse, Response
+from fastapi.responses import StreamingResponse, Response, RedirectResponse
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
+
+from content_bank import ContentBank, load_config as load_content_bank_config
 
 
 # ---------- Pricing ----------
@@ -1373,6 +1375,20 @@ def _ensure_media_cached(path: str) -> tuple[str, str]:
         with open(cpath, "w") as f:
             f.write(ct)
         return fpath, ct
+
+
+content_bank = ContentBank(load_content_bank_config())
+
+
+# Must stay above /media/{path:path}: routes match in order.
+@api.get("/media/content-bank/{path:path}")
+async def serve_content_bank(path: str):
+    """Files from the Cloudinary Content Bank folder (see content_bank.py). Redirects to Cloudinary's
+    CDN, which handles Range requests itself. Short cache: a file can be replaced under the same name."""
+    url = await content_bank.resolve(path)
+    if not url:
+        raise HTTPException(status_code=404, detail="Media not found")
+    return RedirectResponse(url, status_code=302, headers={"Cache-Control": "public, max-age=300"})
 
 
 @api.get("/media/{path:path}")

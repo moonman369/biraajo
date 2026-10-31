@@ -17,7 +17,7 @@ WORKDIR /app
 
 RUN useradd --create-home --uid 10001 app
 COPY --from=deps /opt/venv /opt/venv
-COPY --chown=app:app server.py site_defaults.py ./
+COPY --chown=app:app server.py site_defaults.py content_bank.py ./
 
 USER app
 EXPOSE 8000
