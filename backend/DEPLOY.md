@@ -23,22 +23,17 @@ Jobs:
    running server and database, so CI does not run them.
 2. **build-and-push**: builds `backend/Dockerfile` for amd64 and arm64 and pushes `latest` and
    `sha-<commit>` to GHCR with the built-in `GITHUB_TOKEN`.
-3. **deploy**: checks that the required secrets and variables exist, then over SSH: writes
-   `docker-compose.yml` and `.env` into `VM_APP_DIR`, logs in to GHCR, `docker compose pull` +
+3. **deploy**: checks that the four `VM_*` secrets exist, then over SSH: copies
+   `docker-compose.yml` into `VM_APP_DIR`, checks that the VM's `.env` has the required settings
+   (key names only; values are never printed), sets its `IMAGE_TAG` line, logs in to GHCR, `docker compose pull` +
    `up -d` of the exact `sha-<commit>` image, prunes old images of this app only (keeps the newest
    3), and waits up to 4 minutes for the container to be **healthy** and answer on
    `127.0.0.1:8002/api/`. If it doesn't, the job prints the container logs and fails.
 
-## Secrets and variables
+## GitHub secrets (connection only)
 
-Set them in GitHub: **repository → Settings → Secrets and variables → Actions**. Secrets go on
-the *Secrets* tab, variables on the *Variables* tab. The `GITHUB_TOKEN` is automatic.
-
-Values are written to `.env` as `KEY='value'`, so a value **must not contain a single quote `'` or a
-newline** (the deploy fails with the setting's name if one does). Optional settings that are not set
-are left out of `.env`, so the app's built-in default applies.
-
-### Secrets
+Set them in GitHub: **repository → Settings → Secrets and variables → Actions → Secrets**.
+The `GITHUB_TOKEN` is automatic. No app settings are stored in GitHub.
 
 | Name | Required | What it is |
 |---|---|---|
@@ -47,27 +42,66 @@ are left out of `.env`, so the app's built-in default applies.
 | `VM_SSH_KEY` | yes | Private key (full text, including the BEGIN/END lines) whose public key is in the user's `~/.ssh/authorized_keys` |
 | `VM_APP_DIR` | yes | Deploy folder on the VM, e.g. `biraajo-backend` (relative paths are relative to the user's home; `~/...` works). The job fails if it is unset |
 | `VM_SSH_FINGERPRINT` | recommended | SHA256 fingerprint of the VM's SSH host key; when set, the job refuses to connect to any other host |
-| `MONGO_URL` | yes | Atlas connection string, `mongodb+srv://user:password@cluster.../` |
-| `JWT_SECRET` | yes | Long random string used to sign admin login tokens (`openssl rand -hex 32`) |
-| `ADMIN_EMAIL` | yes | Admin login email; the admin account is created from it on first start |
-| `ADMIN_PASSWORD` | yes | Admin password (bcrypt uses at most the first 72 bytes) |
-| `RESEND_API_KEY` | no | Resend API key; without it emails are skipped |
-| `GOOGLE_SHEETS_WEBHOOK_URL` | no | Google Apps Script webhook for the bookings sheet; without it the sheet sync is skipped |
-| `CLOUDINARY_URL` | for the Content Bank | `cloudinary://<api_key>:<api_secret>@<cloud_name>` (Cloudinary console → Settings → API Keys). Enables `/api/media/content-bank/...`; without it those URLs return 404 |
-| `EMERGENT_LLM_KEY` | no, temporary | Login for Emergent object storage, which still serves `/api/media/*` and payment screenshots until the Cloudinary switch (plan phase A2). Without it media and screenshot uploads fail. Remove after A2 |
 
-### Variables
+## App settings: `.env` on the VM
 
-| Name | Required | What it is | Default in the app if unset |
+All app settings live in `<VM_APP_DIR>/.env` on the VM. You create and edit this file by hand; the
+pipeline never writes it. On every deploy the pipeline:
+- fails if `.env` is missing, or if any **required** key below is missing or empty (it prints the key
+  names, never the values);
+- warns if `CORS_ORIGINS` is not set;
+- replaces (or adds) only the `IMAGE_TAG='sha-<commit>'` line. Every other line, comments included,
+  stays as you wrote it.
+
+After editing `.env`, apply it without waiting for a deploy: `docker compose up -d` in `VM_APP_DIR`.
+
+| Key | Required | What it is | Default in the app if unset |
 |---|---|---|---|
+| `MONGO_URL` | yes | Atlas connection string, `mongodb+srv://user:password@cluster.../` | — |
 | `DB_NAME` | yes | Database name in Atlas, e.g. `biraajo` | — |
-| `CORS_ORIGINS` | yes | Comma-separated site origins allowed to call the API, e.g. `https://biraajo.in,https://www.biraajo.in,https://<project>.vercel.app` | `*` (the workflow requires it so production never runs with `*`) |
-| `PUBLIC_SITE_URL` | no | Site URL used in links inside emails, e.g. `https://biraajo.in` | an old Emergent preview URL: **set this** |
+| `JWT_SECRET` | yes | Long random string used to sign admin login tokens (`openssl rand -hex 32`) | — |
+| `ADMIN_EMAIL` | yes | Admin login email; the admin account is created from it on first start | — |
+| `ADMIN_PASSWORD` | yes | Admin password (bcrypt uses at most the first 72 bytes) | — |
+| `CORS_ORIGINS` | strongly recommended | Comma-separated site origins allowed to call the API, e.g. `https://biraajo.in,https://www.biraajo.in,https://<project>.vercel.app` | `*` (any origin) |
+| `PUBLIC_SITE_URL` | recommended | Site URL used in links inside emails, e.g. `https://biraajo.in` | an old Emergent preview URL |
+| `CLOUDINARY_URL` | for the Content Bank | `cloudinary://<api_key>:<api_secret>@<cloud_name>` (Cloudinary console → Settings → API Keys). Without it `/api/media/content-bank/...` returns 404 | — |
+| `CONTENT_BANK_FOLDER` | no | Cloudinary Media Library folder served at `/api/media/content-bank/` | `biraajo/Biraajo Content Bank` |
 | `UPI_ID` | no | UPI ID shown on the payment step | the chef's current UPI ID |
+| `RESEND_API_KEY` | no | Resend API key; without it emails are skipped | — |
 | `RESEND_FROM_EMAIL` | no | Sender, e.g. `Biraajo <hello@biraajo.in>` | `Biraajo <onboarding@resend.dev>` |
 | `RESEND_REPLY_TO` | no | Reply-to address | none |
+| `GOOGLE_SHEETS_WEBHOOK_URL` | no | Google Apps Script webhook for the bookings sheet; without it the sheet sync is skipped | — |
+| `EMERGENT_LLM_KEY` | no, temporary | Login for Emergent object storage, which still serves the old `/api/media/biraajo/*` files and payment screenshots until the Cloudinary switch (plan phase A2). Without it those fail | — |
 | `APP_NAME` | no | Prefix of the object-storage paths | `biraajo` |
-| `CONTENT_BANK_FOLDER` | no | Cloudinary Media Library folder served at `/api/media/content-bank/` | `biraajo/Biraajo Content Bank` |
+| `IMAGE_TAG` | managed by the pipeline | Image tag to run; set on every deploy | `latest` |
+
+**Quoting:** Compose reads `$` in unquoted or double-quoted values as a variable reference. Wrap any
+value that contains `$` in single quotes, e.g. `ADMIN_PASSWORD='pa$$word'`. Leave an optional key out
+entirely rather than writing it empty: an empty value replaces the app's default.
+
+Template (`chmod 600 .env` after creating it):
+
+```bash
+# Required
+MONGO_URL='mongodb+srv://<user>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority'
+DB_NAME='biraajo'
+JWT_SECRET='<openssl rand -hex 32>'
+ADMIN_EMAIL='<admin email>'
+ADMIN_PASSWORD='<admin password>'
+
+# Recommended
+CORS_ORIGINS='https://<site-domain>,https://www.<site-domain>,https://<project>.vercel.app'
+PUBLIC_SITE_URL='https://<site-domain>'
+CLOUDINARY_URL='cloudinary://<api_key>:<api_secret>@<cloud_name>'
+
+# Optional (delete the line to use the app's default)
+# UPI_ID='...'
+# RESEND_API_KEY='...'
+# RESEND_FROM_EMAIL='Biraajo <hello@<site-domain>>'
+# RESEND_REPLY_TO='...'
+# GOOGLE_SHEETS_WEBHOOK_URL='...'
+# EMERGENT_LLM_KEY='...'
+```
 
 ## One-time VM setup
 
@@ -86,9 +120,11 @@ are left out of `.env`, so the app's built-in default applies.
    ```bash
    ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub | awk '{print $2}'   # SHA256:...
    ```
-4. The deploy folder (the workflow also creates it if missing):
+4. The deploy folder and its `.env` (the deploy fails until both exist):
    ```bash
-   mkdir -p ~/biraajo-backend       # and set VM_APP_DIR to biraajo-backend
+   mkdir -p ~/biraajo-backend && cd ~/biraajo-backend   # set VM_APP_DIR to biraajo-backend
+   nano .env                                            # fill in from the template above
+   chmod 600 .env
    ```
 5. **MongoDB Atlas → Network Access → Add IP Address**: add the VM's public IP
    (`curl -s https://ifconfig.me` on the VM). Without it the container cannot reach the database,
@@ -169,8 +205,7 @@ Every build is kept in GHCR as `sha-<full commit hash>` (GitHub → your profile
 `biraajo-backend`, or the commit list on `main`). The VM also keeps the newest 3 images locally.
 
 **Option A, from GitHub (recommended):** open the last good run of the workflow → Re-run jobs →
-re-run only **deploy**. It redeploys that run's exact image tag and rewrites `.env` from the current
-secrets.
+re-run only **deploy**. It redeploys that run's exact image tag (it only changes `IMAGE_TAG` in `.env`).
 
 **Option B, on the VM:**
 ```bash

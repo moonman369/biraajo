@@ -127,28 +127,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check required secrets and variables
+      # App settings (MONGO_URL, JWT_SECRET, ...) are NOT GitHub secrets: they live in .env on the VM.
+      - name: Check required secrets
         env:
           VM_HOST: ${{ secrets.VM_HOST }}
           VM_USER: ${{ secrets.VM_USER }}
           VM_SSH_KEY: ${{ secrets.VM_SSH_KEY }}
           VM_APP_DIR: ${{ secrets.VM_APP_DIR }}
-          MONGO_URL: ${{ secrets.MONGO_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          DB_NAME: ${{ vars.DB_NAME }}
-          CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
         run: |
           missing=""
-          for name in VM_HOST VM_USER VM_SSH_KEY VM_APP_DIR MONGO_URL JWT_SECRET ADMIN_EMAIL ADMIN_PASSWORD DB_NAME CORS_ORIGINS; do
+          for name in VM_HOST VM_USER VM_SSH_KEY VM_APP_DIR; do
             if [ -z "${!name}" ]; then missing="$missing $name"; fi
           done
           if [ -n "$missing" ]; then
-            echo "::error::Missing GitHub secrets/variables:$missing (see backend/DEPLOY.md)"
+            echo "::error::Missing GitHub secrets:$missing (see backend/DEPLOY.md)"
             exit 1
           fi
-          echo "All required secrets and variables are set."
+          echo "All required secrets are set."
 
       - name: Check compose image and encode compose file
         id: compose
@@ -173,31 +168,13 @@ jobs:
           IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
           IMAGE_REPO: ${{ steps.compose.outputs.repo }}
           HOST_PORT: ${{ env.HOST_PORT }}
-          # App configuration. Required: MONGO_URL DB_NAME JWT_SECRET ADMIN_EMAIL ADMIN_PASSWORD.
-          # The rest is written only when set, so the app's own defaults still apply otherwise.
-          APP_MONGO_URL: ${{ secrets.MONGO_URL }}
-          APP_DB_NAME: ${{ vars.DB_NAME }}
-          APP_JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          APP_ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
-          APP_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          APP_CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
-          APP_PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
-          APP_UPI_ID: ${{ vars.UPI_ID }}
-          APP_APP_NAME: ${{ vars.APP_NAME }}
-          APP_RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          APP_RESEND_FROM_EMAIL: ${{ vars.RESEND_FROM_EMAIL }}
-          APP_RESEND_REPLY_TO: ${{ vars.RESEND_REPLY_TO }}
-          APP_GOOGLE_SHEETS_WEBHOOK_URL: ${{ secrets.GOOGLE_SHEETS_WEBHOOK_URL }}
-          APP_EMERGENT_LLM_KEY: ${{ secrets.EMERGENT_LLM_KEY }}
-          APP_CLOUDINARY_URL: ${{ secrets.CLOUDINARY_URL }}
-          APP_CONTENT_BANK_FOLDER: ${{ vars.CONTENT_BANK_FOLDER }}
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           # Optional host-key pinning (recommended). Empty = not checked.
           fingerprint: ${{ secrets.VM_SSH_FINGERPRINT }}
-          envs: GHCR_USER,GHCR_TOKEN,VM_APP_DIR,COMPOSE_B64,IMAGE_TAG,IMAGE_REPO,HOST_PORT,APP_MONGO_URL,APP_DB_NAME,APP_JWT_SECRET,APP_ADMIN_EMAIL,APP_ADMIN_PASSWORD,APP_CORS_ORIGINS,APP_PUBLIC_SITE_URL,APP_UPI_ID,APP_APP_NAME,APP_RESEND_API_KEY,APP_RESEND_FROM_EMAIL,APP_RESEND_REPLY_TO,APP_GOOGLE_SHEETS_WEBHOOK_URL,APP_EMERGENT_LLM_KEY,APP_CLOUDINARY_URL,APP_CONTENT_BANK_FOLDER
+          envs: GHCR_USER,GHCR_TOKEN,VM_APP_DIR,COMPOSE_B64,IMAGE_TAG,IMAGE_REPO,HOST_PORT
           command_timeout: 15m
           script: |
             set -euo pipefail
@@ -213,45 +190,37 @@ jobs:
               "~") APP_DIR="$HOME" ;;
               "~/"*) APP_DIR="$HOME/${APP_DIR#\~/}" ;;
             esac
-            mkdir -p "$APP_DIR"
+            if [ ! -d "$APP_DIR" ]; then
+              echo "Deploy dir $APP_DIR does not exist for user $(whoami). Do the one-time VM setup (backend/DEPLOY.md)." >&2
+              exit 1
+            fi
             cd "$APP_DIR"
 
             # 1. Compose file from the repo.
             printf '%s' "$COMPOSE_B64" | base64 -d > docker-compose.yml
 
-            # 2. .env from GitHub secrets/variables. Single-quoted values are taken literally by
-            #    Compose (no $ interpolation), so a value must not contain ' or a newline.
-            umask 077
+            # 2. App settings live in .env on the VM, maintained by hand (backend/DEPLOY.md). The pipeline
+            #    never writes them: it checks the required keys (names only, values are never printed)
+            #    and sets IMAGE_TAG, leaving every other line as it is.
+            if [ ! -f .env ]; then
+              echo "$APP_DIR/.env does not exist. Create it on the VM first (backend/DEPLOY.md)." >&2
+              exit 1
+            fi
+            missing=""
+            for key in MONGO_URL DB_NAME JWT_SECRET ADMIN_EMAIL ADMIN_PASSWORD; do
+              grep -Eq "^[[:space:]]*${key}[[:space:]]*=[[:space:]]*[^[:space:]]" .env || missing="$missing $key"
+            done
+            if [ -n "$missing" ]; then
+              echo "Missing or empty in $APP_DIR/.env:$missing" >&2
+              exit 1
+            fi
+            if ! grep -Eq "^[[:space:]]*CORS_ORIGINS[[:space:]]*=[[:space:]]*[^[:space:]]" .env; then
+              echo "WARNING: CORS_ORIGINS is not set in .env, so the API accepts requests from any origin (*)." >&2
+            fi
             tmp="$(mktemp .env.XXXXXX)"
-            put() { # put NAME VALUE [required]
-              if [ -z "$2" ]; then
-                if [ "${3:-}" = required ]; then echo "Required setting $1 is empty" >&2; rm -f "$tmp"; exit 1; fi
-                return 0
-              fi
-              case "$2" in
-                *"'"*|*$'\n'*) echo "Setting $1 contains a single quote or newline, which .env cannot hold" >&2; rm -f "$tmp"; exit 1 ;;
-              esac
-              printf "%s='%s'\n" "$1" "$2" >> "$tmp"
-            }
-            put IMAGE_TAG "$IMAGE_TAG" required
-            put MONGO_URL "$APP_MONGO_URL" required
-            put DB_NAME "$APP_DB_NAME" required
-            put JWT_SECRET "$APP_JWT_SECRET" required
-            put ADMIN_EMAIL "$APP_ADMIN_EMAIL" required
-            put ADMIN_PASSWORD "$APP_ADMIN_PASSWORD" required
-            put CORS_ORIGINS "$APP_CORS_ORIGINS"
-            put PUBLIC_SITE_URL "$APP_PUBLIC_SITE_URL"
-            put UPI_ID "$APP_UPI_ID"
-            put APP_NAME "$APP_APP_NAME"
-            put RESEND_API_KEY "$APP_RESEND_API_KEY"
-            put RESEND_FROM_EMAIL "$APP_RESEND_FROM_EMAIL"
-            put RESEND_REPLY_TO "$APP_RESEND_REPLY_TO"
-            put GOOGLE_SHEETS_WEBHOOK_URL "$APP_GOOGLE_SHEETS_WEBHOOK_URL"
-            put EMERGENT_LLM_KEY "$APP_EMERGENT_LLM_KEY"
-            put CLOUDINARY_URL "$APP_CLOUDINARY_URL"
-            put CONTENT_BANK_FOLDER "$APP_CONTENT_BANK_FOLDER"
-            mv "$tmp" .env
-            echo "Wrote $(wc -l < .env) settings to $APP_DIR/.env"
+            { grep -v '^IMAGE_TAG=' .env || true; printf "IMAGE_TAG='%s'\n" "$IMAGE_TAG"; } > "$tmp"
+            cat "$tmp" > .env   # rewrite in place: keeps the file's owner and permissions
+            rm -f "$tmp"
 
             # 3. Pull and start the image built for this commit.
             echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
