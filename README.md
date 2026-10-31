@@ -55,11 +55,9 @@ Install and run:
 cd backend
 python -m venv .venv
 # Windows: .venv\Scripts\activate    macOS/Linux: source .venv/bin/activate
-pip install -r requirements.txt --extra-index-url https://d33sy5i8bnduwe.cloudfront.net/simple/
+pip install -r requirements-dev.txt     # runtime deps + pytest
 uvicorn server:app --reload --port 8001
 ```
-
-`emergentintegrations` isn't on PyPI, so it needs the extra index URL above. `server.py` doesn't import it; if the install fails you can delete that line from `requirements.txt`.
 
 When the server starts it creates indexes, seeds the admin user from `ADMIN_EMAIL`/`ADMIN_PASSWORD`, seeds the gallery and menus, and runs the content migrations. API docs are at http://localhost:8001/docs.
 
@@ -106,4 +104,5 @@ Some tests create and delete events and bookings, so use a throwaway database.
 
 - **Media**: site images and videos are served through `/api/media/...`, which pulls them from Emergent Object Storage. Without `EMERGENT_LLM_KEY` those assets won't load locally, though the rest of the site still works. Payment screenshot uploads need it as well.
 - **Email / Sheets**: if `RESEND_API_KEY` or `GOOGLE_SHEETS_WEBHOOK_URL` isn't set, that integration is skipped, and bookings are still saved to MongoDB.
+- **Backend deployment**: Docker image on the Oracle VM via GitHub Actions; see [`backend/DEPLOY.md`](backend/DEPLOY.md).
 - **Production build**: `cd frontend && npm run build`, which writes to `frontend/dist/`. Set `VITE_API_URL` to the API origin (for example `https://api.<domain>`) at build time.

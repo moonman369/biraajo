@@ -9,7 +9,7 @@ Plan: [plan.md](plan.md) (v3). Branch: `emergent-exit`, created from `feature/su
 | A2 Storage | Not started | | | | |
 | A3 Strip Emergent (backend) | Not started | | | | |
 | A4 Upgrade backend | Not started | | | | |
-| A5 Dockerize | Not started | | | | |
+| A5 Dockerize | **Done early** (owner request, before A2–A4) | 2026-10-31 | this commit | image builds (amd64+arm64), compose healthy on dummy env, deploy script tested locally, actionlint 0 | Also CI/CD to the VM; see A5 below |
 | A6 Hand-off | Not started | | | | |
 | B0 Baseline | Done | 2026-10-28 | this commit | build OK; 2 consecutive runs: 48/48 identical | Owner chose Part B before A2–A6 |
 | B1 Prune | Done | 2026-10-28 | this commit | build OK; diff vs baseline 0/48; data-testid 316 | |
@@ -277,6 +277,38 @@ Part B is complete. Still open before go-live: Part A (A2 storage, A3–A6), the
 
 ---
 
+## A5. Dockerize + deploy pipeline (done early, owner request 2026-10-31)
+
+Owner asked for a Docker image of `backend/` plus a GitHub Actions pipeline to the Oracle VM, modelled on `moonman369/portfolio-api-v2`. Done ahead of A2–A4, so the image runs **today's backend** (Motor, Python 3.12, Emergent object storage for media).
+
+Inspection of `backend/` (nothing assumed):
+- FastAPI app `server:app` (no `__main__`; uvicorn picks the port). Health route already exists: `GET /api/` → `{"status":"ok","name":"Biraajo API"}`, so no `/health` was added and the app code is unchanged.
+- Env read: required `MONGO_URL`, `DB_NAME`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`; optional `CORS_ORIGINS` (default `*`), `PUBLIC_SITE_URL` (default: Emergent preview URL), `UPI_ID`, `APP_NAME`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_REPLY_TO`, `GOOGLE_SHEETS_WEBHOOK_URL`, `EMERGENT_LLM_KEY` (storage login, until A2). Not read yet: `STORAGE_MODE`, `CLOUDINARY_URL` (A2).
+- Startup needs the database (indexes, seeds, migrations) before serving; without it the app exits with `ServerSelectionTimeoutError`.
+
+Files: `backend/Dockerfile`, `backend/.dockerignore`, `backend/docker-compose.yml`, `backend/requirements-dev.txt`, `backend/DEPLOY.md`, `.github/workflows/deploy-backend.yml`; `frontend/vercel.json` gained `ignoreCommand`; root `README.md` install note fixed.
+
+Decisions (later phases must follow up):
+- **`requirements.txt` → direct runtime deps only, at the versions tested in A1** (13 lines). The old 125-line file needs `emergentintegrations` (not on PyPI: `No matching distribution found`) and a litellm wheel on Emergent's CDN; nothing imports either. This is A3's requirements rule, applied early; the rest of A3 is untouched. `pytest` moved to `requirements-dev.txt`.
+- Base image `python:3.12-slim` (tested runtime; `pymongo 4.5.0` has no 3.13 wheels). **A4 must switch the Dockerfile to 3.13 together with the upgrades.**
+- Compose file at `backend/docker-compose.yml` (owner's spec), not `deploy/docker-compose.prod.yml` as in the plan. The root `docker-compose.yml` stays the local Mongo for development.
+- Host port `127.0.0.1:8002` (8000/8001 are taken on the VM); container port 8000; image `ghcr.io/moonman369/biraajo-backend:${IMAGE_TAG:-latest}`. The workflow deploys the exact `sha-<commit>` tag and fails if the compose image name stops matching what it pushes.
+- Images for **linux/amd64 and linux/arm64** (Oracle Ampere VMs are ARM). arm64 build checked locally: no source compiles, `import server` OK on aarch64.
+- `.env` on the VM is written as `KEY='value'` (Compose takes single-quoted values literally, so `$` in passwords survives; checked). Optional settings are only written when set, so the app's defaults (e.g. `UPI_ID`) keep working. `CORS_ORIGINS` is required by the workflow so production never runs with `*`.
+- Old images: only this app's images are pruned, newest 3 kept; other services' images are never touched.
+- CI test job: compile + import with dummy settings (no network) and `tests/unit/` if present (none yet, skipped with a notice). `tests/*.py` are live-server integration tests and are not run in CI.
+
+Verification (local, Docker Desktop 29.6.1):
+- `docker build backend` OK, 237 MB, runs as uid 10001 `app`, image holds only `server.py` + `site_defaults.py`, no `.env`.
+- `backend/docker-compose.yml` with a dummy `.env` + throwaway Mongo: healthy in ~9 s, `GET 127.0.0.1:8002/api/` → 200, admin login → 200, 24 migrations applied, port bound to 127.0.0.1 only, restart `unless-stopped`.
+- The workflow's SSH script, extracted and run locally with only `docker login/logout/compose pull` stubbed: success path → `.env` with 7 keys (no empty optionals), healthy, "Deployed verify"; no-database path → "Container is not healthy after 240s", logs printed, **exit 1**.
+- actionlint: 0 errors; shellcheck on the SSH script: 0 warnings.
+- Paths filter: matches 21 tracked files, all under `backend/` plus the workflow, none under `frontend/`. No frontend workflow exists. `ignoreCommand` simulated on past commits: frontend commits build, backend/docs-only commits skip.
+
+Not verifiable here: the real GHCR push, SSH to the VM, Atlas access, Nginx/Certbot. They happen on the first run on `main` (cutover C4).
+
+---
+
 ## Cutover list (needs real data / Cloudinary / live site)
 
 Found during code scans. Each item is handled in plan Section 6.
@@ -289,6 +321,8 @@ Found during code scans. Each item is handled in plan Section 6.
 - Cloudinary folder mode / `asset_folder` (C3).
 
 ## Open questions
+- Vercel: confirm the project's Root Directory is `frontend` (the `ignoreCommand` depends on it).
+- First backend deploy needs Atlas to hold the restored production data incl. `migrations` (C1) before the workflow runs on `main`.
 - Tailwind 4 drops support for Safari < 16.4 (iOS < 16.4). Acceptable for the guests, or revert B5 to Tailwind 3.4.17?
 - Backend tests (A1) and Part A phases A2–A6 are still open; Part B was started first at the owner's request.
 - B3/B4: re-run `tools/visual/flows.mjs` once A2 gives the backend storage; the upload and admin-viewer checks must turn from STORAGE to PASS.
