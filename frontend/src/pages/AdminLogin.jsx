@@ -45,7 +45,7 @@ export default function AdminLogin() {
             <input
               required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
               data-testid="admin-email-input"
-              className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+              className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-hidden"
             />
           </label>
           <label className="block">
@@ -53,7 +53,7 @@ export default function AdminLogin() {
             <input
               required type="password" value={password} onChange={(e) => setPassword(e.target.value)}
               data-testid="admin-password-input"
-              className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none"
+              className="w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-hidden"
             />
           </label>
           <button

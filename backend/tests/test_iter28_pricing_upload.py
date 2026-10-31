@@ -7,19 +7,11 @@ import pytest
 import requests
 from pathlib import Path
 
-def _load_env():
-    envp = Path("/app/frontend/.env")
-    if envp.exists():
-        for line in envp.read_text().splitlines():
-            if "=" in line and not line.strip().startswith("#"):
-                k, v = line.split("=", 1)
-                os.environ.setdefault(k.strip(), v.strip())
-_load_env()
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 assert BASE_URL, "REACT_APP_BACKEND_URL not set"
-ADMIN_EMAIL = "reachbiraajo@gmail.com"
-ADMIN_PASSWORD = "Biraajo@2026"
+ADMIN_EMAIL = os.environ["ADMIN_EMAIL"]
+ADMIN_PASSWORD = os.environ["ADMIN_PASSWORD"]
 
 
 @pytest.fixture(scope="module")

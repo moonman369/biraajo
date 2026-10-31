@@ -6,7 +6,7 @@ Website for Biraajo, a supper club by chef Vidip Shah. It has a public site (lan
 
 | Layer    | Tech                                                                 |
 | -------- | -------------------------------------------------------------------- |
-| Frontend | React 19 (CRA + CRACO), Tailwind, shadcn/ui, Framer Motion, React Router |
+| Frontend | React 19 (Vite), Tailwind, Framer Motion, React Router                  |
 | Backend  | FastAPI + Motor (async MongoDB), single file at `backend/server.py`  |
 | Database | MongoDB                                                              |
 | Auth     | JWT, admin only (the admin account is seeded from env vars)          |
@@ -21,7 +21,7 @@ memory/     PRD and changelog
 ## Prerequisites
 
 - Python 3.11+
-- Node.js 18+ and Yarn 1 (`corepack enable` or `npm i -g yarn`)
+- Node.js 22 (22.12 or newer) and npm
 - MongoDB running locally (`mongodb://localhost:27017`) or a MongoDB Atlas URI
 
 ## Quickstart
@@ -55,28 +55,22 @@ Install and run:
 cd backend
 python -m venv .venv
 # Windows: .venv\Scripts\activate    macOS/Linux: source .venv/bin/activate
-pip install -r requirements.txt --extra-index-url https://d33sy5i8bnduwe.cloudfront.net/simple/
+pip install -r requirements-dev.txt     # runtime deps + pytest
 uvicorn server:app --reload --port 8001
 ```
-
-`emergentintegrations` isn't on PyPI, so it needs the extra index URL above. `server.py` doesn't import it; if the install fails you can delete that line from `requirements.txt`.
 
 When the server starts it creates indexes, seeds the admin user from `ADMIN_EMAIL`/`ADMIN_PASSWORD`, seeds the gallery and menus, and runs the content migrations. API docs are at http://localhost:8001/docs.
 
 ### 2. Frontend
 
-Create `frontend/.env`:
-
-```env
-REACT_APP_BACKEND_URL=http://localhost:8001
-```
+`frontend/.env` is optional (see `frontend/.env.example`). With `VITE_API_URL` empty, the app calls `/api` on its own origin and the dev server proxies that to `http://localhost:8000`, so run the backend on port 8000 (`uvicorn server:app --reload --port 8000`).
 
 Install and run:
 
 ```bash
 cd frontend
-yarn install
-yarn start
+npm install
+npm run dev
 ```
 
 Open http://localhost:3000. The admin panel is at http://localhost:3000/admin/login, and you sign in with the `ADMIN_EMAIL`/`ADMIN_PASSWORD` from `backend/.env`.
@@ -110,4 +104,5 @@ Some tests create and delete events and bookings, so use a throwaway database.
 
 - **Media**: site images and videos are served through `/api/media/...`, which pulls them from Emergent Object Storage. Without `EMERGENT_LLM_KEY` those assets won't load locally, though the rest of the site still works. Payment screenshot uploads need it as well.
 - **Email / Sheets**: if `RESEND_API_KEY` or `GOOGLE_SHEETS_WEBHOOK_URL` isn't set, that integration is skipped, and bookings are still saved to MongoDB.
-- **Production build**: `cd frontend && yarn build`, which writes to `frontend/build/`.
+- **Backend deployment**: Docker image on the Oracle VM via GitHub Actions; see [`backend/DEPLOY.md`](backend/DEPLOY.md).
+- **Production build**: `cd frontend && npm run build`, which writes to `frontend/dist/`. Set `VITE_API_URL` to the API origin (for example `https://api.<domain>`) at build time.

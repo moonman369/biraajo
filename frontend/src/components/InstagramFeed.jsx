@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Instagram } from "lucide-react";
+import Instagram from "@/components/icons/Instagram";
 
 const tiles = [
   "/api/media/biraajo/media/7b3c136adf5f5431.jpg",

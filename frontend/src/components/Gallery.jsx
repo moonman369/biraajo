@@ -43,7 +43,7 @@ export default function Gallery() {
         </div>
 
         {/* Masonry */}
-        <div className="columns-2 md:columns-3 lg:columns-4 gap-3 lg:gap-4 [column-fill:_balance]">
+        <div className="columns-2 md:columns-3 lg:columns-4 gap-3 lg:gap-4 [column-fill:balance]">
           {images.map((img, i) => (
             <motion.button
               key={img.id}
@@ -58,7 +58,7 @@ export default function Gallery() {
               {isVideo(img.url) ? (
                 <video
                   src={img.url}
-                  className="w-full aspect-[4/5] object-cover bg-[#140A09]"
+                  className="w-full aspect-4/5 object-cover bg-[#140A09]"
                   autoPlay
                   muted
                   loop
@@ -77,7 +77,7 @@ export default function Gallery() {
                 />
               )}
               {isVideo(img.url) && (
-                <span className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 bg-[#0A0504]/80 backdrop-blur-sm text-overline text-[#F3EFE7]">
+                <span className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 bg-[#0A0504]/80 backdrop-blur-xs text-overline text-[#F3EFE7]">
                   <Play size={10} /> Video
                 </span>
               )}
@@ -97,7 +97,7 @@ export default function Gallery() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-[80] bg-[#0A0504]/96 backdrop-blur-sm flex items-center justify-center p-6"
+            className="fixed inset-0 z-80 bg-[#0A0504]/96 backdrop-blur-xs flex items-center justify-center p-6"
             onClick={() => setOpenIndex(null)}
             data-testid="lightbox"
           >

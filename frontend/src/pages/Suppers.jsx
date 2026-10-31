@@ -66,7 +66,7 @@ export default function Suppers() {
             className="border border-[#2D1D1A] bg-[#140A09] grid grid-cols-1 md:grid-cols-12 overflow-hidden"
             data-testid="supper-card-naani-ghar"
           >
-            <div className="md:col-span-5 relative aspect-[4/3] md:aspect-auto img-zoom">
+            <div className="md:col-span-5 relative aspect-4/3 md:aspect-auto img-zoom">
               <img src="/api/media/biraajo/media/6a6d9d936ab71fa4.jpg" alt="Naani Ghar" className="w-full h-full object-cover" />
               <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#9FD79F] border border-[#3A7D44]/60">Series concluded</span>
             </div>
@@ -96,7 +96,7 @@ export default function Suppers() {
             className="border border-[#2D1D1A] bg-[#140A09] grid grid-cols-1 md:grid-cols-12 overflow-hidden"
             data-testid="supper-card-barsaat"
           >
-            <div className="md:col-span-5 relative aspect-[4/3] md:aspect-auto img-zoom">
+            <div className="md:col-span-5 relative aspect-4/3 md:aspect-auto img-zoom">
               <img src="/api/media/biraajo/media/31cf3839eeb74061.jpg" alt="Barsaat" className="w-full h-full object-cover" />
               <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">Reservations open</span>
             </div>
@@ -130,7 +130,7 @@ export default function Suppers() {
             className="border border-[#2D1D1A] bg-[#140A09] grid grid-cols-1 md:grid-cols-12 overflow-hidden"
             data-testid="supper-card-wtwe"
           >
-            <div className="md:col-span-5 relative aspect-[4/3] md:aspect-auto img-zoom">
+            <div className="md:col-span-5 relative aspect-4/3 md:aspect-auto img-zoom">
               <video src={WTWE_COVER} className="w-full h-full object-cover" autoPlay muted loop playsInline preload="metadata" onCanPlay={(e) => { try { e.currentTarget.play(); } catch { /* ignore */ } }} />
               <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">Now booking</span>
             </div>

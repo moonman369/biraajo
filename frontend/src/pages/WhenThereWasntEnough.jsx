@@ -173,7 +173,7 @@ export default function WhenThereWasntEnough() {
         <section className="py-20 sm:py-28 border-t border-[#2D1D1A]" data-testid="wtwe-concept-statement">
           <div className="max-w-3xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
             <p className="text-overline">{csEyebrow}</p>
-            <p className="font-display text-3xl sm:text-4xl mt-7 leading-[1.25] tracking-tight">
+            <p className="font-display text-3xl sm:text-4xl mt-7 leading-tight tracking-tight">
               &ldquo;<span className="italic text-[#D9772B]">{csQuote}</span>&rdquo;
             </p>
             {csBody && <p className="mt-7 text-[#B5A79E] leading-relaxed max-w-2xl mx-auto">{csBody}</p>}

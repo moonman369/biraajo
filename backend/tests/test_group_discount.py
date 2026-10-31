@@ -12,9 +12,9 @@ import uuid
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://premium-chef-demo.preview.emergentagent.com").rstrip("/")
-ADMIN_EMAIL = "reachbiraajo@gmail.com"
-ADMIN_PASS = "Biraajo@2026"
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000").rstrip("/")
+ADMIN_EMAIL = os.environ["ADMIN_EMAIL"]
+ADMIN_PASS = os.environ["ADMIN_PASSWORD"]
 
 created_reg_ids = []
 

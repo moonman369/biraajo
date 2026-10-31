@@ -4,22 +4,12 @@ import json
 import pytest
 import requests
 
-# Load frontend .env if not in shell environment (pytest may not inherit)
-if not os.environ.get("REACT_APP_BACKEND_URL"):
-    try:
-        with open("/app/frontend/.env") as _f:
-            for _line in _f:
-                if _line.startswith("REACT_APP_BACKEND_URL="):
-                    os.environ["REACT_APP_BACKEND_URL"] = _line.split("=", 1)[1].strip()
-                    break
-    except Exception:
-        pass
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 API = f"{BASE_URL}/api"
 
-ADMIN_EMAIL = "reachbiraajo@gmail.com"
-ADMIN_PASSWORD = "Biraajo@2026"
+ADMIN_EMAIL = os.environ["ADMIN_EMAIL"]
+ADMIN_PASSWORD = os.environ["ADMIN_PASSWORD"]
 
 
 @pytest.fixture(scope="module")
