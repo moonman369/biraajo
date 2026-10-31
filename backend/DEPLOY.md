@@ -10,7 +10,7 @@ checks the code, builds the image, pushes it to GHCR and SSHes into the VM to ru
 | Container | `biraajo-backend` (listens on 8000 inside) |
 | Host port | `127.0.0.1:8002` (8000 and 8001 belong to other services on the VM) |
 | Health check | `GET /api/` → `{"status":"ok","name":"Biraajo API"}` |
-| VM folder | the `VM_APP_DIR` secret (holds `docker-compose.yml` and `.env`) |
+| VM folder | `~/biraajo` (the `VM_APP_DIR` secret; holds `docker-compose.yml` and `.env`) |
 
 ## When it runs
 
@@ -40,7 +40,7 @@ The `GITHUB_TOKEN` is automatic. No app settings are stored in GitHub.
 | `VM_HOST` | yes | Public IP or hostname of the Oracle VM |
 | `VM_USER` | yes | SSH user on the VM (must be able to run `docker`) |
 | `VM_SSH_KEY` | yes | Private key (full text, including the BEGIN/END lines) whose public key is in the user's `~/.ssh/authorized_keys` |
-| `VM_APP_DIR` | yes | Deploy folder on the VM, e.g. `biraajo-backend` (relative paths are relative to the user's home; `~/...` works). The job fails if it is unset |
+| `VM_APP_DIR` | yes | Deploy folder on the VM: `biraajo` (relative paths are relative to the user's home; `~/biraajo` works too). The job fails if it is unset |
 | `VM_SSH_FINGERPRINT` | recommended | SHA256 fingerprint of the VM's SSH host key; when set, the job refuses to connect to any other host |
 
 ## App settings: `.env` on the VM
@@ -122,7 +122,7 @@ CLOUDINARY_URL='cloudinary://<api_key>:<api_secret>@<cloud_name>'
    ```
 4. The deploy folder and its `.env` (the deploy fails until both exist):
    ```bash
-   mkdir -p ~/biraajo-backend && cd ~/biraajo-backend   # set VM_APP_DIR to biraajo-backend
+   mkdir -p ~/biraajo && cd ~/biraajo                   # VM_APP_DIR secret = biraajo
    nano .env                                            # fill in from the template above
    chmod 600 .env
    ```
@@ -194,7 +194,7 @@ served at `/api/media/content-bank/<subfolders>/<display name>.<ext>`, for examp
 ## Day to day
 
 ```bash
-cd ~/biraajo-backend
+cd ~/biraajo
 docker compose ps                     # STATUS shows (healthy)
 docker compose logs -f --tail 100
 ```
@@ -209,7 +209,7 @@ re-run only **deploy**. It redeploys that run's exact image tag (it only changes
 
 **Option B, on the VM:**
 ```bash
-cd ~/biraajo-backend
+cd ~/biraajo
 IMAGE_TAG=sha-<good commit> docker compose pull      # skip if the image is still local
 IMAGE_TAG=sha-<good commit> docker compose up -d
 docker compose ps                                    # wait for (healthy)
