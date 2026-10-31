@@ -335,6 +335,19 @@ Not verified: playback on a real iPhone/Safari (on the cutover list already), an
 
 ---
 
+## Frontend: Content Bank testimonials on Naani Ghar (owner request 2026-10-31)
+
+Owner asked the frontend to use the new Content Bank media ("best guess where each goes"). The bank holds only the 6 Naani Ghar testimonial videos and no pictures, so no existing photo was replaced.
+
+- `src/pages/NaaniGhar.jsx`: new section "In their words / What the table *said after.*" between the photo grid and the closing CTA (`data-testid` `naani-testimonials-section`, `naani-testimonial-0…5`). Six 9:16 videos with controls (testimonials have speech, so no muted autoplay), 2 columns on mobile and 3 on desktop, the same fade-in as the photo tiles. `#t=0.1` shows the first frame on iOS.
+- URLs are built from `API` in `lib/api.js` (`${API}/media/content-bank/Naani%20Ghar/Testimonials/IMG_xxxx.mp4`), so they work in dev (`/api` proxy) and in production (absolute `VITE_API_URL`). CMS keys `naani_ghar.testimonials.{visible,eyebrow,title,title_italic,items[{url,poster}]}` override the defaults through `read()`; the EditWebsite form has no fields for them yet.
+- Verified in system Chrome on the built site: 6 videos, each `302` → Cloudinary, `readyState 4`, 1080×1920, no errors; screenshot reviewed. Intentional visual change: `supper-club_naani-ghar` captures now include this section. `data-testid` count 316 → 318 in source (two new attributes; 7 rendered).
+- IMG_0276 is a 2-second clip; it might not be meant as a testimonial.
+
+**Found while doing this, not fixed:** all existing site media uses relative URLs (`/api/media/biraajo/...`, set in code and in the CMS data). That worked on Emergent (site and API on one origin). On Vercel with the API on `api.<domain>`, those requests hit Vercel, and `vercel.json` rewrites them to `index.html`, so **every existing image and video would break in production**. Fix options: (a) a Vercel rewrite `/api/:path*` → `https://api.<domain>/api/:path*` placed before the SPA rule (one line; media and API calls then go through Vercel), or (b) a small `mediaUrl()` helper that prefixes `/api/` paths with `VITE_API_URL` at every `src=` (about 15 places). Needs the API domain and an owner decision.
+
+---
+
 ## Cutover list (needs real data / Cloudinary / live site)
 
 Found during code scans. Each item is handled in plan Section 6.
@@ -347,6 +360,7 @@ Found during code scans. Each item is handled in plan Section 6.
 - Cloudinary folder mode / `asset_folder` (C3).
 
 ## Open questions
+- **Production media URLs (blocking go-live):** existing `/api/media/...` URLs are relative and would hit Vercel, not the API. Choose a Vercel rewrite or a `mediaUrl()` prefix (see the Naani Ghar testimonials section).
 - Vercel: confirm the project's Root Directory is `frontend` (the `ignoreCommand` depends on it).
 - First backend deploy needs Atlas to hold the restored production data incl. `migrations` (C1) before the workflow runs on `main`.
 - Tailwind 4 drops support for Safari < 16.4 (iOS < 16.4). Acceptable for the guests, or revert B5 to Tailwind 3.4.17?

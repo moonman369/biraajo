@@ -4,8 +4,14 @@ import { ArrowLeft, Home, Heart, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useSiteContent, read } from "@/lib/siteContent";
+import { API } from "@/lib/api";
 
 const APPROACH_ICONS = { home: Home, heart: Heart, sparkles: Sparkles };
+
+// Guest testimonials from the Cloudinary Content Bank (served as MP4 by the API).
+const TESTIMONIALS_BASE = `${API}/media/content-bank/Naani%20Ghar/Testimonials`;
+const DEFAULT_TESTIMONIALS = ["IMG_0228", "IMG_0229", "IMG_0231", "IMG_0274", "IMG_0276", "IMG_0277"]
+  .map((name) => ({ url: `${TESTIMONIALS_BASE}/${name}.mp4` }));
 
 export default function NaaniGhar() {
   const { content } = useSiteContent();
@@ -21,6 +27,8 @@ export default function NaaniGhar() {
   const chefNoteVisible = read(content, "naani_ghar.chef_note.visible", true) !== false;
   const approachVisible = read(content, "naani_ghar.approach.visible", true) !== false;
   const approachItems = read(content, "naani_ghar.approach.items", []);
+  const testimonialsVisible = read(content, "naani_ghar.testimonials.visible", true) !== false;
+  const testimonials = (read(content, "naani_ghar.testimonials.items", DEFAULT_TESTIMONIALS) || []).filter((t) => t && t.url);
 
   return (
     <div className="bg-[#0A0504] text-[#F3EFE7] min-h-screen film-grain" data-testid="page-naani-ghar">
@@ -163,6 +171,39 @@ export default function NaaniGhar() {
                   className="bg-[#0A0504] aspect-4/5 overflow-hidden img-zoom"
                 >
                   <img src={p} alt="Naani Ghar moment" loading="lazy" className="w-full h-full object-cover" />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {testimonialsVisible && testimonials.length > 0 && (
+        <section className="py-24 sm:py-32 border-t border-[#2D1D1A]" data-testid="naani-testimonials-section">
+          <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
+            <p className="text-overline">{read(content, "naani_ghar.testimonials.eyebrow", "In their words")}</p>
+            <h2 className="font-display text-4xl sm:text-5xl mt-6 leading-[1.04] tracking-tight max-w-3xl">
+              {read(content, "naani_ghar.testimonials.title", "What the table")}{" "}
+              <span className="italic text-[#D9772B]">{read(content, "naani_ghar.testimonials.title_italic", "said after.")}</span>
+            </h2>
+            <div className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+              {testimonials.map((t, i) => (
+                <motion.div
+                  key={`${t.url}-${i}`}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: i * 0.05 }}
+                  className="relative aspect-9/16 w-full overflow-hidden bg-[#0A0504] border border-[#2D1D1A]"
+                  data-testid={`naani-testimonial-${i}`}
+                >
+                  {/* #t=0.1 makes iOS Safari show the first frame instead of a black box. */}
+                  <video
+                    src={`${t.url}#t=0.1`}
+                    poster={t.poster || undefined}
+                    className="w-full h-full object-cover"
+                    controls playsInline preload="metadata"
+                  />
                 </motion.div>
               ))}
             </div>
