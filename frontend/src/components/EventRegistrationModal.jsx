@@ -161,7 +161,7 @@ export default function EventRegistrationModal({ event, events, onClose, onSucce
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[90] bg-[#0A0504]/90 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-6"
+        className="fixed inset-0 z-90 bg-[#0A0504]/90 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-6"
         onClick={step === "form" ? onClose : undefined}
         data-testid="event-registration-modal"
       >
@@ -474,7 +474,7 @@ export default function EventRegistrationModal({ event, events, onClose, onSucce
 }
 
 const inputCls =
-  "w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-none";
+  "w-full bg-[#0A0504] border border-[#2D1D1A] px-4 py-3 text-[#F3EFE7] focus:border-[#5A1A1F] outline-hidden";
 
 function Field({ label, required, children }) {
   return (

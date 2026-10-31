@@ -7,7 +7,7 @@ import requests
 
 BASE_URL = os.environ.get(
     "REACT_APP_BACKEND_URL",
-    "https://premium-chef-demo.preview.emergentagent.com",
+    "http://localhost:8000",
 ).rstrip("/")
 
 # Explicit sample paths from the review request

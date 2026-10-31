@@ -56,7 +56,7 @@ export default function Newsletter() {
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
               data-testid="newsletter-name-input"
-              className="sm:col-span-5 bg-[#0A0504] border border-[#2D1D1A] px-4 py-4 text-[#F3EFE7] placeholder-[#B5A79E] focus:border-[#5A1A1F] outline-none"
+              className="sm:col-span-5 bg-[#0A0504] border border-[#2D1D1A] px-4 py-4 text-[#F3EFE7] placeholder-[#B5A79E] focus:border-[#5A1A1F] outline-hidden"
             />
             <input
               required
@@ -65,7 +65,7 @@ export default function Newsletter() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Your email"
               data-testid="newsletter-email-input"
-              className="sm:col-span-7 bg-[#0A0504] border border-[#2D1D1A] px-4 py-4 text-[#F3EFE7] placeholder-[#B5A79E] focus:border-[#5A1A1F] outline-none"
+              className="sm:col-span-7 bg-[#0A0504] border border-[#2D1D1A] px-4 py-4 text-[#F3EFE7] placeholder-[#B5A79E] focus:border-[#5A1A1F] outline-hidden"
             />
             <button
               type="submit"

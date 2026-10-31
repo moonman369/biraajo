@@ -1,4 +1,5 @@
-import { Instagram, MessageCircle, Mail } from "lucide-react";
+import { MessageCircle, Mail } from "lucide-react";
+import Instagram from "@/components/icons/Instagram";
 import { Link } from "react-router-dom";
 import { useSiteContent, read } from "@/lib/siteContent";
 

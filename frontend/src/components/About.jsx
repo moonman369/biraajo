@@ -138,9 +138,9 @@ function Chapter({ chapter }) {
       data-testid={`about-chapter-${chapter.no}`}
     >
       <div className="lg:col-span-6 [direction:ltr]">
-        <div className="img-zoom relative aspect-[4/5] w-full overflow-hidden">
+        <div className="img-zoom relative aspect-4/5 w-full overflow-hidden">
           <img src={chapter.image} alt={chapter.eyebrow} className="w-full h-full object-cover" loading="lazy" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/60 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t/srgb from-[#0A0504]/60 to-transparent" />
           <span className="absolute top-5 left-5 text-overline text-[#F3EFE7]">section {chapter.no}</span>
         </div>
       </div>

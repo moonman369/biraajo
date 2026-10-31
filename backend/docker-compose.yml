@@ -1,0 +1,21 @@
+# Production compose file for the Oracle VM. The deploy workflow copies it to VM_APP_DIR.
+# The VM only pulls the image built by .github/workflows/deploy-backend.yml; it never builds.
+# Local development uses the root docker-compose.yml (Mongo only) instead.
+services:
+  backend:
+    # IMAGE_TAG is written to .env by the workflow (sha-<commit>); `latest` if unset.
+    # Roll back with: IMAGE_TAG=sha-<old commit> docker compose up -d   (see DEPLOY.md)
+    image: ghcr.io/moonman369/biraajo-backend:${IMAGE_TAG:-latest}
+    container_name: biraajo-backend
+    env_file:
+      - ./.env
+    ports:
+      # Loopback only: Nginx proxies api.<domain> to this port. 8000 and 8001 are used by other
+      # services on the VM; the container itself listens on 8000.
+      - "127.0.0.1:8002:8000"
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

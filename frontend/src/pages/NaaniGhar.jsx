@@ -49,9 +49,9 @@ export default function NaaniGhar() {
                 <p className="mt-4 text-[#B5A79E] text-sm tracking-[0.16em] uppercase">{read(content, "naani_ghar.hero.meta", "")}</p>
               </motion.div>
               <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.2 }} className="lg:col-span-5">
-                <div className="img-zoom relative aspect-[4/5] w-full overflow-hidden">
+                <div className="img-zoom relative aspect-4/5 w-full overflow-hidden">
                   <img src={heroImg} alt="Naani Ghar" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504]/55 to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-t/srgb from-[#0A0504]/55 to-transparent" />
                 </div>
               </motion.div>
             </div>
@@ -160,7 +160,7 @@ export default function NaaniGhar() {
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.8, delay: i * 0.05 }}
-                  className="bg-[#0A0504] aspect-[4/5] overflow-hidden img-zoom"
+                  className="bg-[#0A0504] aspect-4/5 overflow-hidden img-zoom"
                 >
                   <img src={p} alt="Naani Ghar moment" loading="lazy" className="w-full h-full object-cover" />
                 </motion.div>

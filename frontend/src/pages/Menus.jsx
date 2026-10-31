@@ -38,13 +38,13 @@ export default function Menus() {
             data-testid="menu-card-naani-ghar"
           >
             <Link to="/menus/naani-ghar" className="block group">
-              <div className="relative aspect-[4/5] overflow-hidden img-zoom">
+              <div className="relative aspect-4/5 overflow-hidden img-zoom">
                 <img
                   src="/api/media/biraajo/media/6a6d9d936ab71fa4.jpg"
                   alt="Naani Ghar menu"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504] via-[#0A0504]/30 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t/srgb from-[#0A0504] via-[#0A0504]/30 to-transparent" />
                 <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#9FD79F] border border-[#3A7D44]/60">
                   Series concluded
                 </span>
@@ -70,13 +70,13 @@ export default function Menus() {
             data-testid="menu-card-barsaat"
           >
             <Link to="/menus/barsaat" className="block group">
-              <div className="relative aspect-[4/5] overflow-hidden img-zoom">
+              <div className="relative aspect-4/5 overflow-hidden img-zoom">
                 <img
                   src="/api/media/biraajo/media/4d82c167b3dc090f.jpg"
                   alt="Barsaat menu"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504] via-[#0A0504]/30 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t/srgb from-[#0A0504] via-[#0A0504]/30 to-transparent" />
                 <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">
                   Reservations open
                 </span>
@@ -102,7 +102,7 @@ export default function Menus() {
             data-testid="menu-card-wtwe"
           >
             <Link to="/menus/when-there-wasnt-enough" className="block group">
-              <div className="relative aspect-[4/5] overflow-hidden img-zoom">
+              <div className="relative aspect-4/5 overflow-hidden img-zoom">
                 <video
                   src={WTWE_COVER}
                   className="w-full h-full object-cover"
@@ -113,7 +113,7 @@ export default function Menus() {
                   preload="metadata"
                   onCanPlay={(e) => { try { e.currentTarget.play(); } catch { /* ignore */ } }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0504] via-[#0A0504]/30 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t/srgb from-[#0A0504] via-[#0A0504]/30 to-transparent" />
                 <span className="absolute top-4 left-4 px-3 py-1 text-[10px] tracking-[0.22em] uppercase bg-[#0A0504]/80 text-[#D9772B] border border-[#D9772B]/60">
                   Now booking
                 </span>

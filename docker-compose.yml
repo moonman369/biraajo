@@ -1,0 +1,11 @@
+# Local development. Finalised in phase A5 (backend service added there).
+services:
+  mongo:
+    image: mongo:8.0
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
